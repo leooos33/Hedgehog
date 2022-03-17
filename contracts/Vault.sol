@@ -27,23 +27,41 @@ contract Vault is
  {
      using SafeERC20 for IERC20;
      using SafeMath for uint256;
+    
+    event SetStrategyCap(
+       uint256 _capAmount
+    );
 
-     event Deposit (
-        address indexed sender,
-        uint256 shares
-     );
+    event Deposit (
+       address indexed sender,
+       uint256 shares
+    );
 
-     event Withdraw (
+    event Withdraw (
          
-     );
+    );
 
-     event CollectFees (
+    event CollectFees (
 
-     );
+    );
 
-     event Snapshot (
+    event Snapshot (
 
-     );
+    );
+
+    event TimeRebalance (
+        address indexed hedger,
+        bool auctionType,
+        uint256 hedgerPrice,
+        uint256 auctionTriggerTimestamp
+    );
+
+    event PriceRebalance (
+        address indexed hedger,
+        bool auctionType,
+        uint256 hedgerPrice,
+        uint256 auctionTriggerTimestamp
+    );
 
     IUniswapV3Pool public immutable poolEU; //ETH-USDC
     IUniswapV3Pool public immutable poolES; //ETH-oSQTH
@@ -73,6 +91,8 @@ contract Vault is
     uint256 public accruedProtocolFees0;
     uint256 public accruedProtocolFees1;
 
+    uint256 public timeAtLastRebalance;
+    uint256 public hedgeTimeThreshold;
     /**
      * @dev After deploying, strategy needs to be set via `setStrategy()`
      * @param _poolEU Underlying Uniswap V3 ETH-USDC pool
@@ -87,7 +107,8 @@ contract Vault is
         uint256 _protocolFee,
         uint256 _cap,
         address _oracleEU,
-        address _oracleES        
+        address _oracleES,
+        uint256 _hedgeTimeThreshold        
     ) ERC20 ("Hedging DL", "HDL") {
         poolEU = IUniswapV3Pool(_poolEU);
         poolES = IUniswapV3Pool(_poolES);
@@ -107,7 +128,16 @@ contract Vault is
         oracleEU = _oracleEU;
         oracleES = _oracleES;
 
+        hedgeTimeThreshold = _hedgeTimeThreshold;
+
         governance = msg.sender;
+    }
+
+    function setStrategyCap(uint256 _capAmount) external {
+        require(msg.sender == governance, "Governance");
+        cap = _capAmount;
+
+        emit SetStrategyCap(_capAmount);
     }
 
     /**
@@ -116,8 +146,7 @@ contract Vault is
      * @param amountToDeposit amount of USDC to deposit
      * @return shares Number of shares minted
      */
-    function deposit (uint256 amountToDeposit) external override nonReentrant returns (shares)
-    {
+    function deposit (uint256 amountToDeposit) external override nonReentrant returns (uint256 shares) {
         require(amountToDeposit > 0, "Amount to deposit should be > 0");
         
         // Poke positions so vault's current holdings are up to date
@@ -134,8 +163,44 @@ contract Vault is
         require(totalSupply() <= cap, "Cap is reached");
 
         emit Deposit(msg.sender, shares);
+    }
+    /**
+     * @notice strategy hedging based on time threshold
+
+     */
+    function timeRebalance() external nonReentrant {
+        (bool _isTimeRebalanceAllowed, uint256 auctionTriggerTime) = _isTimeRebalance();
+    
+        require(_isTimeRebalanceAllowed, "Time rebalance not allowed");
+
+        _rebalance(auctionTriggerTime, , _limitPrice); //TODO
+
+        emit TimeRebalance(msg.sender, ,_limitPrice, auctionTriggerTime); //TODO
 
     }
+    /**
+     * @notice strategy hedging based on price threshold
+
+     */
+    function priceRebalance(uint256 _auctionTriggerTime, bool , uint256 _limitPrice) external nonReentrant {
+        require(_isPriceHedge(_auctionTriggerTime), "Price rebalance is not allowed");
+        _rebalance(_auctionTriggerTime, ,_limitPrice); //TODO
+
+        emit PriceRebalance()
+    }
+
+    function checkTimeRebalance() external view returns (bool){
+        return _isTimeRebalance();
+    }
+
+    function checkPriceRebalance(uint256 _auctionTriggerTime) external returns (bool, uint256) {
+        return _isPriceRebalance(_auctionTriggerTime);
+    }
+
+    function _rebalance() internal {
+
+    }
+
 
     /// @dev Do zero-burns to poke a position on Uniswap so earned fees are
     /// updated. Should be called if total amounts needs to include up-to-date
@@ -170,12 +235,11 @@ contract Vault is
             twapPeriod,
             true
         );
-        
-        if (totalSupply == 0){
-            //Shares to mint
+
+        //Shares to mint
+        if (totalSupply == 0) {   
             shares = _amountToDeposit;
         } else {
-            
             // Value of USDC token holdings in ETH
             uint256 valueUsdcEth = totalUSDC.mul(wUsdcEthPrice);
             // Value of oSQTH token holdings in ETH
@@ -223,6 +287,28 @@ contract Vault is
         bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
         return pool.positions(positionKey);
     }
-    
+
+    function _isTimeRebalance() internal view returns (bool, uint256) {
+        uint256 auctionTriggerTime = timeAtLastRebalance.add(hedgeTimeThreshold);
+
+        return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
+    }
+
+    function _isPriceRebalance(uint256 _auctionTriggerTime) internal view returns (bool) {
+        if (_auctionTriggerTime < timeAtLastRebalance) return false;
+
+        uint32 secondsToPriceRebalanceTrigger = uint32 (block.timestamp.sub(_auctionTriggerTime));
+        uint256 wSqueethEthPriceAtTriggerTime = IOracle(oracle).getHistoricalTwap(
+            ethWSqueethPool,
+            wPowerPerp,
+            weth,
+            secondsToPriceHedgeTrigger + hedgingTwapPeriod,
+            secondsToPriceHedgeTrigger
+        );
+        uint256 cachedRatio = wSqueethEthPriceAtTriggerTime.div(priceAtLastHedge);
+        uint256 priceThreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
+
+        return priceThreshold >= hedgePriceThreshold;
+    }
  }
 
