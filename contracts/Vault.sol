@@ -63,6 +63,13 @@ contract Vault is
         uint256 auctionTriggerTimestamp
     );
 
+    struct Account {
+        uint256 shares;
+        uint256 ethBalance;
+        uint256 usdcBalance;
+        uint256 osqthBalance;
+    }
+
     IUniswapV3Pool public immutable poolEU; //ETH-USDC
     IUniswapV3Pool public immutable poolES; //ETH-oSQTH
     IERC20 public immutable tokenEU0; 
@@ -93,6 +100,9 @@ contract Vault is
 
     uint256 public timeAtLastRebalance;
     uint256 public hedgeTimeThreshold;
+
+    mapping(address => Account) public accounts;
+
     /**
      * @dev After deploying, strategy needs to be set via `setStrategy()`
      * @param _poolEU Underlying Uniswap V3 ETH-USDC pool
@@ -159,6 +169,12 @@ contract Vault is
         // Mint shares to recipient
         shares = _calcShares(_amountToDeposit);
         _mint(msg.sender, shares);
+        
+        if (accounts[msg.sender] == address(0)){
+            accounts[msg.sender] = new Account(shares, 0, 0, 0);
+        } else {
+            accounts[msg.sender].shares = shares;
+        }
 
         require(totalSupply() <= cap, "Cap is reached");
 
