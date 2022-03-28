@@ -58,13 +58,6 @@ contract Vault is
         uint256 auctionTriggerTimestamp
     );
 
-    struct Account {
-        uint256 shares;
-        uint256 ethBalance;
-        uint256 usdcBalance;
-        uint256 osqthBalance;
-    }
-
     IUniswapV3Pool public immutable poolEU; //ETH-USDC
     IUniswapV3Pool public immutable poolES; //ETH-oSQTH
     IERC20 public immutable tokenEU0; 
