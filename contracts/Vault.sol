@@ -44,8 +44,43 @@ contract Vault is
     address public immutable oracleETHUSDC;
     address public immutable oracleOSQTHETH;
 
-    int24 public immutable tickSpacingEthUsdc;
-    int24 public immutable tickSpacingOsqthEth;
+    event Snapshot (
+
+    );
+
+    event TimeRebalance (
+        address indexed hedger,
+        bool auctionType,
+        uint256 hedgerPrice,
+        uint256 auctionTriggerTimestamp
+    );
+
+    event PriceRebalance (
+        address indexed hedger,
+        bool auctionType,
+        uint256 hedgerPrice,
+        uint256 auctionTriggerTimestamp
+    );
+
+    struct Account {
+        uint256 shares;
+        uint256 ethBalance;
+        uint256 usdcBalance;
+        uint256 osqthBalance;
+    }
+
+    IUniswapV3Pool public immutable poolEU; //ETH-USDC
+    IUniswapV3Pool public immutable poolES; //ETH-oSQTH
+    IERC20 public immutable tokenEU0; 
+    IERC20 public immutable tokenEU1;
+    IERC20 public immutable tokenES0;
+    IERC20 public immutable tokenES1;
+    IERC20 public immutable tokenToDeposit; // weth?
+    
+    address public immutable oracleEU;
+    address public immutable oracleES;
+
+    int24 public immutable tickSpacing;
     uint32 public twapPeriod = 420 seconds;
 
     uint256 public protocolFee;
@@ -59,6 +94,7 @@ contract Vault is
     int24 public orderOSQTHETHUpper;
 
     uint256 public timeAtLastRebalance;
+<<<<<<< HEAD
     uint256 public ethPriceAtLastRebalance;
     uint256 public rebalanceTimeThreshold;
     
@@ -69,6 +105,19 @@ contract Vault is
     uint256 public targetUsdcShare;
     uint256 public targetOsqthShare;
 
+=======
+    uint256 public hedgeTimeThreshold;
+
+    mapping(address => Account) public accounts;
+
+    /**
+     * @dev After deploying, strategy needs to be set via `setStrategy()`
+     * @param _poolEU Underlying Uniswap V3 ETH-USDC pool
+     * @param _poolES Underlying Uniswap V3 ETH-oSQTH pool
+     * @param _protocolFee Protocol fee expressed as multiple of 1e-6
+     * @param _cap Cap on total supply
+     */
+>>>>>>> af3681341f2b46d8d2d28f50b6951d761d380653
     constructor (
         address _tokenToDeposit,
         uint256 _cap,
@@ -133,6 +182,12 @@ contract Vault is
         shares = _calcShares(_amountToDeposit);
 
         _mint(msg.sender, shares);
+        
+        if (accounts[msg.sender] == address(0)){
+            accounts[msg.sender] = new Account(shares, 0, 0, 0);
+        } else {
+            accounts[msg.sender].shares = shares;
+        }
 
         emit Deposit(msg.sender, shares);     
         
