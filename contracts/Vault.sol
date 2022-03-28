@@ -44,10 +44,6 @@ contract Vault is
     address public immutable oracleETHUSDC;
     address public immutable oracleOSQTHETH;
 
-    event Snapshot (
-
-    );
-
     event TimeRebalance (
         address indexed hedger,
         bool auctionType,
@@ -94,7 +90,6 @@ contract Vault is
     int24 public orderOSQTHETHUpper;
 
     uint256 public timeAtLastRebalance;
-<<<<<<< HEAD
     uint256 public ethPriceAtLastRebalance;
     uint256 public rebalanceTimeThreshold;
     
@@ -105,19 +100,6 @@ contract Vault is
     uint256 public targetUsdcShare;
     uint256 public targetOsqthShare;
 
-=======
-    uint256 public hedgeTimeThreshold;
-
-    mapping(address => Account) public accounts;
-
-    /**
-     * @dev After deploying, strategy needs to be set via `setStrategy()`
-     * @param _poolEU Underlying Uniswap V3 ETH-USDC pool
-     * @param _poolES Underlying Uniswap V3 ETH-oSQTH pool
-     * @param _protocolFee Protocol fee expressed as multiple of 1e-6
-     * @param _cap Cap on total supply
-     */
->>>>>>> af3681341f2b46d8d2d28f50b6951d761d380653
     constructor (
         address _tokenToDeposit,
         uint256 _cap,
