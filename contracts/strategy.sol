@@ -6,8 +6,7 @@ import "@openzeppelin/contracts/utils/math/Math.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
@@ -17,9 +16,13 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import "./interfaces/IVault.sol";
 import "./interfaces/IOracle.sol";
 
-contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
-    using SafeERC20 for IERC20;
-    using SafeMath for uint256;
+contract Vault is 
+    IVault,
+    IUniswapV3MintCallback,
+    ERC20,
+    ReentrancyGuard
+    {
+        using SafeMath for uint256;
 
     event Deposit(address indexed sender, uint256 shares);
 
@@ -39,16 +42,15 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
     //@dev ETH-USDC Uniswap pool
     IUniswapV3Pool public immutable poolEthUsdc;
     //@dev oSQTH-ETH Uniswap pool
-    IUniswapV3Pool public immutable poolOsqthEth;
+    IUniswapV3Pool public immutable poolEthOsqth;
 
     //@dev wETH, USDC and oSQTH tokens
     IERC20 public immutable weth;
     IERC20 public immutable usdc;
     IERC20 public immutable osqth;
 
-    //@dev strategy Uniswap oracles
-    address public immutable oracleEthUsdc;
-    address public immutable oracleOsqthEth;
+    //@dev strategy Uniswap oracle
+    address public immutable oracle;
 
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
@@ -90,9 +92,8 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
        @param _poolEthUsdc eth:usdc uniswap pool address
-       @param _poolOsqthEth osqth:eth uniswap pool address
-       @param _oracleEthUsdc oracle address for eth/usdc
-       @param _oracleOsqthEth oracle address for osqth/eth
+       @param _poolEthOsqth eth:osqth uniswap pool address
+       @param _oracle oracle address 
        @param _rebalanceTimeThreshold rebalance time threshold (seconds)
        @param _rebalancePriceThreshold rebalance price threshold (0.05*1e18 = 5%)
        @param _auctionTime auction duration (seconds)
@@ -105,9 +106,8 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
     constructor(
         uint256 _cap,
         address _poolEthUsdc,
-        address _poolOsqthEth,
-        address _oracleEthUsdc,
-        address _oracleOsqthEth,
+        address _poolEthOsqth,
+        address _oracle,
         uint256 _rebalanceTimeThreshold,
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
@@ -120,17 +120,16 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         cap = _cap;
 
         poolEthUsdc = IUniswapV3Pool(_poolEthUsdc);
-        poolOsqthEth = IUniswapV3Pool(_poolOsqthEth);
+        poolEthOsqth = IUniswapV3Pool(_poolEthOsqth);
 
         weth = IERC20(IUniswapV3Pool(_poolEthUsdc).token0);
         usdc = IERC20(IUniswapV3Pool(_poolEthUsdc).token1);
-        osqth = IERC20(IUniswapV3Pool(_poolOsqthEth).token0);
+        osqth = IERC20(IUniswapV3Pool(_poolEthOsqth).token1);
 
-        oracleEthUsdc = _oracleEthUsdc;
-        oracleOsqthEth = _oracleOsqthEth;
+        oracle = _oracle;
 
         tickSpacingEthUsdc = IUniswapV3Pool(_poolEthUsdc).tickSpacing();
-        tickSpacingOsqthEth = IUniswapV3Pool(_poolOsqthEth).tickSpacing();
+        tickSpacingOsqthEth = IUniswapV3Pool(_poolEthOsqth).tickSpacing();
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
         rebalancePriceThreshold = _rebalancePriceThreshold;
 
@@ -145,12 +144,12 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
     }
 
     /**
-      @notice deposit wETH into strategy
-      @dev provide wETH, return strategy token (shares)
-     *@dev deposited wETH sit in the vault and are not used for liquidity on
-     *Uniswap until the next rebalance.
-      @param _amountToDeposit amount of wETH to deposit
-      @return shares number of strategy tokens (shares) minted
+    * @notice deposit wETH into strategy
+    * @dev provide wETH, return strategy token (shares)
+    * @dev deposited wETH sit in the vault and are not used for liquidity on
+    * Uniswap until the next rebalance.
+    * @param _amountToDeposit amount of wETH to deposit
+    * @return shares number of strategy tokens (shares) minted
      */
     function deposit(uint256 _amountToDeposit)
         external
@@ -165,11 +164,11 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         //Pull in wETH from sender
-        weth.safeTrasferFrom(msg.sender, address(this), _amountToDeposit);
+        weth.transferFrom(msg.sender, address(this), _amountToDeposit);
 
         //Poke positions so vault's current holdings are up to date
         _poke(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        _poke(poolOsqthEth, orderOsqthEthLower, orderOsqthEthUpper);
+        _poke(poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
 
         //Calculate shares to mint
         shares = _calcShares(_amountToDeposit);
@@ -213,20 +212,8 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
-            poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper,
-            shares,
-            totalSupply
-        );
-        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(
-            poolOsqthEth,
-            orderOsqthEthLower,
-            orderOsqthEthUpper,
-            shares,
-            totalSupply
-        );
+        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, shares, totalSupply);
+        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper, shares, totalSupply);
 
         //sum up received eth from eth:usdc pool and from osqth:eth pool
         amountEth = amountEth0.add(amountEth1);
@@ -236,9 +223,9 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
 
         //send tokens to user
-        if (amountEth > 0) weth.safeTransfer(msg.sender, amountEth);
-        if (amountUsdc > 0) usdc.safeTrasfer(msg.sender, amountUsdc);
-        if (amountOsqth > 0) osqth.safeTrasfer(msg.sender, amountOsqth);
+        if (amountEth > 0) weth.transfer(msg.sender, amountEth);
+        if (amountUsdc > 0) usdc.transfer(msg.sender, amountUsdc);
+        if (amountOsqth > 0) osqth.transfer(msg.sender, amountOsqth);
 
         //track deposited wETH amount
         //TODO
@@ -387,21 +374,19 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             uint256 osqthAmount
         ) = _getTotalAmounts();
 
-        uint256 osqthEthPrice = IOracle(oracleOsqthEth).getTwap(
-            poolOsqthEth,
-            osqth,
-            weth,
-            twapPeriod,
-            true
-        );
+        uint256 osqthEthPrice = IOracle(oracle).getTwap(
+            poolEthOsqth,
+            weth, 
+            osqth, 
+            twapPeriod, 
+            true);
 
-        uint256 usdcEthPrice = IOracle(oracleEthUsdc).getTwap(
-            poolEthUsdc,
-            usdc,
-            weth,
-            twapPeriod,
-            true
-        );
+        uint256 usdcEthPrice = IOracle(oracle).getTwap(
+            poolEthUsdc, 
+            usdc, 
+            weth, 
+            twapPeriod, 
+            true);
 
         if (totalSupply == 0) {
             shares = _amountToDeposit;
@@ -440,10 +425,9 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         (uint256 osqthAmount, uint256 amountWeth1) = getPositionAmount(
-            poolOsqthEth,
-            orderEthUsdcLower,
-            orderEthUsdcUpper
-        );
+            poolEthOsqth, 
+            orderEthUsdcLower, 
+            orderEthUsdcUpper);
 
         ethAmount = amountWeth0.add(amountWeth1);
     }
@@ -640,16 +624,9 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
      * @return USDC to sell/buy
      * @return oSQTH amount to sell or buy
      */
-    function _startAuction(uint256 _auctionTriggerTime)
-        internal
-        returns (
-            bool,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 currentEthUsdcPrice = IOracle(oracleETHUSDC).getTwap(
+    function _startAuction(uint256 _auctionTriggerTime) internal returns (bool, uint256, uint256, uint256) {
+
+        uint256 currentEthUsdcPrice = IOracle(oracle).getTwap(
             poolEthUsdc,
             weth,
             usdc,
@@ -657,11 +634,11 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             true
         );
 
-        uint256 currentOsqthEthPrice = IOracle(oracleOSQTHETH).getTwap(
-            poolOsqthEth,
-            osqth,
+        uint256 currentOsqthEthPrice = IOracle(oracle).getTwap(
+            poolEthOsqth, 
             weth,
-            twapPeriod,
+            osqth, 
+            twapPeriod, 
             true
         );
 
@@ -823,31 +800,25 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             orderOsqthEthUpper
         );
 
-        _burnAndCollect(
-            poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper,
-            liquidityEthUsdc
-        );
-        _burnAndCollect(
-            poolOsqthEth,
-            orderEthUsdcLower,
-            orderOsqthEthUpper,
-            liquidityOsqthEth
-        );
+        (uint128 liquidityEthUsdc, , , , ) = _position(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
+        (uint128 liquidityOsqthEth, , , , ) = _position(poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper);
+        
+        _burnAndCollect(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
+        _burnAndCollect(poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
 
         if (_isPriceInc) {
-            //pull in tokens from sender
-            osqth.safeTrasferFrom(keeper, address(this), _deltaOsqth);
+        //pull in tokens from sender
+        osqth.transferFrom(keeper, address(this), _deltaOsqth);
 
-            //send excess tokens to sender
-            eth.safeTrasfer(keeper, _deltaEth);
-            usdc.safeTrasfer(keeper, _deltaUsdc);
+        //send excess tokens to sender
+        eth.transfer(keeper, _deltaEth);
+        usdc.transfer(keeper, _deltaUsdc);
+
         } else {
-            usdc.safeTrasferFrom(keeper, address(this), _deltaUsdc);
+            usdc.transferFrom(from, to, amount);(keeper, address(this), _deltaUsdc);
 
-            eth.safeTrasfer(keeper, _deltaEth);
-            osqth.safeTrasfer(keeper, deltaOsqth);
+            eth.transfer(keeper, _deltaEth);
+            osqth.transfer(keeper, deltaOsqth);
         }
 
         (
@@ -866,7 +837,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         uint128 liquidityOsqthEth = _liquidityForAmounts(
-            poolOsqthEth,
+            poolEthOsqth,
             _osqthEthLower,
             _osqthEthUpper,
             balanceOf(weth),
@@ -874,18 +845,8 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         //place orders on Uniswap
-        _mintLiquidity(
-            poolEthUsdc,
-            ethUsdcLower,
-            ethUsdcUpper,
-            liquidityEthUsdc
-        );
-        _mintLiquidity(
-            poolOsqthEth,
-            osqthEthLower,
-            osqthEthUpper,
-            liquidityOsqthEth
-        );
+        _mintLiquidity(poolEthUsdc, ethUsdcLower, ethUsdcUpper, liquidityEthUsdc);
+        _mintLiquidity(poolEthOsqth, osqthEthLower, osqthEthUpper, liquidityOsqthEth);
 
         (
             orderEthUsdcLower,
@@ -913,7 +874,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         )
     {
         int24 tickEthUsdc = getTick(poolEthUsdc);
-        int24 tickOsqthEth = getTick(poolOsqthEth);
+        int24 tickOsqthEth = getTick(poolEthOsqth);
 
         int24 tickFloorEthUsdc = _floor(tickEthUsdc, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(tickOsqthEth, tickSpacingOsqthEth);
