@@ -4,6 +4,11 @@ coverage
 coverage.json
 typechain
 
+.vscode
+
+*/.DS_Store
+.DS_Store
+
 #Hardhat files
 cache
 artifacts
