@@ -859,13 +859,13 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             osqth.transferFrom(_keeper, address(this), _deltaOsqth);
 
             //send excess tokens to sender
-            eth.transfer(_keeper, _deltaEth);
+            weth.transfer(_keeper, _deltaEth);
             usdc.transfer(_keeper, _deltaUsdc);
         } else {
             usdc.transferFrom(_keeper, address(this), _deltaUsdc);
 
-            eth.transfer(_keeper, _deltaEth);
-            osqth.transfer(_keeper, deltaOsqth);
+            weth.transfer(_keeper, _deltaEth);
+            osqth.transfer(_keeper, _deltaOsqth);
         }
 
         (
@@ -875,7 +875,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             int24 _osqthEthUpper
         ) = _getBoundaries();
 
-        uint128 liquidityEthUsdc = _liquidityForAmounts(
+        uint128 liquidityEthUsdcForAmounts = _liquidityForAmounts(
             poolEthUsdc,
             _ethUsdcLower,
             _ethUsdcUpper,
@@ -883,7 +883,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             balanceOf(usdc)
         );
 
-        uint128 liquidityOsqthEth = _liquidityForAmounts(
+        uint128 liquidityOsqthEthForAmounts = _liquidityForAmounts(
             poolEthOsqth,
             _osqthEthLower,
             _osqthEthUpper,
@@ -896,13 +896,13 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             poolEthUsdc,
             _ethUsdcLower,
             _ethUsdcUpper,
-            liquidityEthUsdc
+            liquidityEthUsdcForAmounts
         );
         _mintLiquidity(
             poolEthOsqth,
             _osqthEthLower,
             _osqthEthUpper,
-            liquidityOsqthEth
+            liquidityOsqthEthForAmounts
         );
 
         (
