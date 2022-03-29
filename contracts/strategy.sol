@@ -47,16 +47,15 @@ contract Vault is
     //@dev ETH-USDC Uniswap pool
     IUniswapV3Pool public immutable poolEthUsdc;
     //@dev oSQTH-ETH Uniswap pool
-    IUniswapV3Pool public immutable poolOsqthEth;
+    IUniswapV3Pool public immutable poolEthOsqth;
 
     //@dev wETH, USDC and oSQTH tokens
     IERC20 public immutable weth;
     IERC20 public immutable usdc;
     IERC20 public immutable osqth;
 
-    //@dev strategy Uniswap oracles
-    address public immutable oracleEthUsdc;
-    address public immutable oracleOsqthEth;
+    //@dev strategy Uniswap oracle
+    address public immutable oracle;
 
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
@@ -98,9 +97,8 @@ contract Vault is
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
        @param _poolEthUsdc eth:usdc uniswap pool address
-       @param _poolOsqthEth osqth:eth uniswap pool address
-       @param _oracleEthUsdc oracle address for eth/usdc
-       @param _oracleOsqthEth oracle address for osqth/eth
+       @param _poolEthOsqth eth:osqth uniswap pool address
+       @param _oracle oracle address 
        @param _rebalanceTimeThreshold rebalance time threshold (seconds)
        @param _rebalancePriceThreshold rebalance price threshold (0.05*1e18 = 5%)
        @param _auctionTime auction duration (seconds)
@@ -113,9 +111,8 @@ contract Vault is
     constructor (
         uint256 _cap,
         address _poolEthUsdc,
-        address _poolOsqthEth,
-        address _oracleEthUsdc,
-        address _oracleOsqthEth,
+        address _poolEthOsqth,
+        address _oracle,
         uint256 _rebalanceTimeThreshold,
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
@@ -129,17 +126,16 @@ contract Vault is
         cap = _cap;
 
         poolEthUsdc = IUniswapV3Pool(_poolEthUsdc);
-        poolOsqthEth = IUniswapV3Pool(_poolOsqthEth);
+        poolEthOsqth = IUniswapV3Pool(_poolEthOsqth);
 
         weth = IERC20(IUniswapV3Pool(_poolEthUsdc).token0);
         usdc = IERC20(IUniswapV3Pool(_poolEthUsdc).token1);
-        osqth = IERC20(IUniswapV3Pool(_poolOsqthEth).token0);
+        osqth = IERC20(IUniswapV3Pool(_poolEthOsqth).token1);
 
-        oracleEthUsdc = _oracleEthUsdc;
-        oracleOsqthEth = _oracleOsqthEth;
+        oracle = _oracle;
 
         tickSpacingEthUsdc = IUniswapV3Pool(_poolEthUsdc).tickSpacing();
-        tickSpacingOsqthEth = IUniswapV3Pool(_poolOsqthEth).tickSpacing();
+        tickSpacingOsqthEth = IUniswapV3Pool(_poolEthOsqth).tickSpacing();
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
         rebalancePriceThreshold = _rebalancePriceThreshold;
 
@@ -153,12 +149,12 @@ contract Vault is
         governance = msg.sender;
     }
     /**
-      @notice deposit wETH into strategy
-      @dev provide wETH, return strategy token (shares)
-     *@dev deposited wETH sit in the vault and are not used for liquidity on
-     *Uniswap until the next rebalance.
-      @param _amountToDeposit amount of wETH to deposit
-      @return shares number of strategy tokens (shares) minted
+    * @notice deposit wETH into strategy
+    * @dev provide wETH, return strategy token (shares)
+    * @dev deposited wETH sit in the vault and are not used for liquidity on
+    * Uniswap until the next rebalance.
+    * @param _amountToDeposit amount of wETH to deposit
+    * @return shares number of strategy tokens (shares) minted
      */
     function deposit(uint256 _amountToDeposit) external override nonReentrant returns (uint256 shares)
     {
@@ -170,7 +166,7 @@ contract Vault is
 
         //Poke positions so vault's current holdings are up to date
         _poke(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        _poke(poolOsqthEth, orderOsqthEthLower, orderOsqthEthUpper);
+        _poke(poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
 
         //Calculate shares to mint
         shares = _calcShares(_amountToDeposit);
@@ -206,7 +202,7 @@ contract Vault is
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, shares, totalSupply);
-        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(poolOsqthEth, orderOsqthEthLower, orderOsqthEthUpper, shares, totalSupply);
+        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper, shares, totalSupply);
 
         //sum up received eth from eth:usdc pool and from osqth:eth pool
         amountEth = amountEth0.add(amountEth1);
@@ -302,14 +298,14 @@ contract Vault is
 
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
-        uint256 osqthEthPrice = IOracle(oracleOsqthEth).getTwap(
-            poolOsqthEth, 
-            osqth, 
+        uint256 osqthEthPrice = IOracle(oracle).getTwap(
+            poolEthOsqth,
             weth, 
+            osqth, 
             twapPeriod, 
             true);
 
-        uint256 usdcEthPrice = IOracle(oracleEthUsdc).getTwap(
+        uint256 usdcEthPrice = IOracle(oracle).getTwap(
             poolEthUsdc, 
             usdc, 
             weth, 
@@ -337,7 +333,7 @@ contract Vault is
             orderEthUsdcUpper);
 
         (uint256 osqthAmount, uint256 amountWeth1) = getPositionAmount(
-            poolOsqthEth, 
+            poolEthOsqth, 
             orderEthUsdcLower, 
             orderEthUsdcUpper);
 
@@ -479,7 +475,7 @@ contract Vault is
      */
     function _startAuction(uint256 _auctionTriggerTime) internal returns (bool, uint256, uint256, uint256) {
 
-        uint256 currentEthUsdcPrice = IOracle(oracleETHUSDC).getTwap(
+        uint256 currentEthUsdcPrice = IOracle(oracle).getTwap(
             poolEthUsdc,
             weth, 
             usdc, 
@@ -487,10 +483,10 @@ contract Vault is
             true
         );
 
-        uint256 currentOsqthEthPrice = IOracle(oracleOSQTHETH).getTwap(
-            poolOsqthEth, 
+        uint256 currentOsqthEthPrice = IOracle(oracle).getTwap(
+            poolEthOsqth, 
+            weth,
             osqth, 
-            weth, 
             twapPeriod, 
             true
         );
@@ -605,10 +601,10 @@ contract Vault is
         ) internal {
 
         (uint128 liquidityEthUsdc, , , , ) = _position(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        (uint128 liquidityOsqthEth, , , , ) = _position(poolOsqthEth, orderEthUsdcLower, orderOsqthEthUpper);
+        (uint128 liquidityOsqthEth, , , , ) = _position(poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper);
         
         _burnAndCollect(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
-        _burnAndCollect(poolOsqthEth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
+        _burnAndCollect(poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
 
         if (_isPriceInc) {
         //pull in tokens from sender
@@ -635,7 +631,7 @@ contract Vault is
             balanceOf(usdc));
 
         uint128 liquidityOsqthEth = _liquidityForAmounts(
-            poolOsqthEth,
+            poolEthOsqth,
             _osqthEthLower,
             _osqthEthUpper,
             balanceOf(weth),
@@ -644,7 +640,7 @@ contract Vault is
 
         //place orders on Uniswap
         _mintLiquidity(poolEthUsdc, ethUsdcLower, ethUsdcUpper, liquidityEthUsdc);
-        _mintLiquidity(poolOsqthEth, osqthEthLower, osqthEthUpper, liquidityOsqthEth);
+        _mintLiquidity(poolEthOsqth, osqthEthLower, osqthEthUpper, liquidityOsqthEth);
 
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (ethUsdcLower, ethUsdcUpper, osqthEthLower, osqthEthUpper);
     }
@@ -659,7 +655,7 @@ contract Vault is
     function _getBoundaries() internal view returns (int24 ethUsdcLower, int24 ethUsdcUpper, int24 osqthEthLower, int24 osqthEthUpper) {
 
         int24 tickEthUsdc = getTick(poolEthUsdc);
-        int24 tickOsqthEth = getTick(poolOsqthEth);
+        int24 tickOsqthEth = getTick(poolEthOsqth);
 
         int24 tickFloorEthUsdc = _floor(tickEthUsdc, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(tickOsqthEth, tickSpacingOsqthEth);
