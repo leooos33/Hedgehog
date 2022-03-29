@@ -34,6 +34,22 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         uint256 hedgerPrice,
         uint256 auctionTriggerTimestamp
     );
+
+    event Withdraw(
+        address indexed hedger,
+        uint256 shares,
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    );
+
+    event Rebalance(
+        address indexed hedger,
+        bool isPriceIncreased,
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    );
     //@dev ETH-USDC Uniswap pool
     IUniswapV3Pool public immutable poolEthUsdc;
     //@dev oSQTH-ETH Uniswap pool
@@ -73,6 +89,8 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
 
+    uint256 public rebalancePriceThreshold;
+
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
@@ -111,7 +129,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
         uint256 _targetOsqthShare
-    ) ERC20("Hedging DL", "HDL") {
+    ) public ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
         poolEthUsdc = IUniswapV3Pool(_poolEthUsdc);
@@ -189,7 +207,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         uint256 shares,
         uint256 amountEthMin,
         uint256 amountUsdcMin,
-        amountOsqthMin
+        uint256 amountOsqthMin
     )
         external
         override
@@ -243,7 +261,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
     /**
      * @notice strategy rebalancing based on time threshold
      * @dev need to attach msg.value if buying oSQTH
-     * @param _isPriceInc sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
+     * @param _isPriceIncreased sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
@@ -284,7 +302,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
      * @notice strategy rebalancing based on price threshold
      * @dev need to attach msg.value if buying oSQTH
      * @param _auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param _isPriceInc sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
+     * @param _isPriceIncreased sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
@@ -303,7 +321,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         _rebalance(
-            auctionTriggerTime,
+            _auctionTriggerTime,
             _isPriceIncreased,
             _amountEth,
             _amountUsdc,
@@ -568,7 +586,12 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp where auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance() {}
+    function _isPriceRebalance(uint256 _auctionTriggerTime)
+        internal
+        returns (bool)
+    {
+        return true;
+    }
 
     /**
      * @notice rebalancing function to adjust proportion of tokens
@@ -659,7 +682,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             true
         );
 
-        bool _isPriceInc = _checkAuctionType(currentEthToUsdcPrice);
+        bool _isPriceInc = _checkAuctionType(currentEthUsdcPrice);
         (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
             currentEthUsdcPrice,
             currentOsqthEthPrice,
@@ -668,9 +691,9 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         );
 
         timeAtLastRebalance = block.timestamp;
-        ethPriceAtLastRebalance = currentEthToUsdcPrice;
+        ethPriceAtLastRebalance = currentEthUsdcPrice;
 
-        return (isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
+        return (_isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
     }
 
     /**
@@ -733,7 +756,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             );
 
         //calculate current total value based on auction prices
-        totalValue = ethAmount
+        uint256 totalValue = ethAmount
             .mul(_auctionEthUsdcPrice)
             .add(osqthAmount.mul(_auctionOsqthEthPrice))
             .add(usdcAmount);
@@ -979,5 +1002,11 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         if (liquidity > 0) {
             pool.mint(address(this), tickLower, tickUpper, liquidity, "");
         }
+    }
+
+    /// @dev Casts uint256 to uint128 with overflow check.
+    function _toUint128(uint256 x) internal pure returns (uint128) {
+        assert(x <= type(uint128).max);
+        return uint128(x);
     }
 }
