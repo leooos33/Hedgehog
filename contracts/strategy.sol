@@ -17,28 +17,20 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import "./interfaces/IVault.sol";
 import "./interfaces/IOracle.sol";
 
-contract Vault is 
-    IVault,
-    IUniswapV3MintCallback,
-    ERC20,
-    ReentrancyGuard
-    {
-        using SafeERC20 for IERC20;
-        using SafeMath for uint256;
+contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
+    using SafeERC20 for IERC20;
+    using SafeMath for uint256;
 
-    event Deposit (
-       address indexed sender,
-       uint256 shares
-    );
+    event Deposit(address indexed sender, uint256 shares);
 
-    event TimeRebalance (
+    event TimeRebalance(
         address indexed hedger,
         bool auctionType,
         uint256 hedgerPrice,
         uint256 auctionTriggerTimestamp
     );
 
-    event PriceRebalance (
+    event PriceRebalance(
         address indexed hedger,
         bool auctionType,
         uint256 hedgerPrice,
@@ -83,7 +75,7 @@ contract Vault is
     uint256 public ethPriceAtLastRebalance;
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
-    
+
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
@@ -110,7 +102,7 @@ contract Vault is
        @param _targetUsdcShare targeted share of value in USDC (~0.2622*1e18 = 26.22% of total value(in usd) in USDC)
        @param _targetOsqthShare targeted share of value in oSQTH (~0.2378*1e18 = 23.78% of total value(in usd) in oSQTH)
      */
-    constructor (
+    constructor(
         uint256 _cap,
         address _poolEthUsdc,
         address _poolOsqthEth,
@@ -124,8 +116,7 @@ contract Vault is
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
         uint256 _targetOsqthShare
-    ) ERC20 ("Hedging DL", "HDL") {
-        
+    ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
         poolEthUsdc = IUniswapV3Pool(_poolEthUsdc);
@@ -149,9 +140,10 @@ contract Vault is
         targetEthShare = _targetEthShare;
         targetUsdcShare = _targetUsdcShare;
         targetOsqthShare = _targetOsqthShare;
-        
+
         governance = msg.sender;
     }
+
     /**
       @notice deposit wETH into strategy
       @dev provide wETH, return strategy token (shares)
@@ -160,10 +152,17 @@ contract Vault is
       @param _amountToDeposit amount of wETH to deposit
       @return shares number of strategy tokens (shares) minted
      */
-    function deposit(uint256 _amountToDeposit) external override nonReentrant returns (uint256 shares)
+    function deposit(uint256 _amountToDeposit)
+        external
+        override
+        nonReentrant
+        returns (uint256 shares)
     {
         require(_amountToDeposit > 0, "Zero amount");
-        require(totalEthDeposited.add(_amountToDeposit) <= cap, "Cap is reached");
+        require(
+            totalEthDeposited.add(_amountToDeposit) <= cap,
+            "Cap is reached"
+        );
 
         //Pull in wETH from sender
         weth.safeTrasferFrom(msg.sender, address(this), _amountToDeposit);
@@ -181,7 +180,7 @@ contract Vault is
         //Track deposited wETH amount
         totalEthDeposited += _amountToDeposit;
 
-        emit Deposit(msg.sender, shares);     
+        emit Deposit(msg.sender, shares);
     }
 
     /**
@@ -192,12 +191,21 @@ contract Vault is
       @param amountUsdcMin revert if resulting amount of USDC is smaller than this
       @param amountOsqthMin revert if resulting amount of oSQTH is smaller than this
      */
-    function withdraw(uint256 shares, uint256 amountEthMin, uint256 amountUsdcMin, amountOsqthMin) external override nonReentrant 
-    returns (
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
-    ) {
+    function withdraw(
+        uint256 shares,
+        uint256 amountEthMin,
+        uint256 amountUsdcMin,
+        amountOsqthMin
+    )
+        external
+        override
+        nonReentrant
+        returns (
+            uint256 amountEth,
+            uint256 amountUsdc,
+            uint256 amountOsqth
+        )
+    {
         require(shares > 0, "Zero shares");
 
         uint256 totalSupply = totalSupply();
@@ -205,12 +213,24 @@ contract Vault is
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, shares, totalSupply);
-        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(poolOsqthEth, orderOsqthEthLower, orderOsqthEthUpper, shares, totalSupply);
+        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
+            poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper,
+            shares,
+            totalSupply
+        );
+        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(
+            poolOsqthEth,
+            orderOsqthEthLower,
+            orderOsqthEthUpper,
+            shares,
+            totalSupply
+        );
 
         //sum up received eth from eth:usdc pool and from osqth:eth pool
         amountEth = amountEth0.add(amountEth1);
-    
+
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
@@ -224,8 +244,8 @@ contract Vault is
         //TODO
 
         emit Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
-
     }
+
     /**
      * @notice strategy rebalancing based on time threshold
      * @dev need to attach msg.value if buying oSQTH
@@ -234,15 +254,36 @@ contract Vault is
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
-    function timeRebalance(bool _isPriceIncreased, uint256 _amountEth, uint256 _amountUsdc, uint256 _amountOsqth) external nonReentrant {
+    function timeRebalance(
+        bool _isPriceIncreased,
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth
+    ) external nonReentrant {
         //check if rebalancing based on time threshold is allowed
-        (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = _isTimeRebalance();
+        (
+            bool isTimeRebalanceAllowed,
+            uint256 auctionTriggerTime
+        ) = _isTimeRebalance();
 
-        require (isTimeRebalanceAllowed, "Time rebalance not allowed");
+        require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(
+            auctionTriggerTime,
+            _isPriceIncreased,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
 
-        emit TimeRebalance(msg.sender, _isPriceIncreased, auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
+        emit TimeRebalance(
+            msg.sender,
+            _isPriceIncreased,
+            auctionTriggerTime,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
     }
 
     /** TODO
@@ -254,13 +295,34 @@ contract Vault is
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
-    function priceRebalance(uint256 _auctionTriggerTime, bool _isPriceIncreased, uint256 _amountEth, uint256 _amountUsdc, uint256 _amountOsqth) external nonReentrant {
-        //check if rebalancing based on price threshold is allowed 
-        require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
+    function priceRebalance(
+        uint256 _auctionTriggerTime,
+        bool _isPriceIncreased,
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth
+    ) external nonReentrant {
+        //check if rebalancing based on price threshold is allowed
+        require(
+            _isPriceRebalance(_auctionTriggerTime),
+            "Price rebalance not allowed"
+        );
 
-        _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(
+            auctionTriggerTime,
+            _isPriceIncreased,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
 
-        emit PriceRebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit PriceRebalance(
+            msg.sender,
+            _isPriceIncreased,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
     }
 
     /**
@@ -271,24 +333,39 @@ contract Vault is
      * @param tickLower lower tick of the position
      * @param tickUpper upper tick of the position
      */
-    function _poke(address pool, int24 tickLower, int24 tickUpper) internal {
-        
-        (uint128 liquidity, , , ,) = _position(pool, tickLower,  tickUpper);
-        
+    function _poke(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper
+    ) internal {
+        (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
+
         if (liquidity > 0) {
             pool.burn(tickLower, tickUpper);
         }
     }
+
     /// @dev Wrapper around `IUniswapV3Pool.positions()`.
-    function _position(address pool, int24 tickLower, int24 tickUpper) internal view 
-    returns (
+    function _position(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper
+    )
+        internal
+        view
+        returns (
             uint128,
             uint256,
             uint256,
             uint128,
             uint128
-        ) {
-        bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
+        )
+    {
+        bytes32 positionKey = PositionKey.compute(
+            address(this),
+            tickLower,
+            tickUpper
+        );
         return pool.positions(positionKey);
     }
 
@@ -297,31 +374,47 @@ contract Vault is
      * @param _amountToDeposit amount of wETH to deposit
      * @return shares strategy shares to mint
      */
-    function _calcShares(uint256 _amountToDeposit) internal view returns (uint256 shares) {
-        uint256 totalSupply =  totalSupply();
+    function _calcShares(uint256 _amountToDeposit)
+        internal
+        view
+        returns (uint256 shares)
+    {
+        uint256 totalSupply = totalSupply();
 
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
+        (
+            uint256 ethAmount,
+            uint256 usdcAmount,
+            uint256 osqthAmount
+        ) = _getTotalAmounts();
 
         uint256 osqthEthPrice = IOracle(oracleOsqthEth).getTwap(
-            poolOsqthEth, 
-            osqth, 
-            weth, 
-            twapPeriod, 
-            true);
+            poolOsqthEth,
+            osqth,
+            weth,
+            twapPeriod,
+            true
+        );
 
         uint256 usdcEthPrice = IOracle(oracleEthUsdc).getTwap(
-            poolEthUsdc, 
-            usdc, 
-            weth, 
-            twapPeriod, 
-            true);
+            poolEthUsdc,
+            usdc,
+            weth,
+            twapPeriod,
+            true
+        );
 
         if (totalSupply == 0) {
             shares = _amountToDeposit;
         } else {
-            uint256 totalEth = ethAmount.add(usdcAmount.mul(usdcEthPrice)).add(osqthAmount.mul(osqthEthPrice));
-            uint256 depositorShare = _amountToDeposit.div(totalEth.add(_amountToDeposit));
-            shares = totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare));
+            uint256 totalEth = ethAmount.add(usdcAmount.mul(usdcEthPrice)).add(
+                osqthAmount.mul(osqthEthPrice)
+            );
+            uint256 depositorShare = _amountToDeposit.div(
+                totalEth.add(_amountToDeposit)
+            );
+            shares = totalSupply.mul(depositorShare).div(
+                uint256(1e18).sub(depositorShare)
+            );
         }
     }
 
@@ -330,86 +423,137 @@ contract Vault is
      * other words, how much of each token the vault would hold if it withdrew
      * all its liquidity from Uniswap.
      */
-    function _getTotalAmounts() internal view override returns (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount){
+    function _getTotalAmounts()
+        internal
+        view
+        override
+        returns (
+            uint256 ethAmount,
+            uint256 usdcAmount,
+            uint256 osqthAmount
+        )
+    {
         (uint256 amountWeth0, uint256 usdcAmount) = getPositionAmount(
-            poolEthUsdc, 
-            orderEthUsdcLower, 
-            orderEthUsdcUpper);
+            poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper
+        );
 
         (uint256 osqthAmount, uint256 amountWeth1) = getPositionAmount(
-            poolOsqthEth, 
-            orderEthUsdcLower, 
-            orderEthUsdcUpper);
+            poolOsqthEth,
+            orderEthUsdcLower,
+            orderEthUsdcUpper
+        );
 
         ethAmount = amountWeth0.add(amountWeth1);
     }
 
     /**
-     * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees. 
+     * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees.
      * @dev Doesn't include fees accrued since last poke.
      */
-    function getPositionAmount(address pool ,int24 tickLower, int24 tickUpper) public view returns (uint256 total0, uint256 total1) {
-        (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
-        (total0, total1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+    function getPositionAmount(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper
+    ) public view returns (uint256 total0, uint256 total1) {
+        (
+            uint128 liquidity,
+            ,
+            ,
+            uint128 tokensOwed0,
+            uint128 tokensOwed1
+        ) = _position(pool, tickLower, tickUpper);
+        (total0, total1) = _amountsForLiquidity(
+            pool,
+            tickLower,
+            tickUpper,
+            liquidity
+        );
     }
 
     /// @dev Wrapper around `LiquidityAmounts.getAmountsForLiquidity()`.
     function _amountsForLiquidity(
-            address pool, 
-            int24 tickLower, 
-            int24 tickUpper, 
-            uint128 liquidity
-        ) 
-        internal view returns (uint256, uint256) 
-        {
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    ) internal view returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = pool.slot0();
-        return LiquidityAmounts.getAmountsForLiquidity(
-            sqrtRatioX96, 
-            TickMath.getSqrtRatioAtTick(tickLower), 
-            TickMath.getSqrtRatioAtTick(tickUpper), 
-            liquidity);
+        return
+            LiquidityAmounts.getAmountsForLiquidity(
+                sqrtRatioX96,
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
+                liquidity
+            );
     }
 
-    /// @dev Withdraws share of liquidity in a range from Uniswap pool.    
+    /// @dev Withdraws share of liquidity in a range from Uniswap pool.
     function _burnLiquidityShare(
-            address pool, 
-            int24 tickLower, 
-            int24 tickUpper, 
-            uint256 shares, 
-            uint256 totalSupply
-            ) 
-        internal returns (
-            uint256 amount0, 
-            uint256 amount1
-            ) 
-        {
-        (uint128 totalLiquidity, , , , ) = _position(pool, tickLower, tickUpper);
-        uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint256 shares,
+        uint256 totalSupply
+    ) internal returns (uint256 amount0, uint256 amount1) {
+        (uint128 totalLiquidity, , , , ) = _position(
+            pool,
+            tickLower,
+            tickUpper
+        );
+        uint256 liquidity = uint256(totalLiquidity).mul(shares).div(
+            totalSupply
+        );
 
         if (liquidity > 0) {
-            (uint256 burned0, uint256 burned1, uint256 fees0, uint256 fees1) = _burnAndCollect(pool, tickLower, tickUpper, _toUint128(liquidity));
+            (
+                uint256 burned0,
+                uint256 burned1,
+                uint256 fees0,
+                uint256 fees1
+            ) = _burnAndCollect(
+                    pool,
+                    tickLower,
+                    tickUpper,
+                    _toUint128(liquidity)
+                );
 
             //add share of fees
             amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
             amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
         }
-        
     }
+
     /// @dev Withdraws liquidity from a range and collects all fees in the process.
-    function _burnAndCollect(address pool, int24 tickLower, int24 tickUpper, uint128 liquidity) internal returns (
-            uint256 burned0, 
-            uint256 burned1, 
-            uint256 feesToVault0, 
+    function _burnAndCollect(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    )
+        internal
+        returns (
+            uint256 burned0,
+            uint256 burned1,
+            uint256 feesToVault0,
             uint256 feesToVault1
-        ) {
-            if (liquidity > 0) {
-                pool.burn(tickLower, tickUpper, liquidity);
-            }
+        )
+    {
+        if (liquidity > 0) {
+            pool.burn(tickLower, tickUpper, liquidity);
+        }
 
-            (uint256 collect0, uint256 collect1) = pool.collect(address(this), tickLower, tickUpper, type(uint128).max, type(uint128).max);
+        (uint256 collect0, uint256 collect1) = pool.collect(
+            address(this),
+            tickLower,
+            tickUpper,
+            type(uint128).max,
+            type(uint128).max
+        );
 
-            feesToVault0 = collect0.sub(burned0);
-            feesToVault1 = collect1.sub(burned1);
+        feesToVault0 = collect0.sub(burned0);
+        feesToVault1 = collect1.sub(burned1);
     }
 
     /**
@@ -418,7 +562,9 @@ contract Vault is
      * @return auction trigger timestamp
      */
     function _isTimeRebalance() internal view returns (bool, uint256) {
-        uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
+        uint256 auctionTriggerTime = timeAtLastRebalance.add(
+            rebalanceTimeThreshold
+        );
 
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
@@ -428,9 +574,7 @@ contract Vault is
      * @param _auctionTriggerTime timestamp where auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance() {
-        
-    }
+    function _isPriceRebalance() {}
 
     /**
      * @notice rebalancing function to adjust proportion of tokens
@@ -438,35 +582,54 @@ contract Vault is
      * @param _isPriceIncreased auction type, true for sell auction
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)     
+     * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function _rebalance(
-        uint256 _auctionTriggerTime, 
-        bool _isPriceIncreased, 
-        uint256 _amountEth, 
-        uint256 _amountUsdc, 
+        uint256 _auctionTriggerTime,
+        bool _isPriceIncreased,
+        uint256 _amountEth,
+        uint256 _amountUsdc,
         uint256 _amountOsqth
-        ) internal {
-        
-        (bool isPriceInc, uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _startAuction(_auctionTriggerTime);
+    ) internal {
+        (
+            bool isPriceInc,
+            uint256 deltaEth,
+            uint256 deltaUsdc,
+            uint256 deltaOsqth
+        ) = _startAuction(_auctionTriggerTime);
 
         require(isPriceInc == _isPriceIncreased, "Wrong auction type");
 
         if (isPriceInc) {
-
             require(_amountOsqth >= deltaOsqth, "Wrong amount");
 
-            _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
-
-        }  else {
-
+            _executeAuction(
+                msg.sender,
+                deltaEth,
+                deltaUsdc,
+                deltaOsqth,
+                isPriceInc
+            );
+        } else {
             require(_amountEth >= deltaEth, "Wrong amount");
             require(_amountUsdc >= deltaUsdc, "Wrong amount");
 
-            _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
+            _executeAuction(
+                msg.sender,
+                deltaEth,
+                deltaUsdc,
+                deltaOsqth,
+                isPriceInc
+            );
         }
 
-        emit Rebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit Rebalance(
+            msg.sender,
+            _isPriceIncreased,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
     }
 
     /**
@@ -477,67 +640,87 @@ contract Vault is
      * @return USDC to sell/buy
      * @return oSQTH amount to sell or buy
      */
-    function _startAuction(uint256 _auctionTriggerTime) internal returns (bool, uint256, uint256, uint256) {
-
+    function _startAuction(uint256 _auctionTriggerTime)
+        internal
+        returns (
+            bool,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         uint256 currentEthUsdcPrice = IOracle(oracleETHUSDC).getTwap(
             poolEthUsdc,
-            weth, 
-            usdc, 
-            twapPeriod, 
+            weth,
+            usdc,
+            twapPeriod,
             true
         );
 
         uint256 currentOsqthEthPrice = IOracle(oracleOSQTHETH).getTwap(
-            poolOsqthEth, 
-            osqth, 
-            weth, 
-            twapPeriod, 
+            poolOsqthEth,
+            osqth,
+            weth,
+            twapPeriod,
             true
         );
 
         bool _isPriceInc = _checkAuctionType(currentEthToUsdcPrice);
         (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
-            currentEthUsdcPrice, 
-            currentOsqthEthPrice, 
-            _auctionTriggerTime, 
-            _isPriceInc);
+            currentEthUsdcPrice,
+            currentOsqthEthPrice,
+            _auctionTriggerTime,
+            _isPriceInc
+        );
 
         timeAtLastRebalance = block.timestamp;
         ethPriceAtLastRebalance = currentEthToUsdcPrice;
 
-        return(isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
+        return (isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
     }
+
     /**
-    * @notice check the direction of auction
-    * @param _ethUsdcPrice current wETH/USDC price
-    * @return isPriceInc true if price increased
+     * @notice check the direction of auction
+     * @param _ethUsdcPrice current wETH/USDC price
+     * @return isPriceInc true if price increased
      */
-    function _checkAuctionType(uint256 _ethUsdcPrice) internal view returns (bool isPriceInc) {
+    function _checkAuctionType(uint256 _ethUsdcPrice)
+        internal
+        view
+        returns (bool isPriceInc)
+    {
         isPriceInc = _ethUsdcPrice >= ethPriceAtLastRebalance ? true : false;
     }
 
     /**
-    * @notice calculate how much of each token the strategy need to sell to achieve target proportion
-    * @param _currentEthUsdcPrice current wETH/USDC price
-    * @param _currentOsqthEthPrice current oSQTH/ETH price
-    * @param _auctionTriggerTime time when auction has started
-    * @param _isPriceInc true if price increased
-    * @return deltaEth amount of wETH to sell or buy
-    * @return deltaUsdc amount of USDC to sell or buy
-    * @return deltaOsqth amount of oSQTH to sell or buy
+     * @notice calculate how much of each token the strategy need to sell to achieve target proportion
+     * @param _currentEthUsdcPrice current wETH/USDC price
+     * @param _currentOsqthEthPrice current oSQTH/ETH price
+     * @param _auctionTriggerTime time when auction has started
+     * @param _isPriceInc true if price increased
+     * @return deltaEth amount of wETH to sell or buy
+     * @return deltaUsdc amount of USDC to sell or buy
+     * @return deltaOsqth amount of oSQTH to sell or buy
      */
     function _getDeltas(
-        uint256 _currentEthUsdcPrice, 
-        uint256 _currentOsqthEthPrice, 
-        uint256 _auctionTriggerTime, 
+        uint256 _currentEthUsdcPrice,
+        uint256 _currentOsqthEthPrice,
+        uint256 _auctionTriggerTime,
         bool _isPriceInc
-        ) internal view returns(
-            uint256 deltaEth, 
-            uint256 deltaUsdc, 
+    )
+        internal
+        view
+        returns (
+            uint256 deltaEth,
+            uint256 deltaUsdc,
             uint256 deltaOsqth
-        ) {
-
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
+        )
+    {
+        (
+            uint256 ethAmount,
+            uint256 usdcAmount,
+            uint256 osqthAmount
+        ) = _getTotalAmounts();
 
         //add unused deposited tokens
         ethAmount = ethAmount.add(weth.balanceOf(address(this)));
@@ -545,18 +728,33 @@ contract Vault is
         usdcAmount = usdcAmount.add(usdc.balanceOf(address(this)));
         osqthAmount = osqthAmount.add(osqth.balanceOf(address(this)));
 
-        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = _getPriceMultiplier(
-            _auctionTriggerTime, 
-            _currentEthUsdcPrice, 
-            _currentOsqthEthPrice, 
-            _isPriceInc);
+        (
+            uint256 _auctionEthUsdcPrice,
+            uint256 _auctionOsqthEthPrice
+        ) = _getPriceMultiplier(
+                _auctionTriggerTime,
+                _currentEthUsdcPrice,
+                _currentOsqthEthPrice,
+                _isPriceInc
+            );
 
         //calculate current total value based on auction prices
-        totalValue = ethAmount.mul(_auctionEthUsdcPrice).add(osqthAmount.mul(_auctionOsqthEthPrice)).add(usdcAmount);
+        totalValue = ethAmount
+            .mul(_auctionEthUsdcPrice)
+            .add(osqthAmount.mul(_auctionOsqthEthPrice))
+            .add(usdcAmount);
 
-        deltaEth = targetEthShare.div(1e18).mul(totalValue.div(_auctionEthUsdcPrice)).sub(ethAmount);
+        deltaEth = targetEthShare
+            .div(1e18)
+            .mul(totalValue.div(_auctionEthUsdcPrice))
+            .sub(ethAmount);
         deltaUsdc = targetUsdcShare.div(1e18).mul(totalValue).sub(usdcAmount);
-        deltaOsqth = targetOsqthShare.div(1e18).mul(totalValue.div(_auctionOsqthEthPrice.mul(_auctionEthUsdcPrice))).sub(osqthAmount);
+        deltaOsqth = targetOsqthShare
+            .div(1e18)
+            .mul(
+                totalValue.div(_auctionOsqthEthPrice.mul(_auctionEthUsdcPrice))
+            )
+            .sub(osqthAmount);
     }
 
     /**
@@ -567,28 +765,39 @@ contract Vault is
      * @param _isPriceInc true if price increased (determine auction direction)
      */
     function _getPriceMultiplier(
-        uint256 _auctionTriggerTime, 
-        uint256 _currentEthUsdcPrice, 
-        uint256 _currentOsqthEthPrice, 
+        uint256 _auctionTriggerTime,
+        uint256 _currentEthUsdcPrice,
+        uint256 _currentOsqthEthPrice,
         bool _isPriceInc
-        ) internal returns (
-            uint256 auctionEthUsdcPrice, 
-            uint256 auctionOsqthEthPrice
-        ) {
-            uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
+    )
+        internal
+        returns (uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice)
+    {
+        uint256 auctionCompletionRatio = block.timestamp.sub(
+            _auctionTriggerTime
+        ) >= auctionTime
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
-            uint256 priceMultiplier;
+        uint256 priceMultiplier;
 
-            if (_isPriceInc) {
-                priceMultiplier = maxPriceMultiplier.sub(auctionCompletionRatio.wmul(maxPriceMultiplier.sub(minPriceMultiplier)));
-            } else {
-                priceMultiplier = minPriceMultiplier.add(auctionCompletionRatio.wmul(maxPriceMultiplier.sub(minPriceMultiplier)));
-            }
-            auctionEthUsdcPrice = priceMultiplier.mul(_currentEthUsdcPrice);
-            auctionOsqthEthPrice = priceMultiplier.mul(_currentOsqthEthPrice);
+        if (_isPriceInc) {
+            priceMultiplier = maxPriceMultiplier.sub(
+                auctionCompletionRatio.wmul(
+                    maxPriceMultiplier.sub(minPriceMultiplier)
+                )
+            );
+        } else {
+            priceMultiplier = minPriceMultiplier.add(
+                auctionCompletionRatio.wmul(
+                    maxPriceMultiplier.sub(minPriceMultiplier)
+                )
+            );
         }
+        auctionEthUsdcPrice = priceMultiplier.mul(_currentEthUsdcPrice);
+        auctionOsqthEthPrice = priceMultiplier.mul(_currentOsqthEthPrice);
+    }
+
     /**
      * @notice execute auction based on the parameters calculated
      * @dev withdraw all liquidity from the positions
@@ -597,27 +806,43 @@ contract Vault is
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
     function _executeAuction(
-        address keeper, 
-        uint256 _deltaEth, 
-        uint256 _deltaUsdc, 
-        uint256 _deltaOsqth, 
+        address keeper,
+        uint256 _deltaEth,
+        uint256 _deltaUsdc,
+        uint256 _deltaOsqth,
         bool _isPriceInc
-        ) internal {
+    ) internal {
+        (uint128 liquidityEthUsdc, , , , ) = _position(
+            poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper
+        );
+        (uint128 liquidityOsqthEth, , , , ) = _position(
+            poolOsqthEth,
+            orderEthUsdcLower,
+            orderOsqthEthUpper
+        );
 
-        (uint128 liquidityEthUsdc, , , , ) = _position(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        (uint128 liquidityOsqthEth, , , , ) = _position(poolOsqthEth, orderEthUsdcLower, orderOsqthEthUpper);
-        
-        _burnAndCollect(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
-        _burnAndCollect(poolOsqthEth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
+        _burnAndCollect(
+            poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper,
+            liquidityEthUsdc
+        );
+        _burnAndCollect(
+            poolOsqthEth,
+            orderEthUsdcLower,
+            orderOsqthEthUpper,
+            liquidityOsqthEth
+        );
 
         if (_isPriceInc) {
-        //pull in tokens from sender
-        osqth.safeTrasferFrom(keeper, address(this), _deltaOsqth);
+            //pull in tokens from sender
+            osqth.safeTrasferFrom(keeper, address(this), _deltaOsqth);
 
-        //send excess tokens to sender
-        eth.safeTrasfer(keeper, _deltaEth);
-        usdc.safeTrasfer(keeper, _deltaUsdc);
-
+            //send excess tokens to sender
+            eth.safeTrasfer(keeper, _deltaEth);
+            usdc.safeTrasfer(keeper, _deltaUsdc);
         } else {
             usdc.safeTrasferFrom(keeper, address(this), _deltaUsdc);
 
@@ -625,14 +850,20 @@ contract Vault is
             osqth.safeTrasfer(keeper, deltaOsqth);
         }
 
-        (int24 _ethUsdcLower, int24 _ethUsdcUpper, int24 _osqthEthLower, int24 _osqthEthUpper) = _getBoundaries();
+        (
+            int24 _ethUsdcLower,
+            int24 _ethUsdcUpper,
+            int24 _osqthEthLower,
+            int24 _osqthEthUpper
+        ) = _getBoundaries();
 
         uint128 liquidityEthUsdc = _liquidityForAmounts(
             poolEthUsdc,
-            _ethUsdcLower, 
-            _ethUsdcUpper, 
-            balanceOf(weth).mul(targetUsdcShare.div(2)), 
-            balanceOf(usdc));
+            _ethUsdcLower,
+            _ethUsdcUpper,
+            balanceOf(weth).mul(targetUsdcShare.div(2)),
+            balanceOf(usdc)
+        );
 
         uint128 liquidityOsqthEth = _liquidityForAmounts(
             poolOsqthEth,
@@ -643,10 +874,25 @@ contract Vault is
         );
 
         //place orders on Uniswap
-        _mintLiquidity(poolEthUsdc, ethUsdcLower, ethUsdcUpper, liquidityEthUsdc);
-        _mintLiquidity(poolOsqthEth, osqthEthLower, osqthEthUpper, liquidityOsqthEth);
+        _mintLiquidity(
+            poolEthUsdc,
+            ethUsdcLower,
+            ethUsdcUpper,
+            liquidityEthUsdc
+        );
+        _mintLiquidity(
+            poolOsqthEth,
+            osqthEthLower,
+            osqthEthUpper,
+            liquidityOsqthEth
+        );
 
-        (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (ethUsdcLower, ethUsdcUpper, osqthEthLower, osqthEthUpper);
+        (
+            orderEthUsdcLower,
+            orderEthUsdcUpper,
+            orderOsqthEthLower,
+            orderOsqthEthUpper
+        ) = (ethUsdcLower, ethUsdcUpper, osqthEthLower, osqthEthUpper);
     }
 
     /**
@@ -656,8 +902,16 @@ contract Vault is
      * @return osqthEthLower tick lower for osqth:eth pool
      * @return osqthEthUpper tick upper for osqth:eth pool
      */
-    function _getBoundaries() internal view returns (int24 ethUsdcLower, int24 ethUsdcUpper, int24 osqthEthLower, int24 osqthEthUpper) {
-
+    function _getBoundaries()
+        internal
+        view
+        returns (
+            int24 ethUsdcLower,
+            int24 ethUsdcUpper,
+            int24 osqthEthLower,
+            int24 osqthEthUpper
+        )
+    {
         int24 tickEthUsdc = getTick(poolEthUsdc);
         int24 tickOsqthEth = getTick(poolOsqthEth);
 
@@ -671,9 +925,8 @@ contract Vault is
         ethUsdcUpper = tickCeilEthUsdc.add(ethUsdcThreshold);
         osqthEthLower = tickFloorOsqthEth.sub(osqthEthThreshold);
         osqthEthUpper = tickCeilOsqthEth.add(osqthEthThreshold);
-
     }
-    
+
     /// @dev Fetches current price in ticks from Uniswap pool.
     function getTick(address pool) public view returns (int24 tick) {
         (, tick, , , , , ) = pool.slot0();
@@ -681,22 +934,24 @@ contract Vault is
 
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) internal view returns (int24) {
-
+    function _floor(int24 tick, int24 tickSpacing)
+        internal
+        view
+        returns (int24)
+    {
         int24 compressed = tick / tickSpacing;
         if (tick < 0 && tick % tickSpacing != 0) compressed--;
         return compressed * tickSpacing;
-    } 
-    
+    }
+
     /// @dev Wrapper around `LiquidityAmounts.getLiquidityForAmounts()`.
     function _liquidityForAmounts(
-        address pool, 
-        int24 tickLower, 
-        int24 tickUpper, 
-        uint256 amount0, 
-        uint256 amount1) 
-        internal view returns (uint128) 
-        {
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint256 amount0,
+        uint256 amount1
+    ) internal view returns (uint128) {
         (uint160 sqrtRatioX96, , , , , , ) = pool.slot0();
         return
             LiquidityAmounts.getLiquidityForAmounts(
@@ -709,10 +964,14 @@ contract Vault is
     }
 
     /// @dev Deposits liquidity in a range on the Uniswap pool.
-    function _mintLiquidity(address pool, int24 tickLower, int24 tickUpper, uint128 liquidity) internal {
-        if (liquidity > 0) { 
+    function _mintLiquidity(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    ) internal {
+        if (liquidity > 0) {
             pool.mint(address(this), tickLower, tickUpper, liquidity, "");
         }
     }
-
-    }
+}
