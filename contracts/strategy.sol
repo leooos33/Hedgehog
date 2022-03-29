@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
@@ -23,7 +22,6 @@ contract Vault is
     ERC20,
     ReentrancyGuard
     {
-        using SafeERC20 for IERC20;
         using SafeMath for uint256;
 
     event Deposit (
@@ -162,7 +160,7 @@ contract Vault is
         require(totalEthDeposited.add(_amountToDeposit) <= cap, "Cap is reached");
 
         //Pull in wETH from sender
-        weth.safeTrasferFrom(msg.sender, address(this), _amountToDeposit);
+        weth.transferFrom(msg.sender, address(this), _amountToDeposit);
 
         //Poke positions so vault's current holdings are up to date
         _poke(poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
@@ -212,9 +210,9 @@ contract Vault is
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
 
         //send tokens to user
-        if (amountEth > 0) weth.safeTransfer(msg.sender, amountEth);
-        if (amountUsdc > 0) usdc.safeTrasfer(msg.sender, amountUsdc);
-        if (amountOsqth > 0) osqth.safeTrasfer(msg.sender, amountOsqth);
+        if (amountEth > 0) weth.transfer(msg.sender, amountEth);
+        if (amountUsdc > 0) usdc.transfer(msg.sender, amountUsdc);
+        if (amountOsqth > 0) osqth.transfer(msg.sender, amountOsqth);
 
         //track deposited wETH amount
         //TODO
@@ -608,17 +606,17 @@ contract Vault is
 
         if (_isPriceInc) {
         //pull in tokens from sender
-        osqth.safeTrasferFrom(keeper, address(this), _deltaOsqth);
+        osqth.transferFrom(keeper, address(this), _deltaOsqth);
 
         //send excess tokens to sender
-        eth.safeTrasfer(keeper, _deltaEth);
-        usdc.safeTrasfer(keeper, _deltaUsdc);
+        eth.transfer(keeper, _deltaEth);
+        usdc.transfer(keeper, _deltaUsdc);
 
         } else {
-            usdc.safeTrasferFrom(keeper, address(this), _deltaUsdc);
+            usdc.transferFrom(from, to, amount);(keeper, address(this), _deltaUsdc);
 
-            eth.safeTrasfer(keeper, _deltaEth);
-            osqth.safeTrasfer(keeper, deltaOsqth);
+            eth.transfer(keeper, _deltaEth);
+            osqth.transfer(keeper, deltaOsqth);
         }
 
         (int24 _ethUsdcLower, int24 _ethUsdcUpper, int24 _osqthEthLower, int24 _osqthEthUpper) = _getBoundaries();
