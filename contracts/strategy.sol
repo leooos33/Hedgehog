@@ -823,7 +823,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
     function _executeAuction(
-        address keeper,
+        address _keeper,
         uint256 _deltaEth,
         uint256 _deltaUsdc,
         uint256 _deltaOsqth,
@@ -834,17 +834,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             orderEthUsdcLower,
             orderEthUsdcUpper
         );
-        (uint128 liquidityOsqthEth, , , , ) = _position(
-            poolOsqthEth,
-            orderEthUsdcLower,
-            orderOsqthEthUpper
-        );
 
-        (uint128 liquidityEthUsdc, , , , ) = _position(
-            poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper
-        );
         (uint128 liquidityOsqthEth, , , , ) = _position(
             poolEthOsqth,
             orderEthUsdcLower,
@@ -866,17 +856,16 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
 
         if (_isPriceInc) {
             //pull in tokens from sender
-            osqth.transferFrom(keeper, address(this), _deltaOsqth);
+            osqth.transferFrom(_keeper, address(this), _deltaOsqth);
 
             //send excess tokens to sender
-            eth.transfer(keeper, _deltaEth);
-            usdc.transfer(keeper, _deltaUsdc);
+            eth.transfer(_keeper, _deltaEth);
+            usdc.transfer(_keeper, _deltaUsdc);
         } else {
-            usdc.transferFrom(from, to, amount);
-            (keeper, address(this), _deltaUsdc);
+            usdc.transferFrom(_keeper, address(this), _deltaUsdc);
 
-            eth.transfer(keeper, _deltaEth);
-            osqth.transfer(keeper, deltaOsqth);
+            eth.transfer(_keeper, _deltaEth);
+            osqth.transfer(_keeper, deltaOsqth);
         }
 
         (
@@ -905,14 +894,14 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
         //place orders on Uniswap
         _mintLiquidity(
             poolEthUsdc,
-            ethUsdcLower,
-            ethUsdcUpper,
+            _ethUsdcLower,
+            _ethUsdcUpper,
             liquidityEthUsdc
         );
         _mintLiquidity(
             poolEthOsqth,
-            osqthEthLower,
-            osqthEthUpper,
+            _osqthEthLower,
+            _osqthEthUpper,
             liquidityOsqthEth
         );
 
@@ -921,7 +910,7 @@ contract Vault is IVault, IUniswapV3MintCallback, ERC20, ReentrancyGuard {
             orderEthUsdcUpper,
             orderOsqthEthLower,
             orderOsqthEthUpper
-        ) = (ethUsdcLower, ethUsdcUpper, osqthEthLower, osqthEthUpper);
+        ) = (_ethUsdcLower, _ethUsdcUpper, _osqthEthLower, _osqthEthUpper);
     }
 
     /**
