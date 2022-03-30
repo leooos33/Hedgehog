@@ -162,20 +162,20 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         //Pull in wETH from sender
         weth.transferFrom(msg.sender, address(this), _amountToDeposit);
 
-        // //Poke positions so vault's current holdings are up to date
-        // _poke(address(poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
-        // _poke(address(poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
+        //Poke positions so vault's current holdings are up to date
+        _poke(address(poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
+        _poke(address(poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
 
-        // //Calculate shares to mint
-        // shares = _calcShares(_amountToDeposit);
+        //Calculate shares to mint
+        shares = _calcShares(_amountToDeposit);
 
-        // //Mint shares to user
-        // _mint(msg.sender, shares);
+        //Mint shares to user
+        _mint(msg.sender, shares);
 
-        // //Track deposited wETH amount
-        // totalEthDeposited += _amountToDeposit;
+        //Track deposited wETH amount
+        totalEthDeposited += _amountToDeposit;
 
-        // emit Deposit(msg.sender, shares);
+        emit Deposit(msg.sender, shares);
     }
 
     /**

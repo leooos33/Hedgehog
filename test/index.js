@@ -37,9 +37,14 @@ describe("Vault", function () {
     tx = await contract.connect(depositor).deposit(wethInput);
     await tx.wait();
 
+    // Balances
     expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
     expect(await getERC20Balance(contract.address, wethAddress)).to.equal(wethInput);
 
-    expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0");
+    // Shares
+    expect(await getERC20Balance(depositor.address, contract.address)).to.equal(wethInput);
+    
+    // Meta
+    expect(await contract.totalEthDeposited()).to.equal(wethInput);
   });
 });
