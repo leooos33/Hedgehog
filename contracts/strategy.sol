@@ -126,9 +126,9 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         poolEthUsdc = IUniswapV3Pool(_poolEthUsdc);
         poolEthOsqth = IUniswapV3Pool(_poolEthOsqth);
 
-        weth = IERC20(IUniswapV3Pool(_poolEthUsdc).token0.address);
-        usdc = IERC20(IUniswapV3Pool(_poolEthUsdc).token1.address);
-        osqth = IERC20(IUniswapV3Pool(_poolEthOsqth).token1.address);
+        weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
+        usdc = IERC20(0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48);
+        osqth = IERC20(0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B);
 
         oracle = _oracle;
 
@@ -162,20 +162,20 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         //Pull in wETH from sender
         weth.transferFrom(msg.sender, address(this), _amountToDeposit);
 
-        //Poke positions so vault's current holdings are up to date
-        _poke(address(poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
-        _poke(address(poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
+        // //Poke positions so vault's current holdings are up to date
+        // _poke(address(poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
+        // _poke(address(poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
 
-        //Calculate shares to mint
-        shares = _calcShares(_amountToDeposit);
+        // //Calculate shares to mint
+        // shares = _calcShares(_amountToDeposit);
 
-        //Mint shares to user
-        _mint(msg.sender, shares);
+        // //Mint shares to user
+        // _mint(msg.sender, shares);
 
-        //Track deposited wETH amount
-        totalEthDeposited += _amountToDeposit;
+        // //Track deposited wETH amount
+        // totalEthDeposited += _amountToDeposit;
 
-        emit Deposit(msg.sender, shares);
+        // emit Deposit(msg.sender, shares);
     }
 
     /**
