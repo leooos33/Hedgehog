@@ -23,7 +23,7 @@ module.exports = {
       chainId: CHAIN_IDS.hardhat,
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
-        blockNumber: 12821000,
+        blockNumber: 14487787,
       },
     },
   },
