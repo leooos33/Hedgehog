@@ -15,32 +15,14 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
 import "./interfaces/IVault.sol";
 import "./interfaces/IOracle.sol";
+import "./libraries/SharedEvents.sol";
+
+import "hardhat/console.sol";
 
 // remove  due to not implementing this function
 contract Vault is IVault, ERC20, ReentrancyGuard {
     using SafeMath for uint256;
 
-    event Deposit(address indexed sender, uint256 shares);
-
-    event TimeRebalance(address indexed hedger, bool auctionType, uint256 auctionTriggerTime, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth);
-
-    event PriceRebalance(
-        address indexed hedger,
-        bool auctionType,
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
-    );
-
-    event Withdraw(address indexed hedger, uint256 shares, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth);
-
-    event Rebalance(
-        address indexed hedger,
-        bool isPriceIncreased,
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
-    );
     //@dev ETH-USDC Uniswap pool
     IUniswapV3Pool public immutable poolEthUsdc;
     //@dev oSQTH-ETH Uniswap pool
@@ -175,7 +157,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         //Track deposited wETH amount
         totalEthDeposited += _amountToDeposit;
 
-        emit Deposit(msg.sender, shares);
+        emit SharedEvents.Deposit(msg.sender, shares);
     }
 
     /**
@@ -226,6 +208,9 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         //sum up received eth from eth:usdc pool and from osqth:eth pool
         amountEth = amountEth0.add(amountEth1);
 
+        console.log(amountEth);
+        console.log(amountUsdc);
+        console.log(amountOsqth);
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
@@ -238,7 +223,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         //track deposited wETH amount
         //TODO
 
-        emit Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
+        emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
 
     /**
@@ -262,7 +247,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
 
         _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
 
-        emit TimeRebalance(msg.sender, _isPriceIncreased, auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.TimeRebalance(msg.sender, _isPriceIncreased, auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /** TODO
@@ -286,7 +271,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
 
         _rebalance(_auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
 
-        emit PriceRebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.PriceRebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
         
     }
 
@@ -518,7 +503,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
             _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
         }
 
-        emit Rebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.Rebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /**

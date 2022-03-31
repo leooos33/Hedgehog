@@ -47,4 +47,22 @@ describe("Vault", function () {
     // Meta
     expect(await contract.totalEthDeposited()).to.equal(wethInput);
   });
+
+  it("Should withdraw", async function () {
+    const depositor = (await ethers.getSigners())[3];
+    const sharesInput = utils.parseUnits("2", 18).toString();
+    
+    tx = await contract.connect(depositor).withdraw(sharesInput, 0, 1, 1);
+    await tx.wait();
+
+    // Balances
+    expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0", "test 1");
+    expect(await getERC20Balance(contract.address, wethAddress)).to.equal("0", "test 2");
+
+    // Shares
+    expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0", "test 3");
+    
+    // Meta
+    expect(await contract.totalEthDeposited()).to.equal("2000000000000000000", "test 4");
+  });
 });
