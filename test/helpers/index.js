@@ -2,6 +2,8 @@ const { ethers, network } = require("hardhat");
 
 const { wethAddress, usdcAddress, osqthAddress } = require('../common')
 
+const gasToSend = 100812679875357878208;
+
 async function getWETH(amount, account) {
     const wethAccountHolder = "0x2f0b23f53734252bda2277357e97e1517d6b042a";
     await hre.network.provider.request({
@@ -15,7 +17,7 @@ async function getWETH(amount, account) {
 
     await network.provider.send("hardhat_setBalance", [
         signer.address,
-        toHexdigital(100812679875357878208)
+        toHexdigital(gasToSend)
     ]);
 
     await WETH.connect(signer).transfer(account, amount);
@@ -27,7 +29,7 @@ async function getWETH(amount, account) {
 }
 
 async function getUSDC(amount, account) {
-    const wethAccountHolder = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
+    const wethAccountHolder = "0x2e6907a0ce523ccb5532ffea2e411df1eee26607";
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [wethAccountHolder],
@@ -39,7 +41,7 @@ async function getUSDC(amount, account) {
 
     await network.provider.send("hardhat_setBalance", [
         signer.address,
-        toHexdigital(80426371035961456)
+        toHexdigital(gasToSend)
     ]);
 
     await WETH.connect(signer).transfer(account, amount);
@@ -63,7 +65,7 @@ async function getOSQTH(amount, account) {
 
     await network.provider.send("hardhat_setBalance", [
         signer.address,
-        toHexdigital(100812679875357878208)
+        toHexdigital(gasToSend)
     ]);
 
     await WETH.connect(signer).transfer(account, amount);

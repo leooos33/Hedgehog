@@ -14,13 +14,13 @@ import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
 import "../libraries/SharedEvents.sol";
-import "../libraries/Constants.sol";
-import "../libraries/VaultParams.sol";
+import "./Constants.sol";
+import "./VaultParams.sol";
 
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
+abstract contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
     using SafeMath for uint256;
 
     /**

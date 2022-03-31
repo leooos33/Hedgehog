@@ -6,11 +6,11 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
-import "../libraries/Constants.sol";
+import "./Constants.sol";
 
 import "hardhat/console.sol";
 
-contract VaultParams {
+abstract contract VaultParams {
     using SafeMath for uint256;
 
     //@dev Uniswap pools tick spacing
