@@ -167,16 +167,27 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             twapPeriod,
             true
         );
-        uint256 depositorValue = _amountUsdc.add(_amountEth.mul(ethUsdcPrice));
-        depositorValue = depositorValue.add(_amountOsqth.mul(osqthEthPrice.mul(ethUsdcPrice))); //potential optimization
-
-        return _calcSharesAndAmounts(osqthEthPrice, ethUsdcPrice, depositorValue, usdcAmount, ethAmount, osqthAmount);
+        return
+            _calcSharesAndAmounts(
+                totalSupply(),
+                _amountEth,
+                _amountUsdc,
+                _amountOsqth,
+                osqthEthPrice,
+                ethUsdcPrice,
+                usdcAmount,
+                ethAmount,
+                osqthAmount
+            );
     }
 
     function _calcSharesAndAmounts(
+        uint256 totalSupply,
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth,
         uint256 osqthEthPrice,
         uint256 ethUsdcPrice,
-        uint256 depositorValue,
         uint256 usdcAmount,
         uint256 ethAmount,
         uint256 osqthAmount
@@ -190,19 +201,25 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             uint256
         )
     {
-        if (totalSupply() == 0) {
+        uint256 depositorValue = _amountUsdc.add(_amountEth.mul(ethUsdcPrice));
+        depositorValue = depositorValue.add(_amountOsqth.mul(osqthEthPrice.mul(ethUsdcPrice))); //potential optimization
+
+        if (totalSupply == 0) {
             return (
                 depositorValue,
-                depositorValue.mul(targetEthShare).div(ethUsdcPrice),
-                depositorValue.mul(targetUsdcShare),
-                depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice))
+                // depositorValue.mul(targetEthShare).div(ethUsdcPrice),
+                // depositorValue.mul(targetUsdcShare),
+                // depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice))
+                depositorValue.mul(targetEthShare.div(uint256(1e18))).div(ethUsdcPrice),
+                depositorValue.mul(targetUsdcShare.div(uint256(1e18))),
+                depositorValue.mul(targetOsqthShare.div(uint256(1e18))).div(osqthEthPrice.mul(ethUsdcPrice))
             );
         } else {
             uint256 totalValue = usdcAmount.add(ethAmount.add(osqthAmount.mul(osqthEthPrice)).mul(ethUsdcPrice));
             uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
 
             return (
-                totalSupply().mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
+                totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
                 depositorShare.mul(ethAmount),
                 depositorShare.mul(usdcAmount),
                 depositorShare.mul(osqthAmount)
