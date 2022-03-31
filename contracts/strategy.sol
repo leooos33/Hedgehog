@@ -16,50 +16,13 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import "./interfaces/IVault.sol";
 import "./libraries/SharedEvents.sol";
 import "./libraries/Constants.sol";
+import "./libraries/VaultParams.sol";
 
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-contract Vault is IVault, ERC20, ReentrancyGuard {
+contract Vault is IVault, ERC20, ReentrancyGuard, VaultParams {
     using SafeMath for uint256;
-
-    //@dev Uniswap pools tick spacing
-    int24 public immutable tickSpacingEthUsdc;
-    int24 public immutable tickSpacingOsqthEth;
-    //@dev twap period to use for rebalance calculations
-    uint32 public twapPeriod = 420 seconds;
-
-    //@dev total amount of deposited wETH
-    uint256 public totalEthDeposited;
-    //@dev max amount of wETH that strategy accept for deposit
-    uint256 public cap;
-    //@dev governance
-    address public governance;
-
-    //@dev lower and upper ticks in Uniswap pools
-    int24 public orderEthUsdcLower;
-    int24 public orderEthUsdcUpper;
-    int24 public orderOsqthEthLower;
-    int24 public orderOsqthEthUpper;
-
-    //@dev timestamp when last rebalance executed
-    uint256 public timeAtLastRebalance;
-    //@dev ETH/USDC price when last rebalance executed
-    uint256 public ethPriceAtLastRebalance;
-    //@dev time difference to trigger a hedge (seconds)
-    uint256 public rebalanceTimeThreshold;
-
-    uint256 public rebalancePriceThreshold;
-
-    //@dev rebalance auction duration (seconds)
-    uint256 public auctionTime;
-    //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
-    uint256 public minPriceMultiplier;
-    uint256 public maxPriceMultiplier;
-    //@dev targeted share of value in a certain token (0.5*100 = 50%)
-    uint256 public targetEthShare;
-    uint256 public targetUsdcShare;
-    uint256 public targetOsqthShare;
 
     /**
      * @notice strategy constructor
@@ -83,23 +46,21 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
         uint256 _targetOsqthShare
-    ) public ERC20("Hedging DL", "HDL") {
-        cap = _cap;
-
-        tickSpacingEthUsdc = IUniswapV3Pool(Constants.poolEthUsdc).tickSpacing();
-        tickSpacingOsqthEth = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
-        rebalanceTimeThreshold = _rebalanceTimeThreshold;
-        rebalancePriceThreshold = _rebalancePriceThreshold;
-
-        auctionTime = _auctionTime;
-        minPriceMultiplier = _minPriceMultiplier;
-        maxPriceMultiplier = _maxPriceMultiplier;
-        targetEthShare = _targetEthShare;
-        targetUsdcShare = _targetUsdcShare;
-        targetOsqthShare = _targetOsqthShare;
-
-        governance = msg.sender;
-    }
+    )
+        public
+        ERC20("Hedging DL", "HDL")
+        VaultParams(
+            _cap,
+            _rebalanceTimeThreshold,
+            _rebalancePriceThreshold,
+            _auctionTime,
+            _minPriceMultiplier,
+            _maxPriceMultiplier,
+            _targetEthShare,
+            _targetUsdcShare,
+            _targetOsqthShare
+        )
+    {}
 
     function getProportion(uint256 _wethAmountToDeposit)
         public
@@ -753,14 +714,6 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
     }
 
-    /// @dev Rounds tick down towards negative infinity so that it's a multiple
-    /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) internal view returns (int24) {
-        int24 compressed = tick / tickSpacing;
-        if (tick < 0 && tick % tickSpacing != 0) compressed--;
-        return compressed * tickSpacing;
-    }
-
     /// @dev Wrapper around `LiquidityAmounts.getLiquidityForAmounts()`.
     function _liquidityForAmounts(
         address pool,
@@ -790,11 +743,5 @@ contract Vault is IVault, ERC20, ReentrancyGuard {
         if (liquidity > 0) {
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, "");
         }
-    }
-
-    /// @dev Casts uint256 to uint128 with overflow check.
-    function _toUint128(uint256 x) internal pure returns (uint128) {
-        assert(x <= type(uint128).max);
-        return uint128(x);
     }
 }

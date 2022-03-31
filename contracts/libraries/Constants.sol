@@ -9,7 +9,7 @@ import "../interfaces/IOracle.sol";
 library Constants {
     //@dev ETH-USDC Uniswap pool
     address public constant poolEthUsdc = 0x8ad599c3A0ff1De082011EFDDc58f1908eb6e6D8;
-    
+
     //@dev oSQTH-ETH Uniswap pool
     address public constant poolEthOsqth = 0x82c427AdFDf2d245Ec51D8046b41c4ee87F0d29C;
 
