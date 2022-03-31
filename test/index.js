@@ -22,43 +22,53 @@ describe("Vault", function () {
     await contract.deployed();
   });
 
-  it("Should deposit", async function () {
-    const depositor = (await ethers.getSigners())[3];
-    
+  it("Should calculate", async function () {
     const wethInput = utils.parseUnits("2", 18).toString();
     const usdcInput = utils.parseUnits("2", 6).toString();
     const osqthInput = utils.parseUnits("2", 18).toString();
-    
-    await getWETH(wethInput, depositor.address);
-    await getUSDC(usdcInput, depositor.address);
-    await getOSQTH(osqthInput, depositor.address);
 
-    expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
-    expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
-    expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
+    const amount = await contract.calcSharesAndAmounts(wethInput, usdcInput, osqthInput)
+    expect(amount.toString()).to.equal("0", "test 1");
 
-    await approveERC20(depositor, contract.address, wethInput, wethAddress);
-    await approveERC20(depositor, contract.address, usdcInput, usdcAddress);
-    await approveERC20(depositor, contract.address, osqthInput, osqthAddress);
-
-    // tx = await contract.connect(depositor).deposit(wethInput);
-    // await tx.wait();
-
-    // // Balances
-    // expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
-    // expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
-    // expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
-    
-    // expect(await getERC20Balance(contract.address, wethAddress)).to.equal(wethInput);
-    // expect(await getERC20Balance(contract.address, usdcAddress)).to.equal(usdcInput);
-    // expect(await getERC20Balance(contract.address, osqthAddress)).to.equal(osqthInput);
-
-    // // Shares
-    // expect(await getERC20Balance(depositor.address, contract.address)).to.equal(wethInput);
-    
-    // // Meta
-    // expect(await contract.totalEthDeposited()).to.equal(wethInput);
   });
+
+  // it("Should deposit", async function () {
+  //   const depositor = (await ethers.getSigners())[3];
+    
+  //   const wethInput = utils.parseUnits("2", 18).toString();
+  //   const usdcInput = utils.parseUnits("2", 6).toString();
+  //   const osqthInput = utils.parseUnits("2", 18).toString();
+    
+  //   await getWETH(wethInput, depositor.address);
+  //   await getUSDC(usdcInput, depositor.address);
+  //   await getOSQTH(osqthInput, depositor.address);
+
+  //   expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
+  //   expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
+  //   expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
+
+  //   await approveERC20(depositor, contract.address, wethInput, wethAddress);
+  //   await approveERC20(depositor, contract.address, usdcInput, usdcAddress);
+  //   await approveERC20(depositor, contract.address, osqthInput, osqthAddress);
+
+  //   // tx = await contract.connect(depositor).deposit(wethInput);
+  //   // await tx.wait();
+
+  //   // // Balances
+  //   // expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
+  //   // expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+  //   // expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
+    
+  //   // expect(await getERC20Balance(contract.address, wethAddress)).to.equal(wethInput);
+  //   // expect(await getERC20Balance(contract.address, usdcAddress)).to.equal(usdcInput);
+  //   // expect(await getERC20Balance(contract.address, osqthAddress)).to.equal(osqthInput);
+
+  //   // // Shares
+  //   // expect(await getERC20Balance(depositor.address, contract.address)).to.equal(wethInput);
+    
+  //   // // Meta
+  //   // expect(await contract.totalEthDeposited()).to.equal(wethInput);
+  // });
 
   // it("Should withdraw", async function () {
   //   const depositor = (await ethers.getSigners())[3];

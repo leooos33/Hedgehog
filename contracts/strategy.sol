@@ -15,7 +15,7 @@ import "./libraries/VaultAuction.sol";
 
 import "hardhat/console.sol";
 
-contract Vault is IVault, ReentrancyGuard, VaultAuction  {
+contract Vault is IVault, ReentrancyGuard, VaultAuction {
     using SafeMath for uint256;
 
     /**
@@ -94,79 +94,5 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction  {
         shares = _shares;
 
         emit SharedEvents.Deposit(to, _shares);
-    }
-
-    function calcSharesAndAmounts(
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
-    )
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-        assert(totalSupply() > 0 || ethAmount > 0 || usdcAmount > 0 || osqthAmount > 0);
-
-        uint256 osqthEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthOsqth,
-            address(Constants.osqth),
-            address(Constants.weth),
-            twapPeriod,
-            true
-        );
-        uint256 ethUsdcPrice = Constants.oracle.getTwap(
-            Constants.poolEthUsdc,
-            address(Constants.weth),
-            address(Constants.usdc),
-            twapPeriod,
-            true
-        );
-        uint256 depositorValue = _amountUsdc.add(_amountEth.mul(ethUsdcPrice));
-        depositorValue = depositorValue.add(_amountOsqth.mul(osqthEthPrice.mul(ethUsdcPrice))); //potential optimization
-
-        return _calcSharesAndAmounts(osqthEthPrice, ethUsdcPrice, depositorValue, usdcAmount, ethAmount, osqthAmount);
-    }
-
-    function _calcSharesAndAmounts(
-        uint256 osqthEthPrice,
-        uint256 ethUsdcPrice,
-        uint256 depositorValue,
-        uint256 usdcAmount,
-        uint256 ethAmount,
-        uint256 osqthAmount
-    )
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        if (totalSupply() == 0) {
-            uint256 amountEth = depositorValue.mul(targetEthShare).div(ethUsdcPrice);
-            uint256 amountOsqth = depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice));
-            uint256 amountUsdc = depositorValue.mul(targetUsdcShare);
-            uint256 shares = depositorValue;
-
-            return (shares, amountEth, amountUsdc, amountOsqth);
-        } else {
-            uint256 totalValue = usdcAmount.add(ethAmount.add(osqthAmount.mul(osqthEthPrice)).mul(ethUsdcPrice));
-            uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
-
-            uint256 amountEth = depositorShare.mul(ethAmount);
-            uint256 amountUsdc = depositorShare.mul(usdcAmount);
-            uint256 amountOsqth = depositorShare.mul(osqthAmount);
-            uint256 shares = totalSupply().mul(depositorShare).div(uint256(1e18).sub(depositorShare));
-
-            return (shares, amountEth, amountUsdc, amountOsqth);
-        }
     }
 }

@@ -20,7 +20,7 @@ import "./VaultParams.sol";
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-abstract contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
+abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
     using SafeMath for uint256;
 
     /**
@@ -136,6 +136,82 @@ abstract contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
         }
     }
 
+    function calcSharesAndAmounts(
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth
+    )
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
+
+        assert(totalSupply() > 0 || ethAmount > 0 || usdcAmount > 0 || osqthAmount > 0);
+
+        uint256 osqthEthPrice = Constants.oracle.getTwap(
+            Constants.poolEthOsqth,
+            address(Constants.osqth),
+            address(Constants.weth),
+            twapPeriod,
+            true
+        );
+
+        uint256 ethUsdcPrice = Constants.oracle.getTwap(
+            Constants.poolEthUsdc,
+            address(Constants.weth),
+            address(Constants.usdc),
+            twapPeriod,
+            true
+        );
+        uint256 depositorValue = _amountUsdc.add(_amountEth.mul(ethUsdcPrice));
+        depositorValue = depositorValue.add(_amountOsqth.mul(osqthEthPrice.mul(ethUsdcPrice))); //potential optimization
+
+        return _calcSharesAndAmounts(osqthEthPrice, ethUsdcPrice, depositorValue, usdcAmount, ethAmount, osqthAmount);
+    }
+
+    function _calcSharesAndAmounts(
+        uint256 osqthEthPrice,
+        uint256 ethUsdcPrice,
+        uint256 depositorValue,
+        uint256 usdcAmount,
+        uint256 ethAmount,
+        uint256 osqthAmount
+    )
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        if (totalSupply() == 0) {
+            return (
+                depositorValue,
+                depositorValue.mul(targetEthShare).div(ethUsdcPrice),
+                depositorValue.mul(targetUsdcShare),
+                depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice))
+            );
+        } else {
+            uint256 totalValue = usdcAmount.add(ethAmount.add(osqthAmount.mul(osqthEthPrice)).mul(ethUsdcPrice));
+            uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
+
+            return (
+                totalSupply().mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
+                depositorShare.mul(ethAmount),
+                depositorShare.mul(usdcAmount),
+                depositorShare.mul(osqthAmount)
+            );
+        }
+    }
+
     /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in
      * other words, how much of each token the vault would hold if it withdrew
@@ -145,9 +221,9 @@ abstract contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
         internal
         view
         returns (
-            uint256 ethAmount,
-            uint256 usdcAmount,
-            uint256 osqthAmount
+            uint256,
+            uint256,
+            uint256
         )
     {
         (uint256 amountWeth0, uint256 usdcAmount) = getPositionAmount(
@@ -162,7 +238,7 @@ abstract contract VaultMath is ERC20, ReentrancyGuard, VaultParams {
             orderEthUsdcUpper
         );
 
-        ethAmount = amountWeth0.add(amountWeth1);
+        return (amountWeth0.add(amountWeth1), usdcAmount, osqthAmount);
     }
 
     /**
