@@ -152,8 +152,6 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
-        assert(totalSupply() > 0 || ethAmount > 0 || usdcAmount > 0 || osqthAmount > 0);
-
         uint256 osqthEthPrice = Constants.oracle.getTwap(
             Constants.poolEthOsqth,
             address(Constants.osqth),

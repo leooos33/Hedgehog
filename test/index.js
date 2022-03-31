@@ -1,6 +1,6 @@
-const { expect } = require("chai");
+const { expect, util } = require("chai");
 const { ethers } = require("hardhat");
-const { utils } = ethers;
+const { utils, BigNumber } = ethers;
 const { getERC20Balance, getWETH, approveERC20, getERC20Allowance, getUSDC, getOSQTH } = require('./helpers');
 const { wethAddress, usdcAddress, osqthAddress } = require('./common');
 
@@ -28,15 +28,21 @@ describe("Vault", function () {
     const osqthInput = utils.parseUnits("2", 18).toString();
 
     const amount = await contract.calcSharesAndAmounts(wethInput, usdcInput, osqthInput)
-    expect(amount.toString()).to.equal("0", "test 1");
+    
+    expect(amount.toString()).to.equal("1807878779577599762727898140000000000000000000000002000000,266539217285974315000000000000000000000000000000000294,474025816005246657787254892308000000000000000000000524400000000000000000000,475600000000000001784352804974740098", "test 1");
 
+    const arr = amount.toString().split(',');
+    console.log(utils.formatUnits(BigNumber.from(arr[0], 18)));
+    console.log(utils.formatUnits(BigNumber.from(arr[1], 18)));
+    console.log(utils.formatUnits(BigNumber.from(arr[2], 18)));
+    console.log(utils.formatUnits(BigNumber.from(arr[3], 18)));
   });
 
   // it("Should deposit", async function () {
   //   const depositor = (await ethers.getSigners())[3];
     
-  //   const wethInput = utils.parseUnits("2", 18).toString();
-  //   const usdcInput = utils.parseUnits("2", 6).toString();
+  //   const wethInput = "266539217285974315000000000000000000000000000000000294"
+  //   const usdcInput = "474025816005246657787254892308000000000000000000000524400000000000000000000"
   //   const osqthInput = utils.parseUnits("2", 18).toString();
     
   //   await getWETH(wethInput, depositor.address);
