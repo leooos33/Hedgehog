@@ -4,7 +4,14 @@ pragma solidity ^0.6.6;
 library SharedEvents {
     event Deposit(address indexed sender, uint256 shares);
 
-    event TimeRebalance(address indexed hedger, bool auctionType, uint256 auctionTriggerTime, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth);
+    event TimeRebalance(
+        address indexed hedger,
+        bool auctionType,
+        uint256 auctionTriggerTime,
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    );
 
     event PriceRebalance(
         address indexed hedger,
