@@ -1,6 +1,8 @@
 const { ethers, network } = require("hardhat");
-
-const { wethAddress, usdcAddress, osqthAddress } = require('../common')
+const { utils, BigNumber } = ethers;
+const csv = require('csvtojson');
+const path = require('path');
+const { wethAddress, usdcAddress, osqthAddress } = require('../common');
 
 const gasToSend = 100812679875357878208;
 
@@ -95,12 +97,26 @@ const getERC20Allowance = async (owner, spender, tokenAddress) => {
     return (await WETH.allowance(owner, spender)).toString();
 }
 
+const loadTestDataset = async (name) => {
+    const csvFilePath = path.join(__dirname, '../ds/', `${name}.csv`);
+    const array = await csv().fromFile(csvFilePath);
+    return array;
+}
+
+const toWEIS = (value, num = 18) => {
+    // let [a, b] = value.split('.');
+    // value = a + Math(b
+    return utils.parseUnits(Number(value).toFixed(num), num).toString();
+}
+
 module.exports = {
+    toWEIS,
     getOSQTH,
     approveERC20,
     getUSDC,
     getWETH,
     toHexdigital,
     getERC20Allowance,
+    loadTestDataset,
     getERC20Balance,
 }

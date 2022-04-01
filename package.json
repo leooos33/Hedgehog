@@ -18,6 +18,7 @@
     "@uniswap/v3-core": "^1.0.1",
     "@uniswap/v3-periphery": "^1.4.0",
     "chai": "^4.3.6",
+    "csvtojson": "^2.0.10",
     "dotenv": "^16.0.0",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.1",

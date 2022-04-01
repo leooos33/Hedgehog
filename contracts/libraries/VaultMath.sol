@@ -206,8 +206,13 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             uint256
         )
     {
-        uint256 depositorValue = params._amountUsdc.add(params._amountEth.mul(params.ethUsdcPrice));
-        depositorValue = depositorValue.add(params._amountOsqth.mul(params.osqthEthPrice.mul(params.ethUsdcPrice))); //potential optimization
+        // console.log("!!!");
+        // console.log(params.totalSupply);
+        uint256 depositorValue = params
+            ._amountEth
+            .add(params._amountOsqth.mul(params.osqthEthPrice.div(uint256(1e18))))
+            .mul(params.ethUsdcPrice.div(uint256(1e18)))
+            .add(params._amountUsdc.mul(uint256(1e12)));
 
         if (params.totalSupply == 0) {
             return (
@@ -222,16 +227,18 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
                 )
             );
         } else {
-            uint256 totalValue = params.usdcAmount.add(
-                params.ethAmount.add(params.osqthAmount.mul(params.osqthEthPrice)).mul(params.ethUsdcPrice)
-            );
+            uint256 totalValue = params
+                .ethAmount
+                .add(params.osqthAmount.mul(params.osqthEthPrice.div(uint256(1e18))))
+                .mul(params.ethUsdcPrice.div(uint256(1e18)))
+                .add(params.usdcAmount.mul(uint256(1e12)));
             uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
 
             return (
                 params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.ethAmount),
-                depositorShare.mul(params.usdcAmount),
-                depositorShare.mul(params.osqthAmount)
+                depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
+                depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
+                depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
             );
         }
     }
