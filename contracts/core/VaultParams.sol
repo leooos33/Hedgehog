@@ -6,12 +6,12 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
-import "./Constants.sol";
+import "../libraries/Constants.sol";
 
 import "hardhat/console.sol";
 
 abstract contract VaultParams {
-    using SafeMath for uint256;
+    // using SafeMath for uint256;
 
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
@@ -100,14 +100,6 @@ abstract contract VaultParams {
     /**
         All strategy getters and setters will be here
      */
-
-    /// @dev Rounds tick down towards negative infinity so that it's a multiple
-    /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
-        int24 compressed = tick / tickSpacing;
-        if (tick < 0 && tick % tickSpacing != 0) compressed--;
-        return compressed * tickSpacing;
-    }
 
     /// @dev Casts uint256 to uint128 with overflow check.
     function _toUint128(uint256 x) internal pure returns (uint128) {

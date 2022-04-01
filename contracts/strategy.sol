@@ -11,8 +11,8 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import "./interfaces/IVault.sol";
 import "./libraries/SharedEvents.sol";
 import "./libraries/Constants.sol";
-import "./libraries/VaultParams.sol";
-import "./libraries/VaultAuction.sol";
+import "./core/VaultParams.sol";
+import "./core/VaultAuction.sol";
 
 import "hardhat/console.sol";
 

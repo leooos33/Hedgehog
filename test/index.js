@@ -36,7 +36,7 @@ describe("Vault", function () {
         _amountUsdc: toWEIS(test_sute._amountUsdc, 6),
         _amountOsqth: toWEIS(test_sute._amountOsqth),
         osqthEthPrice: toWEIS(test_sute.osqthEthPrice),
-        ethUsdcPrice: toWEIS(test_sute.ethUsdcPrice, 6),
+        ethUsdcPrice: toWEIS(test_sute.ethUsdcPrice),
         usdcAmount: toWEIS(test_sute.usdcAmount, 6),
         ethAmount: toWEIS(test_sute.ethAmount),
         osqthAmount: toWEIS(test_sute.osqthAmount),

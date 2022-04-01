@@ -15,8 +15,8 @@ import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
 import "../interfaces/IVault.sol";
-import "./SharedEvents.sol";
-import "./Constants.sol";
+import "../libraries/SharedEvents.sol";
+import "../libraries/Constants.sol";
 import "./VaultParams.sol";
 import "./VaultMath.sol";
 

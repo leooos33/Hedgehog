@@ -15,7 +15,7 @@ import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
 import "../libraries/SharedEvents.sol";
-import "./Constants.sol";
+import "../libraries/Constants.sol";
 import "./VaultParams.sol";
 
 import "hardhat/console.sol";
@@ -206,13 +206,10 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             uint256
         )
     {
-        // console.log("!!!");
-        // console.log(params.totalSupply);
-        uint256 depositorValue = params
-            ._amountEth
-            .add(params._amountOsqth.mul(params.osqthEthPrice.div(uint256(1e18))))
-            .mul(params.ethUsdcPrice.div(uint256(1e18)))
-            .add(params._amountUsdc.mul(uint256(1e12)));
+        uint256 depositorValue = (
+            params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36))
+        ).add((params._amountUsdc.mul(uint256(1e12)))).add((params._amountEth.mul(params.ethUsdcPrice).div(1e18)));
+        console.log("depositorValue: %s", depositorValue);
 
         if (params.totalSupply == 0) {
             return (
@@ -227,21 +224,49 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
                 )
             );
         } else {
-            uint256 totalValue = params
-                .ethAmount
-                .add(params.osqthAmount.mul(params.osqthEthPrice.div(uint256(1e18))))
-                .mul(params.ethUsdcPrice.div(uint256(1e18)))
-                .add(params.usdcAmount.mul(uint256(1e12)));
-            uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
+            uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
+            uint256 usdcValue = params.usdcAmount.mul(uint256(1e12));
+            uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
+            // console.log("osqthValue %s", osqthValue);
+            // console.log("usdcValue %s", usdcValue);
+            // console.log("ethValue %s", ethValue);
 
-            return (
-                params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
-            );
+            uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
+            console.log("totalValue: %s", totalValue);
+
+            uint256 depositorShare = depositorValue / (depositorValue + totalValue);
+            console.log("depositorShare: %s", depositorShare);
+
+            // console.log(
+            //     "share2: %s",
+            //     params.totalSupply.mul(depositorValue.div(totalValue.add(depositorValue))).div(
+            //         uint256(1e18).sub(depositorValue.div(totalValue.add(depositorValue)))
+            //     )
+            // );
+
+            return (0, 0, 0, 0);
+            // return (
+            //     params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
+            // );
         }
     }
+
+    // function _getDepositorValue(SharesInfo memory params) public view returns (uint256 depositorValue) {
+    //     // uint256 dOsqthValue = ;
+    //     // uint256 dUsdcValue = ;
+    //     // uint256 dEthValue = ;
+
+    //     // console.log("dOsqthValue %", dOsqthValue);
+    //     // console.log("dUsdcValue %", dUsdcValue);
+    //     // console.log("dEthValue %", dEthValue);
+
+    //     // depositorValue = dOsqthValue.add(dUsdcValue).add(dEthValue);
+    //     // console.log("depositorValue: %s", depositorValue);
+
+    // }
 
     /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in
@@ -540,5 +565,13 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         if (liquidity > 0) {
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, "");
         }
+    }
+
+    /// @dev Rounds tick down towards negative infinity so that it's a multiple
+    /// of `tickSpacing`.
+    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
+        int24 compressed = tick / tickSpacing;
+        if (tick < 0 && tick % tickSpacing != 0) compressed--;
+        return compressed * tickSpacing;
     }
 }
