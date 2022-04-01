@@ -214,6 +214,13 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             .mul(params.ethUsdcPrice.div(uint256(1e18)))
             .add(params._amountUsdc.mul(uint256(1e12)));
 
+        uint256 dOsqthValue = params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36));
+        uint256 dUsdcValue = params._amountUsdc.mul(uint256(1e12));
+        uint256 dEthValue = params._amountEth.mul(params.ethUsdcPrice).div(1e18);
+
+        uint256 depositorValue = dOsqthValue.add(dUsdcValue).add(dEthValue);
+
+
         if (params.totalSupply == 0) {
             return (
                 depositorValue,
@@ -227,6 +234,13 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
                 )
             );
         } else {
+            
+            uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
+            uint256 usdcValue = params.usdcAmount.mul(uint256(1e12));
+            uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(1e18);
+
+            uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
+
             uint256 totalValue = params
                 .ethAmount
                 .add(params.osqthAmount.mul(params.osqthEthPrice.div(uint256(1e18))))
