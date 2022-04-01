@@ -22,8 +22,7 @@ describe.only("Math", function () {
     await contract.deployed();
   });
 
-  it("Should calculate", async function () {
-    return;
+  it("_calcSharesAndAmounts", async function () {
     const testsDs = await loadTestDataset("_calcSharesAndAmounts");
 
     for (let i in testsDs) {
@@ -46,7 +45,7 @@ describe.only("Math", function () {
       const amount = await contract._calcSharesAndAmounts(
         test_sute,
       );
-      console.log(amount);
+      console.log(">>", amount);
 
       expect(amount[0].toString()).to.equal(toWEIS(testsDs[i].shares), `test_sute ${i}: sub 1`);
       expect(amount[1].toString()).to.equal(toWEIS(testsDs[i].amountEth), `test_sute ${i}: sub 2`);

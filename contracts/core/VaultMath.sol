@@ -228,21 +228,22 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
                 )
             );
         } else {
-            
-            uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36));
-            uint256 usdcValue = params.usdcAmount.mul(uint256(1e12));
-            uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
+            // uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(
+            //     uint256(1e36)
+            // );
+            // uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
 
-            uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
+            // uint256 depositorShare = depositorValue
+            //     .div((osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue)))
+            //     .add(depositorValue);
 
-            uint256 depositorShare = depositorValue.div(totalValue.add(depositorValue));
-
-            return (
-                params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
-                depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
-            );
+            // return (
+            //     params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
+            //     depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
+            // );
+            return (0, 0, 0, 0);
         }
     }
 
