@@ -66,14 +66,12 @@ contract VaultMathTest is VaultParams {
         uint256 depositorValue = (
             params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36))
         ).add((params._amountUsdc.mul(uint256(1e12)))).add((params._amountEth.mul(params.ethUsdcPrice).div(1e18)));
+
         console.log("depositorValue: %s", depositorValue);
 
         if (params.totalSupply == 0) {
             return (
                 depositorValue,
-                // depositorValue.mul(targetEthShare).div(ethUsdcPrice),
-                // depositorValue.mul(targetUsdcShare),
-                // depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice))
                 depositorValue.mul(targetEthShare.div(uint256(1e18))).div(params.ethUsdcPrice),
                 depositorValue.mul(targetUsdcShare.div(uint256(1e18))),
                 depositorValue.mul(targetOsqthShare.div(uint256(1e18))).div(
@@ -82,32 +80,17 @@ contract VaultMathTest is VaultParams {
             );
         } else {
             uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
-            uint256 usdcValue = params.usdcAmount.mul(uint256(1e12));
             uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
-            // console.log("osqthValue %s", osqthValue);
-            // console.log("usdcValue %s", usdcValue);
-            // console.log("ethValue %s", ethValue);
 
-            uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
-            console.log("totalValue: %s", totalValue);
+            uint256 totalValue = osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue);
+            // console.log("totalValue: %s", totalValue);
 
-            uint256 depositorShare = depositorValue / (depositorValue + totalValue);
-            console.log("depositorShare: %s", depositorShare);
-
-            // console.log(
-            //     "share2: %s",
-            //     params.totalSupply.mul(depositorValue.div(totalValue.add(depositorValue))).div(
-            //         uint256(1e18).sub(depositorValue.div(totalValue.add(depositorValue)))
-            //     )
-            // );
-
-            // return (
-            //     params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
-            // );
-            return (0, 0, 0, 0);
+            return (
+                params.totalSupply.mul(depositorValue).div(totalValue),
+                params.ethAmount.mul(depositorValue).div(totalValue),
+                params.usdcAmount.mul(depositorValue).div(totalValue),
+                params.osqthAmount.mul(depositorValue).div(totalValue)
+            );
         }
     }
 }

@@ -4,7 +4,8 @@
     "format": "prettier --write 'contracts/**/*.sol'",
     "compile": "npx hardhat compile --verbose",
     "lint": "solhint 'contracts/**/*.sol'",
-    "test": "npm run format && npx hardhat compile && npx hardhat test"
+    "test": "npm run format && npx hardhat compile && npx hardhat test",
+    "audit": "node test/audit/index.js"
   },
   "devDependencies": {
     "hardhat": "^2.9.2",

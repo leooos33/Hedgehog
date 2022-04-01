@@ -47,6 +47,9 @@ describe.only("Math", function () {
       );
       console.log(">>", amount);
 
+      // 579839.82840
+      // 579839 828473647447067943
+      // 579839 828399999998509884
       expect(amount[0].toString()).to.equal(toWEIS(testsDs[i].shares), `test_sute ${i}: sub 1`);
       expect(amount[1].toString()).to.equal(toWEIS(testsDs[i].amountEth), `test_sute ${i}: sub 2`);
       expect(amount[2].toString()).to.equal(toWEIS(testsDs[i].amountUsdc, 6), `test_sute ${i}: sub 3`);

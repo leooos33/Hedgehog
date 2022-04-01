@@ -78,8 +78,15 @@ const toWEIS = (value, num = 18) => {
     return utils.parseUnits(Number(value).toFixed(num), num).toString();
 }
 
+const toWEI = (value, num = 18) => {
+    // let [a, b] = value.split('.');
+    // value = a + Math(b
+    return utils.parseUnits(Number(value).toFixed(num), num);
+}
+
 module.exports = {
     toWEIS,
+    toWEI,
     getOSQTH,
     approveERC20,
     getUSDC,
