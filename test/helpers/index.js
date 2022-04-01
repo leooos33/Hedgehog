@@ -34,17 +34,17 @@ async function getToken(amount, account, tokenAddress, accountHolder) {
 
 async function getWETH(amount, account) {
     const wethAccountHolder = "0x2f0b23f53734252bda2277357e97e1517d6b042a";
-    getToken(amount, account, wethAddress, wethAccountHolder);
+    await getToken(amount, account, wethAddress, wethAccountHolder);
 }
 
 async function getUSDC(amount, account) {
     const usdcAccountHolder = "0x2e6907a0ce523ccb5532ffea2e411df1eee26607";
-    getToken(amount, account, usdcAddress, usdcAccountHolder);
+    await getToken(amount, account, usdcAddress, usdcAccountHolder);
 }
 
 async function getOSQTH(amount, account) {
     const osqthAccountHolder = "0x94b86a218264c7c424c1476160d675a05ecb0b3d";
-    getToken(amount, account, osqthAddress, osqthAccountHolder);
+    await getToken(amount, account, osqthAddress, osqthAccountHolder);
 }
 
 const toHexdigital = (amount) => {
