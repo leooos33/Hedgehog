@@ -17,6 +17,9 @@ contract VaultMathTest is VaultParams {
     using StrategyMath for uint256;
 
     struct SharesInfo {
+        uint256 targetEthShare;
+        uint256 targetUsdcShare;
+        uint256 targetOsqthShare;
         uint256 totalSupply;
         uint256 _amountEth;
         uint256 _amountUsdc;
@@ -26,9 +29,6 @@ contract VaultMathTest is VaultParams {
         uint256 usdcAmount;
         uint256 ethAmount;
         uint256 osqthAmount;
-        uint256 _auctionTime;
-        uint256 _auctionTriggerTime;
-        uint256 _isPriceInc;
     }
 
     constructor(
@@ -97,50 +97,72 @@ contract VaultMathTest is VaultParams {
         }
     }
 
-    function _getAuctionPrices(SharesInfo memory params)
-    public view 
-    returns (
-        uint256,
-        uint256
-    )
-    {
-        uint256 auctionCompletionRatio = block.timestamp.sub(params._auctionTriggerTime) >= auctionTime ? 1e18 
-        : (block.timestamp.sub(params._auctionTriggerTime)).wdiv(params._auctionTime);
+    struct AuctionInfo {
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 _auctionTime;
+        uint256 auctionTime;
+        uint256 _auctionTriggerTime;
+        bool _isPriceInc;
+        uint256 timestamp;
+    }
+
+    function _getAuctionPrices(AuctionInfo memory params) public view returns (uint256, uint256) {
+        uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
+            ? 1e18
+            : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params._auctionTime);
 
         uint256 priceMultiplier;
-        if(params._isPriceInc) {
-            priceMultiplier = params._maxPriceMultiplier.sub(auctionCompletionRatio.wmul(params._maxPriceMultiplier.sub(params._minPriceMultiplier))
+        if (params._isPriceInc) {
+            priceMultiplier = maxPriceMultiplier.sub(
+                auctionCompletionRatio.wmul(maxPriceMultiplier.sub(minPriceMultiplier))
             );
         } else {
-            priceMultiplier = params._minPriceMultiplier.add(
-                auctionCompletionRatio.wmul(params._maxPriceMultiplier.sub(params._minPriceMultiplier))
+            priceMultiplier = minPriceMultiplier.add(
+                auctionCompletionRatio.wmul(maxPriceMultiplier.sub(minPriceMultiplier))
             );
         }
 
         return (
-            params.osqthEthPrice.wmul(priceMultiplier).wdiv(uint256(1e18));
-            params.ethUsdcPrice.wmul(priceMultiplier).wdiv(uint256(1e18));
+            params.osqthEthPrice.wmul(priceMultiplier).wdiv(uint256(1e18)),
+            params.ethUsdcPrice.wmul(priceMultiplier).wdiv(uint256(1e18))
         );
     }
 
-    function _getDeltas(SharesInfo memory params)
-    public view
-    returns(
-        uint256,
-        uint256,
-        uint256
-    ) 
+    struct DeltasInfo {
+        uint256 _amountEth;
+        uint256 _amountUsdc;
+        uint256 _amountOsqth;
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 usdcAmount;
+        uint256 ethAmount;
+        uint256 osqthAmount;
+    }
+
+    function _getDeltas(DeltasInfo memory params)
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
     {
-        uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(uint256(1e36));
+        uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(
+            uint256(1e36)
+        );
         uint256 usdcValue = params.usdcAmount.wmul(uint256(1e12));
         uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
 
         uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
 
-        return(
-            params.targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).sub(params._amountEth);
-            params.targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).sub(params._amountUsdc);
-            params.targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(paramsOsqthEthPrice).wdiv(paramsEthUsdcPrice).sub(params._amountOsqth);
-        )
+        return (
+            targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).sub(params._amountEth),
+            targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).sub(params._amountUsdc),
+            targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(params.osqthEthPrice).wdiv(params.ethUsdcPrice).sub(
+                params._amountOsqth
+            )
+        );
     }
 }
