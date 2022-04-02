@@ -10,14 +10,10 @@ const loadTestDataset = async (name) => {
 }
 
 const toWEIS = (value, num = 18) => {
-    // let [a, b] = value.split('.');
-    // value = a + Math(b
     return utils.parseUnits(Number(value).toFixed(num), num).toString();
 }
 
 const toWEI = (value, num = 18) => {
-    // let [a, b] = value.split('.');
-    // value = a + Math(b
     return utils.parseUnits(Number(value).toFixed(num), num);
 }
 
@@ -29,8 +25,8 @@ const assertWP = (a, b, pres = 4, num = 18) => {
         const _pres = Math.max(0, decimals.length - pres);
         const tail = Math.round(Number(decimals) / (10 ** _pres));
         
-        // console.log("debug", decimals);
-        // console.log("debug", tail);
+        // console.debug("debug:", decimals);
+        // console.debug("debug:", tail);
 
         return tail;
     }

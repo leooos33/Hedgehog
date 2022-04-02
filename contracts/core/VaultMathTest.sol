@@ -70,23 +70,18 @@ contract VaultMathTest is VaultParams {
             params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36))
         ).add((params._amountUsdc.mul(uint256(1e12)))).add((params._amountEth.mul(params.ethUsdcPrice).div(1e18)));
 
-        console.log("depositorValue: %s", depositorValue);
-
         if (params.totalSupply == 0) {
             return (
                 depositorValue,
-                depositorValue.mul(targetEthShare.div(uint256(1e18))).div(params.ethUsdcPrice),
-                depositorValue.mul(targetUsdcShare.div(uint256(1e18))),
-                depositorValue.mul(targetOsqthShare.div(uint256(1e18))).div(
-                    params.osqthEthPrice.mul(params.ethUsdcPrice)
-                )
+                depositorValue.mul(targetEthShare).div(params.ethUsdcPrice),
+                depositorValue.mul(targetUsdcShare).div(uint256(1e30)),
+                depositorValue.mul(targetOsqthShare.mul(1e18)).div(params.osqthEthPrice).div(params.ethUsdcPrice)
             );
         } else {
             uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
             uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
 
             uint256 totalValue = osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue);
-            // console.log("totalValue: %s", totalValue);
 
             return (
                 params.totalSupply.mul(depositorValue).div(totalValue),
@@ -154,7 +149,7 @@ contract VaultMathTest is VaultParams {
 
         return (
             targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).suba(params.ethAmount),
-            (targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).suba(params.usdcAmount)),
+            ((targetUsdcShare * totalValue) / 1e30).suba(params.usdcAmount),
             targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(params.osqthEthPrice).wdiv(params.ethUsdcPrice).suba(
                 params.osqthAmount
             )

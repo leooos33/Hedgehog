@@ -1,7 +1,7 @@
-const { expect, assert, util } = require("chai");
+const { assert } = require("chai");
 const { ethers } = require("hardhat");
-const { utils, BigNumber } = ethers;
-const { loadTestDataset, toWEIS, assertWP } = require('./helpers');
+const { utils } = ethers;
+const { assertWP } = require('./helpers');
 
 describe.only("Math", function () {
   let contract, tx;
@@ -19,6 +19,64 @@ describe.only("Math", function () {
       "237789753892254000",
     );
     await contract.deployed();
+  });
+
+  it("_calcSharesAndAmounts case 1", async function () {
+
+    const test_sute = {
+      targetEthShare: "500000000000000000",
+      targetUsdcShare: "262210246107746000",
+      targetOsqthShare: "237789753892254000",
+      totalSupply: "0",
+      _amountEth: "10000000000000000000",
+      _amountUsdc: "13110512305",
+      _amountOsqth: "23871300000000000000",
+      osqthEthPrice: "211180000000000000",
+      ethUsdcPrice: "2650000000000000000000",
+      usdcAmount: "41326682043",
+      ethAmount: "19855700000000000000",
+      osqthAmount: "17933300000000000000",
+    }
+    console.log(test_sute);
+
+    const amount = await contract._calcSharesAndAmounts(
+      test_sute,
+    );
+    console.log(">>", amount);
+
+    assert(assertWP(amount[0].toString(), "52969536310487300000000"), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "9994252134054210000"), `test_sute: sub 2`)
+    assert(assertWP(amount[2].toString(), "13889155152", 4, 6), `test_sute: sub 3`)
+    assert(assertWP(amount[3].toString(), "22507157451405300000"), `test_sute: sub 4`)
+  });
+
+  it("_calcSharesAndAmounts case 2", async function () {
+
+    const test_sute = {
+      targetEthShare: "500000000000000000",
+      targetUsdcShare: "262210246107746000",
+      targetOsqthShare: "237789753892254000",
+      totalSupply: "1000000000000000000000000",
+      _amountEth: "10000000000000000000",
+      _amountUsdc: "13110512305",
+      _amountOsqth: "23871300000000000000",
+      osqthEthPrice: "211180000000000000",
+      ethUsdcPrice: "2650000000000000000000",
+      usdcAmount: "41326682043",
+      ethAmount: "19855700000000000000",
+      osqthAmount: "17933300000000000000",
+    }
+    console.log(test_sute);
+
+    const amount = await contract._calcSharesAndAmounts(
+      test_sute,
+    );
+    console.log(">>", amount);
+
+    assert(assertWP(amount[0].toString(), "509419225163916000000000"), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "10114875309087200000"), `test_sute: sub 2`)
+    assert(assertWP(amount[2].toString(), "21052606345", 4, 6), `test_sute: sub 3`)
+    assert(assertWP(amount[3].toString(), "9135567790632050000"), `test_sute: sub 4`)
   });
 
   it("_getAuctionPrices", async function () {
@@ -59,8 +117,7 @@ describe.only("Math", function () {
     console.log(">>", amount);
 
     assert(assertWP(amount[0].toString(), "698068291015541000", 9), `test_sute: sub 1`)
-    assert(assertWP(amount[1].toString(), "27836403450722400000000", 6, 18), `test_sute: sub 2`)
+    assert(assertWP(amount[1].toString(), "23324220948", 4, 6), `test_sute: sub 2`)
     assert(assertWP(amount[2].toString(), "41887449738930900000", 9), `test_sute: sub 3`)
-  
   });
 });
