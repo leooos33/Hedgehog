@@ -26,6 +26,9 @@ contract VaultMathTest is VaultParams {
         uint256 usdcAmount;
         uint256 ethAmount;
         uint256 osqthAmount;
+        uint256 _auctionTime;
+        uint256 _auctionTriggerTime;
+        uint256 _isPriceInc;
     }
 
     constructor(
@@ -92,5 +95,52 @@ contract VaultMathTest is VaultParams {
                 params.osqthAmount.mul(depositorValue).div(totalValue)
             );
         }
+    }
+
+    function _getAuctionPrices(SharesInfo memory params)
+    public view 
+    returns (
+        uint256,
+        uint256
+    )
+    {
+        uint256 auctionCompletionRatio = block.timestamp.sub(params._auctionTriggerTime) >= auctionTime ? 1e18 
+        : (block.timestamp.sub(params._auctionTriggerTime)).wdiv(params._auctionTime);
+
+        uint256 priceMultiplier;
+        if(params._isPriceInc) {
+            priceMultiplier = params._maxPriceMultiplier.sub(auctionCompletionRatio.wmul(params._maxPriceMultiplier.sub(params._minPriceMultiplier))
+            );
+        } else {
+            priceMultiplier = params._minPriceMultiplier.add(
+                auctionCompletionRatio.wmul(params._maxPriceMultiplier.sub(params._minPriceMultiplier))
+            );
+        }
+
+        return (
+            params.osqthEthPrice.wmul(priceMultiplier);
+            params.ethUsdcPrice.wmul(priceMultiplier);
+        );
+    }
+
+    function _getDeltas(SharesInfo memory params)
+    public view
+    returns(
+        uint256,
+        uint256,
+        uint256
+    ) 
+    {
+        uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(uint256(1e36));
+        uint256 usdcValue = params.usdcAmount.wmul(uint256(1e12));
+        uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
+
+        uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
+
+        return(
+            params.targetEthShare.wmul(totalValue).wdiv(params.ethUsdcPrice);
+            params.targetUsdcShare.wmul(totalValue).wdiv(uint256(1e18));
+            params.targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(paramsOsqthEthPrice).wdiv(paramsEthUsdcPrice);
+        )
     }
 }
