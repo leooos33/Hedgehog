@@ -100,7 +100,6 @@ contract VaultMathTest is VaultParams {
     struct AuctionInfo {
         uint256 osqthEthPrice;
         uint256 ethUsdcPrice;
-        uint256 _auctionTime;
         uint256 auctionTime;
         uint256 _auctionTriggerTime;
         bool _isPriceInc;
@@ -110,7 +109,7 @@ contract VaultMathTest is VaultParams {
     function _getAuctionPrices(AuctionInfo memory params) public view returns (uint256, uint256) {
         uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
             ? 1e18
-            : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params._auctionTime);
+            : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params.auctionTime);
 
         uint256 priceMultiplier;
         if (params._isPriceInc) {

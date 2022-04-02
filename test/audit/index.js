@@ -37,4 +37,4 @@ const auditAll = async () => {
   await auditCalcSharesAndAmounts();
 }
 
-auditAll();
+// auditAll();
