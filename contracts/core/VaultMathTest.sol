@@ -118,8 +118,8 @@ contract VaultMathTest is VaultParams {
         }
 
         return (
-            params.osqthEthPrice.wmul(priceMultiplier);
-            params.ethUsdcPrice.wmul(priceMultiplier);
+            params.osqthEthPrice.wmul(priceMultiplier).wdiv(uint256(1e18));
+            params.ethUsdcPrice.wmul(priceMultiplier).wdiv(uint256(1e18));
         );
     }
 
