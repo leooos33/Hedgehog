@@ -138,9 +138,9 @@ contract VaultMathTest is VaultParams {
         uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
 
         return(
-            params.targetEthShare.wmul(totalValue).wdiv(params.ethUsdcPrice);
-            params.targetUsdcShare.wmul(totalValue).wdiv(uint256(1e18));
-            params.targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(paramsOsqthEthPrice).wdiv(paramsEthUsdcPrice);
+            params.targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).sub(params._amountEth);
+            params.targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).sub(params._amountUsdc);
+            params.targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(paramsOsqthEthPrice).wdiv(paramsEthUsdcPrice).sub(params._amountOsqth);
         )
     }
 }
