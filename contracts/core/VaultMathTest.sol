@@ -16,21 +16,6 @@ contract VaultMathTest is VaultParams {
     // using SafeMath for uint256;
     using StrategyMath for uint256;
 
-    struct SharesInfo {
-        uint256 targetEthShare;
-        uint256 targetUsdcShare;
-        uint256 targetOsqthShare;
-        uint256 totalSupply;
-        uint256 _amountEth;
-        uint256 _amountUsdc;
-        uint256 _amountOsqth;
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
-    }
-
     constructor(
         uint256 _cap,
         uint256 _rebalanceTimeThreshold,
@@ -55,6 +40,21 @@ contract VaultMathTest is VaultParams {
             _targetOsqthShare
         )
     {}
+
+    struct SharesInfo {
+        uint256 targetEthShare;
+        uint256 targetUsdcShare;
+        uint256 targetOsqthShare;
+        uint256 totalSupply;
+        uint256 _amountEth;
+        uint256 _amountUsdc;
+        uint256 _amountOsqth;
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 usdcAmount;
+        uint256 ethAmount;
+        uint256 osqthAmount;
+    }
 
     function _calcSharesAndAmounts(SharesInfo memory params)
         public
@@ -129,9 +129,6 @@ contract VaultMathTest is VaultParams {
     }
 
     struct DeltasInfo {
-        uint256 _amountEth;
-        uint256 _amountUsdc;
-        uint256 _amountOsqth;
         uint256 osqthEthPrice;
         uint256 ethUsdcPrice;
         uint256 usdcAmount;
@@ -151,16 +148,15 @@ contract VaultMathTest is VaultParams {
         uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(
             uint256(1e36)
         );
-        uint256 usdcValue = params.usdcAmount.wmul(uint256(1e12));
         uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
 
-        uint256 totalValue = osqthValue.add(usdcValue).add(ethValue);
+        uint256 totalValue = osqthValue.add(params.usdcAmount.mul(uint256(1e12))).add(ethValue);
 
         return (
-            targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).sub(params._amountEth),
-            targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).sub(params._amountUsdc),
-            targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(params.osqthEthPrice).wdiv(params.ethUsdcPrice).sub(
-                params._amountOsqth
+            targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).suba(params.ethAmount),
+            (targetUsdcShare.wmul(totalValue.wdiv(uint256(1e18))).suba(params.usdcAmount)),
+            targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(params.osqthEthPrice).wdiv(params.ethUsdcPrice).suba(
+                params.osqthAmount
             )
         );
     }

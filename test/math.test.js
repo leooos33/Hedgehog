@@ -1,7 +1,7 @@
-const { expect, util } = require("chai");
+const { expect, assert, util } = require("chai");
 const { ethers } = require("hardhat");
 const { utils, BigNumber } = ethers;
-const { loadTestDataset, toWEIS } = require('./helpers');
+const { loadTestDataset, toWEIS, assertWP } = require('./helpers');
 
 describe.only("Math", function () {
   let contract, tx;
@@ -12,11 +12,11 @@ describe.only("Math", function () {
       1000,
       utils.parseUnits("0.05", 18),
       100,
-      utils.parseUnits("0.95", 18),
-      utils.parseUnits("1.05", 18),
-      utils.parseUnits("0.5", 18),
-      utils.parseUnits("0.2622", 18),
-      utils.parseUnits("0.2378", 18),
+      "900000000000000000",
+      "1100000000000000000",
+      "500000000000000000",
+      "262210246107746000",
+      "237789753892254000",
     );
     await contract.deployed();
   });
@@ -38,39 +38,29 @@ describe.only("Math", function () {
     );
     console.log(">>", amount);
 
-    expect(amount[0].toString()).to.equal("188269128137332000", `test_sute: sub 1`);
-    expect(amount[1].toString()).to.equal("2362500000000000000000", `test_sute: sub 2`);
+    assert(assertWP(amount[0].toString(), "188269128137332000"), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "2362500000000000000000"), `test_sute: sub 2`)
   });
 
-  // it("_calcSharesAndAmounts", async function () {
-  //   const testsDs = await loadTestDataset("_calcSharesAndAmounts");
+  it("_getDeltas", async function () {
 
-  //   for (let i in testsDs) {
-  //     let test_sute = { ...testsDs[i] };
+    const test_sute = {
+      osqthEthPrice: "219149249683667000",
+      ethUsdcPrice: "2750000000000000000000",
+      usdcAmount: "51160624399",
+      ethAmount: "20000000000000000000",
+      osqthAmount: "0",
+    }
+    console.log(test_sute);
 
-  //     console.log(test_sute);
-  //     test_sute = {
-  //       totalSupply: toWEIS(test_sute.totalSupply),
-  //       _amountEth: toWEIS(test_sute._amountEth),
-  //       _amountUsdc: toWEIS(test_sute._amountUsdc, 6),
-  //       _amountOsqth: toWEIS(test_sute._amountOsqth),
-  //       osqthEthPrice: toWEIS(test_sute.osqthEthPrice),
-  //       ethUsdcPrice: toWEIS(test_sute.ethUsdcPrice),
-  //       usdcAmount: toWEIS(test_sute.usdcAmount, 6),
-  //       ethAmount: toWEIS(test_sute.ethAmount),
-  //       osqthAmount: toWEIS(test_sute.osqthAmount),
-  //     }
-  //     console.log(test_sute);
+    const amount = await contract._getDeltas(
+      test_sute,
+    );
+    console.log(">>", amount);
 
-  //     const amount = await contract._calcSharesAndAmounts(
-  //       test_sute,
-  //     );
-  //     console.log(">>", amount);
-
-  //     expect(amount[0].toString()).to.equal(toWEIS(testsDs[i].shares), `test_sute ${i}: sub 1`);
-  //     expect(amount[1].toString()).to.equal(toWEIS(testsDs[i].amountEth), `test_sute ${i}: sub 2`);
-  //     expect(amount[2].toString()).to.equal(toWEIS(testsDs[i].amountUsdc, 6), `test_sute ${i}: sub 3`);
-  //     expect(amount[3].toString()).to.equal(toWEIS(testsDs[i].amountOsqth), `test_sute ${i}: sub 4`);
-  //   }
-  // });
+    assert(assertWP(amount[0].toString(), "698068291015541000", 9), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "27836403450722400000000", 6, 18), `test_sute: sub 2`)
+    assert(assertWP(amount[2].toString(), "41887449738930900000", 9), `test_sute: sub 3`)
+  
+  });
 });

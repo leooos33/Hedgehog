@@ -1,0 +1,55 @@
+const { ethers } = require("hardhat");
+const { utils } = ethers;
+const csv = require('csvtojson');
+const path = require('path');
+
+const loadTestDataset = async (name) => {
+    const csvFilePath = path.join(__dirname, '../ds/', `${name}.csv`);
+    const array = await csv().fromFile(csvFilePath);
+    return array;
+}
+
+const toWEIS = (value, num = 18) => {
+    // let [a, b] = value.split('.');
+    // value = a + Math(b
+    return utils.parseUnits(Number(value).toFixed(num), num).toString();
+}
+
+const toWEI = (value, num = 18) => {
+    // let [a, b] = value.split('.');
+    // value = a + Math(b
+    return utils.parseUnits(Number(value).toFixed(num), num);
+}
+
+const assertWP = (a, b, pres = 4, num = 18) => {
+    
+    const getTail = (value, pres, num) => {
+        const decimals = value.slice(-num);
+        
+        const _pres = Math.max(0, decimals.length - pres);
+        const tail = Math.round(Number(decimals) / (10 ** _pres));
+        
+        // console.log("debug", decimals);
+        // console.log("debug", tail);
+
+        return tail;
+    }
+    
+    if(getTail(a, pres, num) == getTail(b, pres, num)) return true;
+
+    // TODO: make gloabl settings during test session
+    // console.log("current  >>>", utils.formatUnits(a, num));
+    // console.log("expected >>>", utils.formatUnits(b, num));
+    
+    console.log("current  >>>", a);
+    console.log("expected >>>", b);
+    
+    return false;
+}
+
+module.exports = {
+    assertWP,
+    toWEIS,
+    toWEI,
+    loadTestDataset,
+}

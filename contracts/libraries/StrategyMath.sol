@@ -15,6 +15,10 @@ library StrategyMath {
         require((z = x - y) <= x, "ds-math-sub-underflow");
     }
 
+    function suba(uint256 x, uint256 y) internal pure returns (uint256) {
+        return x > y ? sub(x, y) : sub(y, x);
+    }
+
     function mul(uint256 x, uint256 y) internal pure returns (uint256 z) {
         require(y == 0 || (z = x * y) / y == x, "ds-math-mul-overflow");
     }
@@ -88,5 +92,9 @@ library StrategyMath {
                 z = rmul(z, x);
             }
         }
+    }
+
+    function abs(int256 x) private pure returns (int256) {
+        return x >= 0 ? x : -x;
     }
 }
