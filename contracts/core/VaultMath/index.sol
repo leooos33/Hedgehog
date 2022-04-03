@@ -243,6 +243,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
         (total0, total1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
     }
 
+    //@dev <tested>
     /// @dev Wrapper around `LiquidityAmounts.getAmountsForLiquidity()`.
     function _amountsForLiquidity(
         address pool,

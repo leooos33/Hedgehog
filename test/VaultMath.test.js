@@ -93,7 +93,7 @@ describe.only("VaultMath", function () {
             "7380438629950410000"
         );
         console.log(">>", amount);
-        assert(assertWP(amount.toString(), "8394376743052387", 0), `should not fail`);
+        assert(assertWP(amount.toString(), "8394376743052387", 0, 6), `should not fail`);
     });
 
     it("_liquidityForAmounts", async function () {
@@ -108,5 +108,31 @@ describe.only("VaultMath", function () {
         console.log(">>", amount);
 
         assert(assertWP(amount.toString(), "277304729505821000000", 0), `should not fail`);
+    });
+
+    it("_amountsForLiquidity", async function () {
+
+        const amount = await contract._amountsForLiquidity(
+            poolEthUsdc,
+            "193980",
+            "196080",
+            "8394376743052387"
+        );
+        console.log(">>", amount);
+        assert(assertWP(amount[0].toString(), "24972947409", 4, 6), `should not fail`);
+        assert(assertWP(amount[1].toString(), "7380438629950410000", 4, 18), `should not fail`);
+    });
+
+    it("_amountsForLiquidity", async function () {
+
+        const amount = await contract._amountsForLiquidity(
+            poolEthOsqth,
+            "12180",
+            "14280",
+            "277304729505821000000"
+        );
+        console.log(">>", amount);
+        assert(assertWP(amount[0].toString(), "7364483097017340000", 1, 18), `should not fail`);
+        assert(assertWP(amount[1].toString(), "27311612764595500000", 1, 18), `should not fail`);
     });
 });

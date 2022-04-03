@@ -34,9 +34,9 @@ const assertWP = (a, b, pres = 4, num = 18) => {
     if(getTail(a, pres, num) == getTail(b, pres, num)) return true;
 
     // TODO: make gloabl settings during test session
-    // console.log("current  >>>", utils.formatUnits(a, num));
-    // console.log("expected >>>", utils.formatUnits(b, num));
     
+    console.log("current  >>>", utils.formatUnits(a, num));
+    console.log("expected >>>", utils.formatUnits(b, num));
     console.log("current  >>>", a);
     console.log("expected >>>", b);
     
