@@ -471,6 +471,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
     }
 
+    //@dev <tested>
     /// @dev Wrapper around `LiquidityAmounts.getLiquidityForAmounts()`.
     function _liquidityForAmounts(
         address pool,
