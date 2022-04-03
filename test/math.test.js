@@ -3,7 +3,7 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { assertWP } = require('./helpers');
 
-describe.only("Math", function () {
+describe("Math", function () {
   let contract, tx;
   it("Should deploy contract", async function () {
     const Contract = await ethers.getContractFactory("VaultMathTest");

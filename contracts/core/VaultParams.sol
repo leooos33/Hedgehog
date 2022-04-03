@@ -18,7 +18,7 @@ abstract contract VaultParams {
     int24 public immutable tickSpacingOsqthEth;
 
     //@dev twap period to use for rebalance calculations
-    uint32 public twapPeriod = 420 seconds;
+    uint32 public twapPeriod = 420;
 
     //@dev total amount of deposited wETH
     uint256 public totalEthDeposited;

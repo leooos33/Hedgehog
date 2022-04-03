@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
-import "./VaultParams.sol";
-import "../libraries/StrategyMath.sol";
+import "../VaultParams.sol";
+import "../../libraries/StrategyMath.sol";
 
 import "hardhat/console.sol";
 
