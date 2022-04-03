@@ -20,4 +20,36 @@ library Constants {
 
     //@dev strategy Uniswap oracle
     IOracle public constant oracle = IOracle(0x65D66c76447ccB45dAf1e8044e918fA786A483A1);
+
+    struct SharesInfo {
+        uint256 targetEthShare;
+        uint256 targetUsdcShare;
+        uint256 targetOsqthShare;
+        uint256 totalSupply;
+        uint256 _amountEth;
+        uint256 _amountUsdc;
+        uint256 _amountOsqth;
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 usdcAmount;
+        uint256 ethAmount;
+        uint256 osqthAmount;
+    }
+
+    struct AuctionInfo {
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 auctionTime;
+        uint256 _auctionTriggerTime;
+        bool _isPriceInc;
+        uint256 timestamp;
+    }
+
+    struct DeltasInfo {
+        uint256 osqthEthPrice;
+        uint256 ethUsdcPrice;
+        uint256 usdcAmount;
+        uint256 ethAmount;
+        uint256 osqthAmount;
+    }
 }

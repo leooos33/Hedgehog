@@ -24,7 +24,7 @@ import "./VaultMathOracle.sol";
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-contract VaultMath is IERC20, ERC20, ReentrancyGuard {
+contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
     // using SafeMath for uint256;
     // using StrategyMath for uint256;
 
@@ -53,22 +53,30 @@ contract VaultMath is IERC20, ERC20, ReentrancyGuard {
     )
         public
         ERC20("Hedging DL", "HDL")
-        // VaultMathTest(
-        //     _cap,
-        //     _rebalanceTimeThreshold,
-        //     _rebalancePriceThreshold,
-        //     _auctionTime,
-        //     _minPriceMultiplier,
-        //     _maxPriceMultiplier,
-        //     _targetEthShare,
-        //     _targetUsdcShare,
-        //     _targetOsqthShare
-        // )
+        VaultParams(
+            _cap,
+            _rebalanceTimeThreshold,
+            _rebalancePriceThreshold,
+            _auctionTime,
+            _minPriceMultiplier,
+            _maxPriceMultiplier,
+            _targetEthShare,
+            _targetUsdcShare,
+            _targetOsqthShare
+        )
     {
         vaultMathOracle = new VaultMathOracle();
+        vaultMathTest = new VaultMathTest(
+            _minPriceMultiplier,
+            _maxPriceMultiplier,
+            _targetEthShare,
+            _targetUsdcShare,
+            _targetOsqthShare
+        );
     }
 
     VaultMathOracle vaultMathOracle;
+    VaultMathTest vaultMathTest;
 
     /**
      * @dev Do zero-burns to poke a position on Uniswap so earned fees are
@@ -178,17 +186,17 @@ contract VaultMath is IERC20, ERC20, ReentrancyGuard {
             true
         );
 
-        SharesInfo memory params = SharesInfo(
-            totalSupply(),
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
-            osqthEthPrice,
-            ethUsdcPrice,
-            usdcAmount,
-            ethAmount,
-            osqthAmount
-        );
+        // Constants.SharesInfo memory params = Constants.SharesInfo(
+        //     totalSupply(),
+        //     _amountEth,
+        //     _amountUsdc,
+        //     _amountOsqth,
+        //     osqthEthPrice,
+        //     ethUsdcPrice,
+        //     usdcAmount,
+        //     ethAmount,
+        //     osqthAmount
+        // );
 
         // return _calcSharesAndAmounts(params);
     }

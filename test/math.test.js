@@ -8,10 +8,6 @@ describe("Math", function () {
   it("Should deploy contract", async function () {
     const Contract = await ethers.getContractFactory("VaultMathTest");
     contract = await Contract.deploy(
-      utils.parseUnits("40", 18),
-      1000,
-      utils.parseUnits("0.05", 18),
-      100,
       "900000000000000000",
       "1100000000000000000",
       "500000000000000000",

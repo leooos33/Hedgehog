@@ -12,52 +12,35 @@ import "../../libraries/StrategyMath.sol";
 
 import "hardhat/console.sol";
 
-contract VaultMathTest is VaultParams {
+contract VaultMathTest {
     // using SafeMath for uint256;
     using StrategyMath for uint256;
 
+    uint256 public minPriceMultiplier;
+    uint256 public maxPriceMultiplier;
+
+    //@dev targeted share of value in a certain token (0.5*100 = 50%)
+    uint256 public targetEthShare;
+    uint256 public targetUsdcShare;
+    uint256 public targetOsqthShare;
+
     constructor(
-        uint256 _cap,
-        uint256 _rebalanceTimeThreshold,
-        uint256 _rebalancePriceThreshold,
-        uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
         uint256 _targetOsqthShare
-    )
-        public
-        VaultParams(
-            _cap,
-            _rebalanceTimeThreshold,
-            _rebalancePriceThreshold,
-            _auctionTime,
-            _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _targetEthShare,
-            _targetUsdcShare,
-            _targetOsqthShare
-        )
-    {}
+    ) public {
+        minPriceMultiplier = _minPriceMultiplier;
+        maxPriceMultiplier = _maxPriceMultiplier;
 
-    struct SharesInfo {
-        uint256 targetEthShare;
-        uint256 targetUsdcShare;
-        uint256 targetOsqthShare;
-        uint256 totalSupply;
-        uint256 _amountEth;
-        uint256 _amountUsdc;
-        uint256 _amountOsqth;
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
+        targetEthShare = _targetEthShare;
+        targetUsdcShare = _targetUsdcShare;
+        targetOsqthShare = _targetOsqthShare;
     }
 
     //@dev <tested>
-    function _calcSharesAndAmounts(SharesInfo memory params)
+    function _calcSharesAndAmounts(Constants.SharesInfo memory params)
         public
         view
         returns (
@@ -93,17 +76,8 @@ contract VaultMathTest is VaultParams {
         }
     }
 
-    struct AuctionInfo {
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 auctionTime;
-        uint256 _auctionTriggerTime;
-        bool _isPriceInc;
-        uint256 timestamp;
-    }
-
     //@dev <tested>
-    function _getAuctionPrices(AuctionInfo memory params) public view returns (uint256, uint256) {
+    function _getAuctionPrices(Constants.AuctionInfo memory params) public view returns (uint256, uint256) {
         uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
             ? 1e18
             : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params.auctionTime);
@@ -125,16 +99,8 @@ contract VaultMathTest is VaultParams {
         );
     }
 
-    struct DeltasInfo {
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
-    }
-
     //@dev <tested>
-    function _getDeltas(DeltasInfo memory params)
+    function _getDeltas(Constants.DeltasInfo memory params)
         public
         view
         returns (
