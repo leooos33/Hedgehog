@@ -56,6 +56,7 @@ contract VaultMathTest is VaultParams {
         uint256 osqthAmount;
     }
 
+    //@dev <tested>
     function _calcSharesAndAmounts(SharesInfo memory params)
         public
         view
@@ -101,6 +102,7 @@ contract VaultMathTest is VaultParams {
         uint256 timestamp;
     }
 
+    //@dev <tested>
     function _getAuctionPrices(AuctionInfo memory params) public view returns (uint256, uint256) {
         uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
             ? 1e18
@@ -131,6 +133,7 @@ contract VaultMathTest is VaultParams {
         uint256 osqthAmount;
     }
 
+    //@dev <tested>
     function _getDeltas(DeltasInfo memory params)
         public
         view

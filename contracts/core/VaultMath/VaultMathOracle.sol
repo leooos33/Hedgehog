@@ -16,6 +16,7 @@ contract VaultMathOracle {
     // using SafeMath for uint256;
     using StrategyMath for uint256;
 
+    //@dev <tested>
     function _getTwap(
         address poolEthOsqth,
         address token1,

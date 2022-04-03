@@ -14,15 +14,19 @@ import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
-import "../libraries/SharedEvents.sol";
-import "../libraries/Constants.sol";
-import "./VaultParams.sol";
+import "../../libraries/SharedEvents.sol";
+import "../../libraries/Constants.sol";
+import "../../libraries/StrategyMath.sol";
+
+import "./VaultMathTest.sol";
+import "./VaultMathOracle.sol";
 
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
-    using SafeMath for uint256;
+contract VaultMath is IERC20, ERC20, ReentrancyGuard {
+    // using SafeMath for uint256;
+    // using StrategyMath for uint256;
 
     /**
      * @notice strategy constructor
@@ -49,18 +53,22 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
     )
         public
         ERC20("Hedging DL", "HDL")
-        VaultParams(
-            _cap,
-            _rebalanceTimeThreshold,
-            _rebalancePriceThreshold,
-            _auctionTime,
-            _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _targetEthShare,
-            _targetUsdcShare,
-            _targetOsqthShare
-        )
-    {}
+        // VaultMathTest(
+        //     _cap,
+        //     _rebalanceTimeThreshold,
+        //     _rebalancePriceThreshold,
+        //     _auctionTime,
+        //     _minPriceMultiplier,
+        //     _maxPriceMultiplier,
+        //     _targetEthShare,
+        //     _targetUsdcShare,
+        //     _targetOsqthShare
+        // )
+    {
+        vaultMathOracle = new VaultMathOracle();
+    }
+
+    VaultMathOracle vaultMathOracle;
 
     /**
      * @dev Do zero-burns to poke a position on Uniswap so earned fees are
@@ -74,7 +82,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) internal {
+    ) public {
         (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
@@ -88,7 +96,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickLower,
         int24 tickUpper
     )
-        internal
+        public
         view
         returns (
             uint128,
@@ -107,7 +115,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * @param _amountToDeposit amount of wETH to deposit
      * @return shares strategy shares to mint
      */
-    function _calcShares(uint256 _amountToDeposit) internal view returns (uint256 shares) {
+    function _calcShares(uint256 _amountToDeposit) public view returns (uint256 shares) {
         uint256 totalSupply = totalSupply();
 
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
@@ -151,6 +159,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             uint256
         )
     {
+        return (0, 0, 0, 0);
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
         uint256 osqthEthPrice = Constants.oracle.getTwap(
@@ -181,70 +190,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
             osqthAmount
         );
 
-        return _calcSharesAndAmounts(params);
-    }
-
-    struct SharesInfo {
-        uint256 totalSupply;
-        uint256 _amountEth;
-        uint256 _amountUsdc;
-        uint256 _amountOsqth;
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
-    }
-
-    function _calcSharesAndAmounts(SharesInfo memory params)
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        // console.log("!!!");
-        // console.log(params.totalSupply);
-
-        uint256 dOsqthValue = params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36));
-        uint256 dUsdcValue = params._amountUsdc.mul(uint256(1e12));
-        uint256 dEthValue = params._amountEth.mul(params.ethUsdcPrice).div(1e18);
-
-        uint256 depositorValue = dOsqthValue.add(dUsdcValue).add(dEthValue);
-
-        if (params.totalSupply == 0) {
-            return (
-                depositorValue,
-                // depositorValue.mul(targetEthShare).div(ethUsdcPrice),
-                // depositorValue.mul(targetUsdcShare),
-                // depositorValue.mul(targetOsqthShare).div(osqthEthPrice.mul(ethUsdcPrice))
-                depositorValue.mul(targetEthShare.div(uint256(1e18))).div(params.ethUsdcPrice),
-                depositorValue.mul(targetUsdcShare.div(uint256(1e18))),
-                depositorValue.mul(targetOsqthShare.div(uint256(1e18))).div(
-                    params.osqthEthPrice.mul(params.ethUsdcPrice)
-                )
-            );
-        } else {
-            // uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(
-            //     uint256(1e36)
-            // );
-            // uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
-
-            // uint256 depositorShare = depositorValue
-            //     .div((osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue)))
-            //     .add(depositorValue);
-
-            // return (
-            //     params.totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.ethAmount).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.usdcAmount).div(uint256(1e18).sub(depositorShare)),
-            //     depositorShare.mul(params.osqthAmount).div(uint256(1e18).sub(depositorShare))
-            // );
-            return (0, 0, 0, 0);
-        }
+        // return _calcSharesAndAmounts(params);
     }
 
     /**
@@ -253,7 +199,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * all its liquidity from Uniswap.
      */
     function _getTotalAmounts()
-        internal
+        public
         view
         returns (
             uint256,
@@ -295,7 +241,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) internal view returns (uint256, uint256) {
+    ) public view returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
             LiquidityAmounts.getAmountsForLiquidity(
@@ -313,7 +259,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickUpper,
         uint256 shares,
         uint256 totalSupply
-    ) internal returns (uint256 amount0, uint256 amount1) {
+    ) public returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = _position(pool, tickLower, tickUpper);
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
 
@@ -338,7 +284,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickUpper,
         uint128 liquidity
     )
-        internal
+        public
         returns (
             uint256 burned0,
             uint256 burned1,
@@ -367,7 +313,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * @return true if time hedging is allowed
      * @return auction trigger timestamp
      */
-    function _isTimeRebalance() internal view returns (bool, uint256) {
+    function _isTimeRebalance() public view returns (bool, uint256) {
         uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
 
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
@@ -378,7 +324,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * @param _auctionTriggerTime timestamp where auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance(uint256 _auctionTriggerTime) internal returns (bool) {
+    function _isPriceRebalance(uint256 _auctionTriggerTime) public returns (bool) {
         return true;
     }
 
@@ -387,7 +333,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * @param _ethUsdcPrice current wETH/USDC price
      * @return isPriceInc true if price increased
      */
-    function _checkAuctionType(uint256 _ethUsdcPrice) internal view returns (bool isPriceInc) {
+    function _checkAuctionType(uint256 _ethUsdcPrice) public view returns (bool isPriceInc) {
         isPriceInc = _ethUsdcPrice >= ethPriceAtLastRebalance ? true : false;
     }
 
@@ -407,7 +353,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         uint256 _auctionTriggerTime,
         bool _isPriceInc
     )
-        internal
+        public
         view
         returns (
             uint256 deltaEth,
@@ -455,7 +401,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         uint256 _currentEthUsdcPrice,
         uint256 _currentOsqthEthPrice,
         bool _isPriceInc
-    ) internal view returns (uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice) {
+    ) public view returns (uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice) {
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
@@ -475,6 +421,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         auctionOsqthEthPrice = priceMultiplier.mul(_currentOsqthEthPrice);
     }
 
+    //@dev <tested>
     /**
      * @notice calculate lower and upper tick for liquidity provision on Uniswap
      * @return ethUsdcLower tick lower for eth:usdc pool
@@ -483,7 +430,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
      * @return osqthEthUpper tick upper for osqth:eth pool
      */
     function _getBoundaries()
-        internal
+        public
         view
         returns (
             int24 ethUsdcLower,
@@ -501,15 +448,16 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
         int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
 
-        int24 ethUsdcThreshold = 1;
-        int24 osqthEthThreshold = 1;
+        int24 ethUsdcThreshold = 1020;
+        int24 osqthEthThreshold = 1020;
 
         ethUsdcLower = tickFloorEthUsdc - ethUsdcThreshold;
         ethUsdcUpper = tickCeilEthUsdc + ethUsdcThreshold;
-        osqthEthLower = tickFloorOsqthEth - osqthEthThreshold;
-        osqthEthUpper = tickCeilOsqthEth + osqthEthThreshold;
+        osqthEthLower = tickCeilOsqthEth + osqthEthThreshold;
+        osqthEthUpper = tickFloorOsqthEth - osqthEthThreshold;
     }
 
+    //@dev <tested>
     /// @dev Fetches current price in ticks from Uniswap pool.
     function getTick(address pool) public view returns (int24 tick) {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
@@ -522,7 +470,7 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickUpper,
         uint256 amount0,
         uint256 amount1
-    ) internal view returns (uint128) {
+    ) public view returns (uint128) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
             LiquidityAmounts.getLiquidityForAmounts(
@@ -540,15 +488,16 @@ abstract contract VaultMath is IERC20, ERC20, ReentrancyGuard, VaultParams {
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) internal {
+    ) public {
         if (liquidity > 0) {
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, "");
         }
     }
 
+    //@dev <tested>
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
+    function _floor(int24 tick, int24 tickSpacing) public pure returns (int24) {
         int24 compressed = tick / tickSpacing;
         if (tick < 0 && tick % tickSpacing != 0) compressed--;
         return compressed * tickSpacing;

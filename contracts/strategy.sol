@@ -11,13 +11,16 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import "./interfaces/IVault.sol";
 import "./libraries/SharedEvents.sol";
 import "./libraries/Constants.sol";
+import "./libraries/StrategyMath.sol";
+
 import "./core/VaultParams.sol";
 import "./core/VaultAuction.sol";
 
 import "hardhat/console.sol";
 
 contract Vault is IVault, ReentrancyGuard, VaultAuction {
-    using SafeMath for uint256;
+    // using SafeMath for uint256;
+    using StrategyMath for uint256;
 
     /**
      * @notice strategy constructor

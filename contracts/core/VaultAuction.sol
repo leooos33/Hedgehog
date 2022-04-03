@@ -17,13 +17,16 @@ import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import "../interfaces/IVault.sol";
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
+import "../libraries/StrategyMath.sol";
+
 import "./VaultParams.sol";
-import "./VaultMath.sol";
+import "./VaultMath/index.sol";
 
 import "hardhat/console.sol";
 
 abstract contract VaultAuction is IAuction, VaultMath {
-    using SafeMath for uint256;
+    // using SafeMath for uint256;
+    using StrategyMath for uint256;
 
     /**
      * @notice strategy constructor

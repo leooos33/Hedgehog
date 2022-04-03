@@ -8,7 +8,7 @@ const { poolEthUsdc,
   usdcAddress,
   wethAddress, } = require('./common');
 
-describe.only("Oracle", function () {
+describe("Oracle", function () {
   let contract, tx;
   it("Should deploy contract", async function () {
     const Contract = await ethers.getContractFactory("VaultMathOracle");
