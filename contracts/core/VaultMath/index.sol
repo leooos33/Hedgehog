@@ -461,8 +461,8 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
 
         ethUsdcLower = tickFloorEthUsdc - ethUsdcThreshold;
         ethUsdcUpper = tickCeilEthUsdc + ethUsdcThreshold;
-        osqthEthLower = tickCeilOsqthEth + osqthEthThreshold;
-        osqthEthUpper = tickFloorOsqthEth - osqthEthThreshold;
+        osqthEthLower = tickFloorOsqthEth - osqthEthThreshold;
+        osqthEthUpper = tickCeilOsqthEth + osqthEthThreshold;
     }
 
     //@dev <tested>
