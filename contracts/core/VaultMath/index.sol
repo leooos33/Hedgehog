@@ -204,12 +204,11 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             orderOsqthEthUpper
         );
 
-        console.log(amountWeth0);
-        console.log(usdcAmount);
-        console.log(osqthAmount);
-        console.log(amountWeth1);
-
-        return (amountWeth0.add(amountWeth1), usdcAmount, osqthAmount);
+        return (
+            getBalance(Constants.weth).add(amountWeth0).add(amountWeth1),
+            getBalance(Constants.usdc).add(usdcAmount),
+            getBalance(Constants.osqth).add(osqthAmount)
+        );
     }
 
     //@dev <tested but without swap>
@@ -227,6 +226,10 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
 
         total0 = amount0.add(tokensOwed0);
         total1 = amount1.add(tokensOwed1);
+    }
+
+    function getBalance(IERC20 token) public view returns (uint256) {
+        return token.balanceOf(address(this)); //? accrued protocol fees
     }
 
     //@dev <tested>
@@ -351,19 +354,12 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         public
         view
         returns (
-            uint256 deltaEth,
-            uint256 deltaUsdc,
-            uint256 deltaOsqth
+            uint256,
+            uint256,
+            uint256
         )
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-
-        //add unused deposited tokens
-        ethAmount = ethAmount.add(Constants.weth.balanceOf(address(this)));
-        //@dev some usdc and osqth may left after the prev rebalance
-        usdcAmount = usdcAmount.add(Constants.usdc.balanceOf(address(this)));
-        osqthAmount = osqthAmount.add(Constants.osqth.balanceOf(address(this)));
-
         (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = _getPriceMultiplier(
             _auctionTriggerTime,
             _currentEthUsdcPrice,
@@ -371,17 +367,15 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             _isPriceInc
         );
 
-        //calculate current total value based on auction prices
-        uint256 totalValue = ethAmount.mul(_auctionEthUsdcPrice).add(osqthAmount.mul(_auctionOsqthEthPrice)).add(
-            usdcAmount
+        Constants.DeltasInfo memory params = Constants.DeltasInfo(
+            _auctionOsqthEthPrice,
+            _auctionEthUsdcPrice,
+            usdcAmount,
+            ethAmount,
+            osqthAmount
         );
 
-        deltaEth = targetEthShare.div(1e18).mul(totalValue.div(_auctionEthUsdcPrice)).sub(ethAmount);
-        deltaUsdc = targetUsdcShare.div(1e18).mul(totalValue).sub(usdcAmount);
-        deltaOsqth = targetOsqthShare
-            .div(1e18)
-            .mul(totalValue.div(_auctionOsqthEthPrice.mul(_auctionEthUsdcPrice)))
-            .sub(osqthAmount);
+        return vaultMathTest._getDeltas(params);
     }
 
     //@dev <tested>

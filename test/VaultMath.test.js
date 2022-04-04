@@ -242,4 +242,13 @@ describe.only("VaultMath", function () {
         assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
         assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
     });
+
+    // it("_getDeltas", async function () {
+    //     const amount = await contract._getTotalAmounts();
+    //     console.log(">>", amount);
+
+    //     assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
+    //     assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
+    //     assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+    // });
 });
