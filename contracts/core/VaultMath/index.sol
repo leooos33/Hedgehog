@@ -205,6 +205,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         // return _calcSharesAndAmounts(params);
     }
 
+    //@dev <tested>
     /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in
      * other words, how much of each token the vault would hold if it withdrew
@@ -219,32 +220,48 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             uint256
         )
     {
-        (uint256 amountWeth0, uint256 usdcAmount) = getPositionAmount(
+        (
+            int24 orderEthUsdcLower,
+            int24 orderEthUsdcUpper,
+            int24 orderOsqthEthLower,
+            int24 orderOsqthEthUpper
+        ) = _getBoundaries();
+
+        (uint256 usdcAmount, uint256 amountWeth0) = getPositionAmounts(
             Constants.poolEthUsdc,
             orderEthUsdcLower,
             orderEthUsdcUpper
         );
 
-        (uint256 osqthAmount, uint256 amountWeth1) = getPositionAmount(
+        (uint256 amountWeth1, uint256 osqthAmount) = getPositionAmounts(
             Constants.poolEthOsqth,
-            orderEthUsdcLower,
-            orderEthUsdcUpper
+            orderOsqthEthLower,
+            orderOsqthEthUpper
         );
+
+        console.log(amountWeth0);
+        console.log(usdcAmount);
+        console.log(osqthAmount);
+        console.log(amountWeth1);
 
         return (amountWeth0.add(amountWeth1), usdcAmount, osqthAmount);
     }
 
+    //@dev <tested but without swap>
     /**
      * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees.
      * @dev Doesn't include fees accrued since last poke.
      */
-    function getPositionAmount(
+    function getPositionAmounts(
         address pool,
         int24 tickLower,
         int24 tickUpper
     ) public view returns (uint256 total0, uint256 total1) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
-        (total0, total1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+        (uint256 amount0, uint256 amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+
+        total0 = amount0.add(tokensOwed0);
+        total1 = amount1.add(tokensOwed1);
     }
 
     //@dev <tested>

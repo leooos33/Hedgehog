@@ -36,8 +36,8 @@ const assertWP = (a, b, pres = 4, num = 18) => {
     // TODO: make gloabl settings during test session
     
     console.log("current  >>>", utils.formatUnits(a, num));
-    console.log("expected >>>", utils.formatUnits(b, num));
     console.log("current  >>>", a);
+    console.log("expected >>>", utils.formatUnits(b, num));
     console.log("expected >>>", b);
     
     return false;

@@ -30,10 +30,11 @@ abstract contract VaultParams {
     address public governance;
 
     //@dev lower and upper ticks in Uniswap pools
-    int24 public orderEthUsdcLower;
-    int24 public orderEthUsdcUpper;
-    int24 public orderOsqthEthLower;
-    int24 public orderOsqthEthUpper;
+    // Removed
+    // int24 public orderEthUsdcLower;
+    // int24 public orderEthUsdcUpper;
+    // int24 public orderOsqthEthLower;
+    // int24 public orderOsqthEthUpper;
 
     //@dev timestamp when last rebalance executed
     uint256 public timeAtLastRebalance;

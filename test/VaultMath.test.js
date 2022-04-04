@@ -221,4 +221,25 @@ describe.only("VaultMath", function () {
         assert(assertWP(amount[0].toString(), "179303931559364000"), `test_sute: sub 1`)
         assert(assertWP(amount[1].toString(), "2250000000000010000000"), `test_sute: sub 2`)
     });
+
+    it("getPositionAmounts", async function () {
+        const amount = await contract.getPositionAmounts(
+            poolEthUsdc,
+            "193980",
+            "196080",
+        );
+        console.log(">>", amount);
+
+        assert(assertWP(amount[0].toString(), "24972947408"), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "7380438629385777544"), `test_sute: sub 2`)
+    });
+
+    it("_getTotalAmounts", async function () {
+        const amount = await contract._getTotalAmounts();
+        console.log(">>", amount);
+
+        assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
+        assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+    });
 });
