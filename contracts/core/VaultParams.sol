@@ -31,10 +31,10 @@ abstract contract VaultParams {
 
     //@dev lower and upper ticks in Uniswap pools
     // Removed
-    // int24 public orderEthUsdcLower;
-    // int24 public orderEthUsdcUpper;
-    // int24 public orderOsqthEthLower;
-    // int24 public orderOsqthEthUpper;
+    int24 public orderEthUsdcLower;
+    int24 public orderEthUsdcUpper;
+    int24 public orderOsqthEthLower;
+    int24 public orderOsqthEthUpper;
 
     //@dev timestamp when last rebalance executed
     uint256 public timeAtLastRebalance;
@@ -101,6 +101,22 @@ abstract contract VaultParams {
     /**
         All strategy getters and setters will be here
      */
+
+    // TODO: remove on main
+    /**
+     * Used to for _getTotalAmounts unit testing
+     */
+    function setTotalAmountsBoundaries(
+        int24 _orderEthUsdcLower,
+        int24 _orderEthUsdcUpper,
+        int24 _orderOsqthEthLower,
+        int24 _orderOsqthEthUpper
+    ) public {
+        orderEthUsdcLower = _orderEthUsdcLower;
+        orderEthUsdcUpper = _orderEthUsdcUpper;
+        orderOsqthEthLower = _orderOsqthEthLower;
+        orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
 
     /// @dev Casts uint256 to uint128 with overflow check.
     function _toUint128(uint256 x) internal pure returns (uint128) {

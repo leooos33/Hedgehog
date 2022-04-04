@@ -24,7 +24,7 @@ pragma experimental ABIEncoderV2;
 
 // import "hardhat/console.sol";
 
-// abstract contract VaultAuction is IAuction, VaultMath {
+// contract VaultAuction is IAuction, VaultMath {
 //     // using SafeMath for uint256;
 //     using StrategyMath for uint256;
 

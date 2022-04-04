@@ -187,13 +187,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             uint256
         )
     {
-        (
-            int24 orderEthUsdcLower,
-            int24 orderEthUsdcUpper,
-            int24 orderOsqthEthLower,
-            int24 orderOsqthEthUpper
-        ) = _getBoundaries();
-
         (uint256 usdcAmount, uint256 amountWeth0) = getPositionAmounts(
             Constants.poolEthUsdc,
             orderEthUsdcLower,

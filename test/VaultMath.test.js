@@ -143,7 +143,7 @@ describe.only("VaultMath", function () {
             "12180",
             "14280"
         );
-        
+
         assert(amount[0].toString() == "0", `test_sute: sub 1`);
         assert(amount[1].toString() == "0", `test_sute: sub 2`);
         assert(amount[2].toString() == "0", `test_sute: sub 3`);
@@ -185,7 +185,7 @@ describe.only("VaultMath", function () {
         await getWETH("7380438629385777545", contract.address);
         //+1
         await getUSDC("24972947409", contract.address);
-        
+
 
         console.log(await getERC20Balance(contract.address, wethAddress));
         console.log(await getERC20Balance(contract.address, usdcAddress));
@@ -235,6 +235,14 @@ describe.only("VaultMath", function () {
     });
 
     it("_getTotalAmounts", async function () {
+        tx = await contract.setTotalAmountsBoundaries(
+            "193980",
+            "196080",
+            "12180",
+            "14280"
+        );
+        await tx.wait();
+
         const amount = await contract._getTotalAmounts();
         console.log(">>", amount);
 
