@@ -8,11 +8,13 @@ import "@openzeppelin/contracts/math/SafeMath.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
+import {IUniswapV3MintCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
+import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
 import "../../libraries/SharedEvents.sol";
 import "../../libraries/Constants.sol";
@@ -24,9 +26,10 @@ import "./VaultMathOracle.sol";
 import "hardhat/console.sol";
 
 // remove  due to not implementing this function
-contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
+contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUniswapV3SwapCallback {
     // using SafeMath for uint256;
     // using StrategyMath for uint256;
+    using SafeERC20 for IERC20;
 
     /**
      * @notice strategy constructor
@@ -98,6 +101,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
         }
     }
 
+    //@dev <tested>
     /// @dev Wrapper around `IUniswapV3Pool.positions()`.
     function _position(
         address pool,
@@ -492,6 +496,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
             );
     }
 
+    //@dev <tested>
     /// @dev Deposits liquidity in a range on the Uniswap pool.
     function _mintLiquidity(
         address pool,
@@ -500,8 +505,39 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard {
         uint128 liquidity
     ) public {
         if (liquidity > 0) {
-            IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, "");
+            address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
+            address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
+            bytes memory params = abi.encode(pool, token0, token1);
+
+            IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
+    }
+
+    //@dev <tested>
+    function uniswapV3MintCallback(
+        uint256 amount0Owed,
+        uint256 amount1Owed,
+        bytes calldata data
+    ) external override {
+        (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
+        console.log("callback on  %s: %s", token0, amount0Owed);
+        console.log("callback on  %s: %s", token1, amount1Owed);
+
+        require(msg.sender == pool);
+        if (amount0Owed > 0) IERC20(token0).safeTransfer(msg.sender, amount0Owed);
+        if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
+    }
+
+    /// @dev Callback for Uniswap V3 pool.
+    function uniswapV3SwapCallback(
+        int256 amount0Delta,
+        int256 amount1Delta,
+        bytes calldata data
+    ) external override {
+        // TODO: fix
+        // require(msg.sender == address(pool));
+        // if (amount0Delta > 0) Constants.weth.safeTransfer(msg.sender, uint256(amount0Delta));
+        // if (amount1Delta > 0) Constants.osqth.safeTransfer(msg.sender, uint256(amount1Delta));
     }
 
     //@dev <tested>

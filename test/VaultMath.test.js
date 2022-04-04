@@ -1,8 +1,8 @@
 const { assert } = require("chai");
 const { ethers } = require("hardhat");
-const { poolEthUsdc, poolEthOsqth } = require("./common");
+const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { assertWP } = require('./helpers');
+const { assertWP, getWETH, getUSDC, getOSQTH, getERC20Balance } = require('./helpers');
 
 describe.only("VaultMath", function () {
     let contract, tx;
@@ -134,5 +134,78 @@ describe.only("VaultMath", function () {
         console.log(">>", amount);
         assert(assertWP(amount[0].toString(), "7364483097017340000", 1, 18), `should not fail`);
         assert(assertWP(amount[1].toString(), "27311612764595500000", 1, 18), `should not fail`);
+    });
+
+    it("_position", async function () {
+
+        const amount = await contract._position(
+            poolEthOsqth,
+            "12180",
+            "14280"
+        );
+        
+        assert(amount[0].toString() == "0", `test_sute: sub 1`);
+        assert(amount[1].toString() == "0", `test_sute: sub 2`);
+        assert(amount[2].toString() == "0", `test_sute: sub 3`);
+        assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    });
+
+    it("_mintLiquidity", async function () {
+
+        //+1
+        await getWETH("7368329871844425587", contract.address);
+        //+1
+        await getOSQTH("27296229334056607431", contract.address);
+
+        console.log(await getERC20Balance(contract.address, wethAddress));
+        console.log(await getERC20Balance(contract.address, osqthAddress));
+
+        await contract._mintLiquidity(
+            poolEthOsqth,
+            "12180",
+            "14280",
+            "277304729505821000000"
+        );
+    });
+
+    it("_position", async function () {
+        const amount = await contract._position(
+            poolEthOsqth,
+            "12180",
+            "14280"
+        );
+        console.log(">>", amount);
+
+        assert(amount[0].toString() == "277304729505821000000", `test_sute: sub 1`);
+    });
+
+    it("_mintLiquidity", async function () {
+
+        //+1
+        await getWETH("7380438629385777545", contract.address);
+        //+1
+        await getUSDC("24972947409", contract.address);
+        
+
+        console.log(await getERC20Balance(contract.address, wethAddress));
+        console.log(await getERC20Balance(contract.address, usdcAddress));
+
+        await contract._mintLiquidity(
+            poolEthUsdc,
+            "193980",
+            "196080",
+            "8394376743052387"
+        );
+    });
+
+    it("_position", async function () {
+        const amount = await contract._position(
+            poolEthUsdc,
+            "193980",
+            "196080",
+        );
+        console.log(">>", amount);
+
+        assert(amount[0].toString() == "8394376743052387", `test_sute: sub 1`);
     });
 });
