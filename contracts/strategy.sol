@@ -70,6 +70,12 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "ZA"); //Zero amount
         require(to != address(0) && to != address(this), "WA"); //Wrong address
 
+        console.log(totalSupply());
+
+        if (totalSupply() == 0) {
+            _executeEmptyAuction();
+        } else {
+
         //Poke positions so vault's current holdings are up to date
         _poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
         _poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);

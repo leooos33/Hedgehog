@@ -235,6 +235,10 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.osqth.transfer(_keeper, _deltaOsqth);
         }
 
+        _executeEmptyAuction();
+    }
+
+    function _executeEmptyAuction() internal {
         (int24 _ethUsdcLower, int24 _ethUsdcUpper, int24 _osqthEthLower, int24 _osqthEthUpper) = _getBoundaries();
 
         uint128 liquidityEthUsdcForAmounts = _liquidityForAmounts(

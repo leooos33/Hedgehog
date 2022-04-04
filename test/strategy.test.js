@@ -72,21 +72,31 @@ describe.only("Strategy", function () {
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
     });
 
-    //   it("Should withdraw", async function () {
-    //     const depositor = (await ethers.getSigners())[3];
-    //     const sharesInput = utils.parseUnits("2", 18).toString();
+    it("withdraw", async function () {
+        const depositor = (await ethers.getSigners())[3];
 
-    //     tx = await contract.connect(depositor).withdraw(sharesInput, 0, 1, 1);
-    //     await tx.wait();
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
 
-    //     // Balances
-    //     expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0", "test 1");
-    //     expect(await getERC20Balance(contract.address, wethAddress)).to.equal("0", "test 2");
+        // Balances
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
 
-    //     // Shares
-    //     expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0", "test 3");
+        tx = await contract.connect(depositor).withdraw(
+            "124875791768051387725783",
+            '0',
+            '0',
+            '0',
+        );
+        await tx.wait();
 
-    //     // Meta
-    //     expect(await contract.totalEthDeposited()).to.equal("2000000000000000000", "test 4");
-    //   });
+        // Balances
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0");
+    });
 });
