@@ -243,12 +243,31 @@ describe.only("VaultMath", function () {
         assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
     });
 
-    // it("_getDeltas", async function () {
-    //     const amount = await contract._getTotalAmounts();
-    //     console.log(">>", amount);
+    it("_getDeltas", async function () {
+        const amount = await contract._getDeltas(
+            "2500000000000000000000",
+            "199226590621515000",
+            "1632160192",
+            false
+        );
+        console.log(">>", amount);
 
-    //     assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
-    //     assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
-    //     assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
-    // });
+        // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
+        // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
+        // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+    });
+
+
+    it("calcSharesAndAmounts", async function () {
+        const amount = await contract.calcSharesAndAmounts(
+            "19855700000000000000",
+            "41326682043",
+            "17933300000000000000",
+        );
+        console.log(">>", amount);
+
+        // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
+        // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
+        // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+    });
 });

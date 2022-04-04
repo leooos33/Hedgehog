@@ -136,7 +136,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             uint256
         )
     {
-        return (0, 0, 0, 0);
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
         uint256 osqthEthPrice = Constants.oracle.getTwap(
@@ -155,19 +154,22 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             true
         );
 
-        // Constants.SharesInfo memory params = Constants.SharesInfo(
-        //     totalSupply(),
-        //     _amountEth,
-        //     _amountUsdc,
-        //     _amountOsqth,
-        //     osqthEthPrice,
-        //     ethUsdcPrice,
-        //     usdcAmount,
-        //     ethAmount,
-        //     osqthAmount
-        // );
+        Constants.SharesInfo memory params = Constants.SharesInfo(
+            targetEthShare,
+            targetUsdcShare,
+            targetOsqthShare,
+            totalSupply(),
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth,
+            osqthEthPrice,
+            ethUsdcPrice,
+            usdcAmount,
+            ethAmount,
+            osqthAmount
+        );
 
-        // return _calcSharesAndAmounts(params);
+        return vaultMathTest._calcSharesAndAmounts(params);
     }
 
     //@dev <tested>
