@@ -4,7 +4,7 @@ const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = re
 const { utils } = ethers;
 const { assertWP, getWETH, getUSDC, getOSQTH, getERC20Balance } = require('./helpers');
 
-describe.only("VaultMath", function () {
+describe("VaultMath", function () {
     let contract, tx;
     it("Should deploy contract", async function () {
         const Contract = await ethers.getContractFactory("VaultMath");
@@ -266,16 +266,17 @@ describe.only("VaultMath", function () {
     });
 
 
-    // it("calcSharesAndAmounts", async function () {
-    //     const amount = await contract.calcSharesAndAmounts(
-    //         "19855700000000000000",
-    //         "41326682043",
-    //         "17933300000000000000",
-    //     );
-    //     console.log(">>", amount);
+    it("calcSharesAndAmounts", async function () {
+        const amount = await contract.calcSharesAndAmounts(
+            "19855700000000000000",
+            "41326682043",
+            "17933300000000000000",
+        );
+        console.log(">>", amount);
 
-    //     // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
-    //     // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
-    //     // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
-    // });
+        assert(assertWP(amount[0].toString(), "124875791768594084851645"), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "18410690015258689749"), `test_sute: sub 2`)
+        assert(assertWP(amount[2].toString(), "32743712092", 0), `test_sute: sub 3`)
+        assert(assertWP(amount[3].toString(), "32849750909396941650", 0), `test_sute: sub 4`)
+    });
 });
