@@ -12,7 +12,7 @@ describe.only("VaultMath", function () {
             utils.parseUnits("40", 18),
             1000,
             utils.parseUnits("0.05", 18),
-            100,
+            "1000000000000000000000",
             "900000000000000000",
             "1100000000000000000",
             "500000000000000000",
@@ -207,5 +207,18 @@ describe.only("VaultMath", function () {
         console.log(">>", amount);
 
         assert(amount[0].toString() == "8394376743052387", `test_sute: sub 1`);
+    });
+
+    it("_getPriceMultiplier", async function () {
+        const amount = await contract._getPriceMultiplier(
+            "1632160192",
+            "2500000000000000000000",
+            "199226590621515000",
+            false
+        );
+        console.log(">>", amount);
+
+        assert(assertWP(amount[0].toString(), "179303931559364000"), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "2250000000000010000000"), `test_sute: sub 2`)
     });
 });

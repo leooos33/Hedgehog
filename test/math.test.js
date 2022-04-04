@@ -116,4 +116,25 @@ describe("Math", function () {
     assert(assertWP(amount[1].toString(), "23324220948", 4, 6), `test_sute: sub 2`)
     assert(assertWP(amount[2].toString(), "41887449738930900000", 9), `test_sute: sub 3`)
   });
+
+  it("_getAuctionPrices", async function () {
+
+    const test_sute = {
+      osqthEthPrice: "199226590621515000",
+      ethUsdcPrice: "2500000000000000000000",
+      auctionTime: "1000000000000000000000",
+      _auctionTriggerTime: "1632160192",
+      _isPriceInc: false,
+      timestamp: "1648646659",
+    }
+    console.log(test_sute);
+
+    const amount = await contract._getAuctionPrices(
+      test_sute,
+    );
+    console.log(">>", amount);
+
+    assert(assertWP(amount[0].toString(), "179303931559364000"), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "2250000000000010000000"), `test_sute: sub 2`)
+  });
 });

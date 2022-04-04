@@ -402,6 +402,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             .sub(osqthAmount);
     }
 
+    //@dev <tested>
     /**
      * @notice calculate auction price based on auction direction, start time and ETH/USDC price
      * @param _auctionTriggerTime time when auction has started
@@ -414,24 +415,18 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         uint256 _currentEthUsdcPrice,
         uint256 _currentOsqthEthPrice,
         bool _isPriceInc
-    ) public view returns (uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice) {
-        uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
-            ? 1e18
-            : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
+    ) public view returns (uint256, uint256) {
+        Constants.AuctionInfo memory params = Constants.AuctionInfo(
+            _currentOsqthEthPrice,
+            _currentEthUsdcPrice,
+            auctionTime,
+            _auctionTriggerTime,
+            _isPriceInc,
+            uint256(1648646659)
+        );
+        console.log(block.timestamp);
 
-        uint256 priceMultiplier;
-
-        if (_isPriceInc) {
-            priceMultiplier = maxPriceMultiplier.sub(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        } else {
-            priceMultiplier = minPriceMultiplier.add(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        }
-        auctionEthUsdcPrice = priceMultiplier.mul(_currentEthUsdcPrice);
-        auctionOsqthEthPrice = priceMultiplier.mul(_currentOsqthEthPrice);
+        return vaultMathTest._getAuctionPrices(params);
     }
 
     //@dev <tested>
