@@ -335,16 +335,29 @@ contract Vault is
             orderEthUsdcLower, 
             orderEthUsdcUpper);
 
-        ethAmount = amountWeth0.add(amountWeth1);
+        return (
+            getBalance(weth).add(amountWeth0).add(amountWeth1);
+            getBalance(usdc).add(usdcAmount);
+            getBalance(osqth).add(osqthAmount);
+        )
+        //getBalance?
+    }
+
+    function getBalance(address token) public view returns (uint256) {
+        return token.balanceOf(address(this)); //? accrued protocol fees
     }
 
     /**
      * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees. 
      * @dev Doesn't include fees accrued since last poke.
      */
-    function getPositionAmount(address pool ,int24 tickLower, int24 tickUpper) public view returns (uint256 total0, uint256 total1) {
+    function getPositionAmounts(address pool ,int24 tickLower, int24 tickUpper) public view returns (uint256 total0, uint256 total1) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
-        (total0, total1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+        (amount0, amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+
+        total0 = amount0.add(tokensOwed0);
+        total1 = amount1.add(tokensOwed1);
+
     }
 
     /// @dev Wrapper around `LiquidityAmounts.getAmountsForLiquidity()`.
@@ -533,13 +546,7 @@ contract Vault is
 
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
-        //add unused deposited tokens
-        ethAmount = ethAmount.add(weth.balanceOf(address(this)));
-        //@dev some usdc and osqth may left after the prev rebalance
-        usdcAmount = usdcAmount.add(usdc.balanceOf(address(this)));
-        osqthAmount = osqthAmount.add(osqth.balanceOf(address(this)));
-
-        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = _getPriceMultiplier(
+        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = _getAuctionPrices(
             _auctionTriggerTime, 
             _currentEthUsdcPrice, 
             _currentOsqthEthPrice, 
@@ -560,7 +567,7 @@ contract Vault is
      * @param _currentOsqthEthPrice current oSQTH/ETH price
      * @param _isPriceInc true if price increased (determine auction direction)
      */
-    function _getPriceMultiplier(
+    function _getAuctionPrices(
         uint256 _auctionTriggerTime, 
         uint256 _currentEthUsdcPrice, 
         uint256 _currentOsqthEthPrice, 
