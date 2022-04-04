@@ -122,41 +122,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         return IUniswapV3Pool(pool).positions(positionKey);
     }
 
-    /**
-     * @notice calculate strategy shares to ming
-     * @param _amountToDeposit amount of wETH to deposit
-     * @return shares strategy shares to mint
-     */
-    function _calcShares(uint256 _amountToDeposit) public view returns (uint256 shares) {
-        uint256 totalSupply = totalSupply();
-
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-
-        uint256 osqthEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthOsqth,
-            address(Constants.weth),
-            address(Constants.osqth),
-            twapPeriod,
-            true
-        );
-
-        uint256 usdcEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthUsdc,
-            address(Constants.usdc),
-            address(Constants.weth),
-            twapPeriod,
-            true
-        );
-
-        if (totalSupply == 0) {
-            shares = _amountToDeposit;
-        } else {
-            uint256 totalEth = ethAmount.add(usdcAmount.mul(usdcEthPrice)).add(osqthAmount.mul(osqthEthPrice));
-            uint256 depositorShare = _amountToDeposit.div(totalEth.add(_amountToDeposit));
-            shares = totalSupply.mul(depositorShare).div(uint256(1e18).sub(depositorShare));
-        }
-    }
-
     function calcSharesAndAmounts(
         uint256 _amountEth,
         uint256 _amountUsdc,
