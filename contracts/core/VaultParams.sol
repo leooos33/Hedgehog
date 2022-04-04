@@ -20,9 +20,6 @@ abstract contract VaultParams {
     //@dev twap period to use for rebalance calculations
     uint32 public twapPeriod = 420;
 
-    //@dev total amount of deposited wETH
-    uint256 public totalEthDeposited;
-
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public cap;
 
