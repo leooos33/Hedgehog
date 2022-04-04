@@ -137,4 +137,25 @@ describe("Math", function () {
     assert(assertWP(amount[0].toString(), "179303931559364000"), `test_sute: sub 1`)
     assert(assertWP(amount[1].toString(), "2250000000000010000000"), `test_sute: sub 2`)
   });
+
+  it("_getDeltas", async function () {
+
+    const test_sute = {
+      osqthEthPrice: "3051898194732165000000",
+      ethUsdcPrice: "243207708904178100",
+      usdcAmount: "24972947408",
+      ethAmount: "14748768501230203130",
+      osqthAmount: "27296229334056607430",
+    }
+    console.log(test_sute);
+
+    const amount = await contract._getDeltas(
+      test_sute,
+    );
+    console.log(">>", amount);
+
+    assert(assertWP(amount[0].toString(), "51333406548477019722657", 9), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "18423844171", 4, 6), `test_sute: sub 2`)
+    assert(assertWP(amount[2].toString(), "19294609072462626762", 9), `test_sute: sub 3`)
+  });
 });

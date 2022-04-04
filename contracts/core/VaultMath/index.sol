@@ -395,7 +395,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             _isPriceInc,
             uint256(1648646659)
         );
-        console.log(block.timestamp);
 
         return vaultMathTest._getAuctionPrices(params);
     }

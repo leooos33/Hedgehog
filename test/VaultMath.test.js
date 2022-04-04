@@ -253,29 +253,29 @@ describe.only("VaultMath", function () {
 
     it("_getDeltas", async function () {
         const amount = await contract._getDeltas(
-            "2500000000000000000000",
-            "199226590621515000",
-            "1632160192",
+            "3390997994146850000000",
+            "270230787671309000",
+            "1648646160",
             false
         );
         console.log(">>", amount);
 
-        // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
-        // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
-        // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+        assert(assertWP(amount[0].toString(), "51333406548477019722657", 4), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "18423844171", 4, 6), `test_sute: sub 2`)
+        assert(assertWP(amount[2].toString(), "19294609072462626762", 4), `test_sute: sub 3`)
     });
 
 
-    it("calcSharesAndAmounts", async function () {
-        const amount = await contract.calcSharesAndAmounts(
-            "19855700000000000000",
-            "41326682043",
-            "17933300000000000000",
-        );
-        console.log(">>", amount);
+    // it("calcSharesAndAmounts", async function () {
+    //     const amount = await contract.calcSharesAndAmounts(
+    //         "19855700000000000000",
+    //         "41326682043",
+    //         "17933300000000000000",
+    //     );
+    //     console.log(">>", amount);
 
-        // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
-        // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
-        // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
-    });
+    //     // assert(assertWP(amount[0].toString(), "14744921726967800000", 1), `test_sute: sub 1`)
+    //     // assert(assertWP(amount[1].toString(), "24972947409", 4, 6), `test_sute: sub 2`)
+    //     // assert(assertWP(amount[2].toString(), "27311612764595500000", 0), `test_sute: sub 3`)
+    // });
 });
