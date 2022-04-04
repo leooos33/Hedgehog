@@ -20,6 +20,7 @@ const CHAIN_IDS = {
 module.exports = {
   networks: {
     hardhat: {
+      allowUnlimitedContractSize: true,
       chainId: CHAIN_IDS.hardhat,
       forking: {
         url: `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_KEY}`,
