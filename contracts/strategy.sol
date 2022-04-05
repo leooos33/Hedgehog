@@ -72,10 +72,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
 
         console.log(totalSupply());
 
-        if (totalSupply() == 0) {
-            _executeEmptyAuction();
-        } else {
-
         //Poke positions so vault's current holdings are up to date
         _poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
         _poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
@@ -99,8 +95,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         //Mint shares to user
         _mint(to, _shares);
         require(totalSupply() <= cap, "Cap is reached");
-
-        shares = _shares;
 
         emit SharedEvents.Deposit(to, _shares);
     }
@@ -128,11 +122,15 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             uint256 amountOsqth
         )
     {
-        require(shares > 0, "Zero shares");
-
+        require(shares > 0, "0");
+        
         uint256 totalSupply = totalSupply();
-
+        
         _burn(msg.sender, shares);
+
+        uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
+        uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
+        uint256 unusedAmountOsqth = getBalance(Constants.osqth).mul(shares).div(totalSupply);
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
@@ -150,12 +148,15 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             totalSupply
         );
 
-        //sum up received eth from eth:usdc pool and from osqth:eth pool
-        amountEth = amountEth0.add(amountEth1);
+        //// Sum up total amounts owed to recipient
+        amountEth = unusedAmountEth.add(amountEth0).add(amountEth1);
+        amountUsdc = unusedAmountUsdc.add(amountUsdc);
+        amountOsqth = unusedAmountOsqth.add(amountOsqth);
 
         console.log(amountEth);
         console.log(amountUsdc);
         console.log(amountOsqth);
+
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
@@ -164,9 +165,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         if (amountEth > 0) Constants.weth.transfer(msg.sender, amountEth);
         if (amountUsdc > 0) Constants.usdc.transfer(msg.sender, amountUsdc);
         if (amountOsqth > 0) Constants.osqth.transfer(msg.sender, amountOsqth);
-
-        //track deposited wETH amount
-        //TODO
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
