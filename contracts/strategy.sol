@@ -148,7 +148,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             totalSupply
         );
 
-        //// Sum up total amounts owed to recipient
+        // Sum up total amounts owed to recipient
         amountEth = unusedAmountEth.add(amountEth0).add(amountEth1);
         amountUsdc = unusedAmountUsdc.add(amountUsdc);
         amountOsqth = unusedAmountOsqth.add(amountOsqth);
