@@ -312,12 +312,26 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 
-    /** //TODO
+    /**
      * @notice check if hedging based on price threshold is allowed
      * @param _auctionTriggerTime timestamp where auction started
      * @return true if hedging is allowed
      */
     function _isPriceRebalance(uint256 _auctionTriggerTime) public returns (bool) {
+        //if (_auctionTriggerTime < timeAtLastRebalance) return false;
+        //uint32 secondsToTrigger = uint32(block.timestamp.sub(_auctionTriggerTime));
+        //uint256 ethUsdcPriceAtTrigger = IOracle(oracle).getHistoricalTwap(
+        //    Constants.poolEthUsdc,
+        //    address(Constants.weth),
+        //    address(Constants.usdc),
+        //    secondsToTrigger + twapPeriod,
+        //    secondsToTrigger        
+        //);
+
+        //uint256 cachedRatio = ethUsdcPriceAtTrigger.wdiv(ethPriceAtLastRebalance);
+        //uint256 priceTreshold = cachedRatio > 1e18 : (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
+        //return priceTreshold >= rebalancePriceThreshold
+
         return true;
     }
 
