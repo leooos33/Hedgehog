@@ -172,6 +172,51 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         return vaultMathTest._calcSharesAndAmounts(params);
     }
 
+    function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
+        public
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        console.log("totalSupply %s", totalSupply);
+
+        uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
+        uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
+        uint256 unusedAmountOsqth = getBalance(Constants.osqth).mul(shares).div(totalSupply);
+
+        //withdraw user share of tokens from the lp positions in current proportion
+        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
+            Constants.poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper,
+            shares,
+            totalSupply
+        );
+        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(
+            Constants.poolEthOsqth,
+            orderOsqthEthLower,
+            orderOsqthEthUpper,
+            shares,
+            totalSupply
+        );
+
+        test1 = unusedAmountEth.add(amountEth0).add(amountEth1);
+        test2 = unusedAmountUsdc.add(amountUsdc);
+        test3 = unusedAmountOsqth.add(amountOsqth);
+        // console.log(test1);
+        // console.log(test2);
+        // console.log(test3);
+
+        // Sum up total amounts owed to recipient
+        return (test1, test2, test3);
+    }
+
+    uint256 public test1;
+    uint256 public test2;
+    uint256 public test3;
+
     //@dev <tested>
     /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in

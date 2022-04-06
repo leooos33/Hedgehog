@@ -70,8 +70,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "ZA"); //Zero amount
         require(to != address(0) && to != address(this), "WA"); //Wrong address
 
-        console.log(totalSupply());
-
         //Poke positions so vault's current holdings are up to date
         _poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
         _poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
@@ -115,9 +113,11 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
     ) external override nonReentrant {
         require(shares > 0, "0");
 
+        uint256 oldTotalSupply = totalSupply();
+
         _burn(msg.sender, shares);
 
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _withdrawAmounts(shares);
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, oldTotalSupply);
 
         console.log(amountEth);
         console.log(amountUsdc);
@@ -133,45 +133,5 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         if (amountOsqth > 0) Constants.osqth.transfer(msg.sender, amountOsqth);
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
-    }
-
-    function _withdrawAmounts(uint256 shares)
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 totalSupply = totalSupply();
-
-        console.log(totalSupply);
-
-        uint256 unusedAmountEth = getBalance(Constants.weth).rmul(shares).rdiv(totalSupply);
-        uint256 unusedAmountUsdc = getBalance(Constants.usdc).rmul(shares).rdiv(totalSupply);
-        uint256 unusedAmountOsqth = getBalance(Constants.osqth).rmul(shares).rdiv(totalSupply);
-
-        //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
-            Constants.poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper,
-            shares,
-            totalSupply
-        );
-        (uint256 amountOsqth, uint256 amountEth1) = _burnLiquidityShare(
-            Constants.poolEthOsqth,
-            orderOsqthEthLower,
-            orderOsqthEthUpper,
-            shares,
-            totalSupply
-        );
-
-        // Sum up total amounts owed to recipient
-        return (
-            unusedAmountEth + amountEth0 + amountEth1,
-            unusedAmountUsdc + amountUsdc,
-            unusedAmountOsqth + amountOsqth
-        );
     }
 }

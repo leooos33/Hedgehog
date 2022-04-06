@@ -20,7 +20,7 @@ import "../libraries/Constants.sol";
 import "../libraries/StrategyMath.sol";
 
 import "./VaultParams.sol";
-import "./VaultMath/index.sol";
+import "./VaultMath/VaultMath.sol";
 
 import "hardhat/console.sol";
 
