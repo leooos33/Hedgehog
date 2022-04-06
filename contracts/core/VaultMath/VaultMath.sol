@@ -202,15 +202,12 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             totalSupply
         );
 
-        test1 = unusedAmountEth.add(amountEth0).add(amountEth1);
-        test2 = unusedAmountUsdc.add(amountUsdc);
-        test3 = unusedAmountOsqth.add(amountOsqth);
-        // console.log(test1);
-        // console.log(test2);
-        // console.log(test3);
-
         // Sum up total amounts owed to recipient
-        return (test1, test2, test3);
+        return (
+            unusedAmountEth.add(amountEth0).add(amountEth1),
+            unusedAmountUsdc.add(amountUsdc),
+            unusedAmountOsqth.add(amountOsqth)
+        );
     }
 
     uint256 public test1;

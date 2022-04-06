@@ -103,4 +103,77 @@ describe("Strategy", function () {
         // Shares
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0");
     });
+
+    const wethInput = "18410690015258689749";
+    const usdcInput = "32743712092";
+    const osqthInput = "32849750909396941650";
+    it("deposit2", async function () {
+        const depositor = (await ethers.getSigners())[3];
+
+        await approveERC20(depositor, contract.address, wethInput, wethAddress);
+        await approveERC20(depositor, contract.address, usdcInput, usdcAddress);
+        await approveERC20(depositor, contract.address, osqthInput, osqthAddress);
+
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
+
+        tx = await contract.connect(depositor).deposit(
+            wethInput,
+            usdcInput,
+            osqthInput,
+            depositor.address,
+            '0',
+            '0',
+            '0',
+        );
+        await tx.wait();
+
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
+    });
+
+    it("withdraw 2", async function () {
+        const depositor = (await ethers.getSigners())[3];
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
+
+        tx = await contract.connect(depositor).withdraw(
+            "24875791768051387725783",
+            '0',
+            '0',
+            '0',
+        );
+        await tx.wait();
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("100000000000000000000000");
+    });
+
+    it("withdraw 3", async function () {
+        const depositor = (await ethers.getSigners())[3];
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("100000000000000000000000");
+
+        tx = await contract.connect(depositor).withdraw(
+            "100000000000000000000000",
+            '0',
+            '0',
+            '0',
+        );
+        await tx.wait();
+
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0");
+    });
 });
