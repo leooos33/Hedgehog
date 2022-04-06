@@ -116,11 +116,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         external
         override
         nonReentrant
-        returns (
-            uint256 amountEth,
-            uint256 amountUsdc,
-            uint256 amountOsqth
-        )
     {
         require(shares > 0, "0");
         
@@ -128,9 +123,13 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         
         _burn(msg.sender, shares);
 
-        uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
-        uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
-        uint256 unusedAmountOsqth = getBalance(Constants.osqth).mul(shares).div(totalSupply);
+        uint256 amountEth;
+        uint256 amountUsdc;
+        uint256 amountOsqth; 
+        {
+            uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
+            uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
+            uint256 unusedAmountOsqth = getBalance(Constants.osqth).mul(shares).div(totalSupply);
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
@@ -152,6 +151,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         amountEth = unusedAmountEth.add(amountEth0).add(amountEth1);
         amountUsdc = unusedAmountUsdc.add(amountUsdc);
         amountOsqth = unusedAmountOsqth.add(amountOsqth);
+        }
 
         console.log(amountEth);
         console.log(amountUsdc);
