@@ -14,7 +14,7 @@ import "hardhat/console.sol";
 
 contract VaultMathOracle {
     // using SafeMath for uint256;
-    using StrategyMath for uint256;
+    // using StrategyMath for uint256;
 
     //@dev <tested>
     function _getTwap(

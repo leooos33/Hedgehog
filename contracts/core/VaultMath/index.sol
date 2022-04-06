@@ -325,7 +325,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         //    address(Constants.weth),
         //    address(Constants.usdc),
         //    secondsToTrigger + twapPeriod,
-        //    secondsToTrigger        
+        //    secondsToTrigger
         //);
 
         //uint256 cachedRatio = ethUsdcPriceAtTrigger.wdiv(ethPriceAtLastRebalance);

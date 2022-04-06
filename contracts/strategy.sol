@@ -19,7 +19,7 @@ import "hardhat/console.sol";
 
 contract Vault is IVault, ReentrancyGuard, VaultAuction {
     // using SafeMath for uint256;
-    // using StrategyMath for uint256;
+    using StrategyMath for uint256;
 
     /**
      * @notice strategy constructor
@@ -112,24 +112,44 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 amountEthMin,
         uint256 amountUsdcMin,
         uint256 amountOsqthMin
-    )
-        external
-        override
-        nonReentrant
-    {
+    ) external override nonReentrant {
         require(shares > 0, "0");
-        
-        uint256 totalSupply = totalSupply();
-        
+
         _burn(msg.sender, shares);
 
-        uint256 amountEth;
-        uint256 amountUsdc;
-        uint256 amountOsqth; 
-        {
-            uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
-            uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
-            uint256 unusedAmountOsqth = getBalance(Constants.osqth).mul(shares).div(totalSupply);
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _withdrawAmounts(shares);
+
+        console.log(amountEth);
+        console.log(amountUsdc);
+        console.log(amountOsqth);
+
+        require(amountEth >= amountEthMin, "amountEthMin");
+        require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
+        require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
+
+        //send tokens to user
+        if (amountEth > 0) Constants.weth.transfer(msg.sender, amountEth);
+        if (amountUsdc > 0) Constants.usdc.transfer(msg.sender, amountUsdc);
+        if (amountOsqth > 0) Constants.osqth.transfer(msg.sender, amountOsqth);
+
+        emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
+    }
+
+    function _withdrawAmounts(uint256 shares)
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        uint256 totalSupply = totalSupply();
+
+        console.log(totalSupply);
+
+        uint256 unusedAmountEth = getBalance(Constants.weth).rmul(shares).rdiv(totalSupply);
+        uint256 unusedAmountUsdc = getBalance(Constants.usdc).rmul(shares).rdiv(totalSupply);
+        uint256 unusedAmountOsqth = getBalance(Constants.osqth).rmul(shares).rdiv(totalSupply);
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountEth0, uint256 amountUsdc) = _burnLiquidityShare(
@@ -148,24 +168,10 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         );
 
         // Sum up total amounts owed to recipient
-        amountEth = unusedAmountEth.add(amountEth0).add(amountEth1);
-        amountUsdc = unusedAmountUsdc.add(amountUsdc);
-        amountOsqth = unusedAmountOsqth.add(amountOsqth);
-        }
-
-        console.log(amountEth);
-        console.log(amountUsdc);
-        console.log(amountOsqth);
-
-        require(amountEth >= amountEthMin, "amountEthMin");
-        require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
-        require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
-
-        //send tokens to user
-        if (amountEth > 0) Constants.weth.transfer(msg.sender, amountEth);
-        if (amountUsdc > 0) Constants.usdc.transfer(msg.sender, amountUsdc);
-        if (amountOsqth > 0) Constants.osqth.transfer(msg.sender, amountOsqth);
-
-        emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
+        return (
+            unusedAmountEth + amountEth0 + amountEth1,
+            unusedAmountUsdc + amountUsdc,
+            unusedAmountOsqth + amountOsqth
+        );
     }
 }
