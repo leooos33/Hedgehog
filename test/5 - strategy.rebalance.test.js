@@ -31,6 +31,9 @@ describe.only("Strategy rebalance", function () {
         await contractHelper.deployed();
     });
 
+    const wethInputR = "6625553923500135";
+    const usdcInputR = "639516585";
+    const osqthInputR = "655702778947399188";
     it("preset", async function () {
         rebalancer = (await ethers.getSigners())[5];
 
@@ -40,24 +43,26 @@ describe.only("Strategy rebalance", function () {
         tx = await contract.connect(rebalancer).setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
 
-        const wethInput = BigNumber.from("669940479022604000").mul(1).toString();
-        const usdcInput = BigNumber.from("8971727690").mul(1).toString();
-        const osqthInput = BigNumber.from("7566198003354210000").mul(1).toString();
+        
+        const _wethInput = wethInputR;
+        const _usdcInput = usdcInputR;
+        const _osqthInput = osqthInputR;
 
-        await getWETH(wethInput, rebalancer.address);
-        await getUSDC(usdcInput, rebalancer.address);
-        await getOSQTH(osqthInput, rebalancer.address);
+        await getWETH(_wethInput, rebalancer.address);
+        await getUSDC(_usdcInput, rebalancer.address);
+        await getOSQTH(_osqthInput, rebalancer.address);
 
-        await approveERC20(rebalancer, contract.address, wethInput, wethAddress);
-        await approveERC20(rebalancer, contract.address, usdcInput, usdcAddress);
-        await approveERC20(rebalancer, contract.address, osqthInput, osqthAddress);
+        await approveERC20(rebalancer, contract.address, _wethInput, wethAddress);
+        await approveERC20(rebalancer, contract.address, _usdcInput, usdcAddress);
+        await approveERC20(rebalancer, contract.address, _osqthInput, osqthAddress);
     });
 
-    const wethInput = "18410690015258689749";
-    const usdcInput = "32743712092";
-    const osqthInput = "32849750909396941650";
     it("deposit", async function () {
         const depositor = (await ethers.getSigners())[4];
+
+        const wethInput = "18410690015258689749";
+        const usdcInput = "32743712092";
+        const osqthInput = "32849750909396941650";
 
         await getWETH(wethInput, depositor.address);
         await getUSDC(usdcInput, depositor.address);
@@ -101,7 +106,7 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
 
         amount = await contractHelper.connect(seller).getTwap();
-        console.log(amount);
+        // console.log(amount);
 
         tx = await contractHelper.connect(seller).swap(
             testAmount
@@ -133,13 +138,21 @@ describe.only("Strategy rebalance", function () {
         });
 
         amount = await contractHelper.connect(seller).getTwap();
-        console.log(amount);
+        // console.log(amount);
 
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
     });
 
     it("rebalance", async function () {
+        const wethInput = wethInputR;
+        const usdcInput = usdcInputR;
+        const osqthInput = osqthInputR;
+
+        expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal(wethInput);
+        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal(usdcInput);
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
+
         tx = await contract.connect(rebalancer).timeRebalance(
             false,
             wethInput,
@@ -147,5 +160,17 @@ describe.only("Strategy rebalance", function () {
             osqthInput
         );
         await tx.wait();
+
+        // 6625553923500135
+        // 13251107847000270
+
+        // 639516585
+        // 1311405557894798376
+
+        // 655702778947399188
+        // 1311405557894798376
+        expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("13251107847000270");
+        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("1311405557894798376");
     });
 });
