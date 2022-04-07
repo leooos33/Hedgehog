@@ -78,12 +78,14 @@ contract VaultMathTest {
 
     //@dev <tested>
     function _getAuctionPrices(Constants.AuctionInfo memory params) public view returns (uint256, uint256) {
-        console.log("_getAuctionPrices => timestamp: %s", params.timestamp);
-        console.log("_getAuctionPrices => _auctionTriggerTime: %s", params._auctionTriggerTime);
+        // console.log("_getAuctionPrices => timestamp: %s", params.timestamp);
+        // console.log("_getAuctionPrices => _auctionTriggerTime: %s", params._auctionTriggerTime);
 
         uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
             ? 1e18
             : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params.auctionTime);
+
+        // console.log("auctionCompletionRatio %s", auctionCompletionRatio);
 
         uint256 priceMultiplier;
         if (params._isPriceInc) {
@@ -95,6 +97,7 @@ contract VaultMathTest {
                 auctionCompletionRatio.wmul(maxPriceMultiplier.sub(minPriceMultiplier))
             );
         }
+        // console.log("priceMultiplier %s", priceMultiplier);
 
         return (
             params.osqthEthPrice.wmul(priceMultiplier).wdiv(uint256(1e18)),
@@ -112,12 +115,23 @@ contract VaultMathTest {
             uint256
         )
     {
+        // console.log("__getDeltas");
+        // console.log("osqthEthPrice %s", params.osqthEthPrice);
+        // console.log("ethUsdcPrice %s", params.ethUsdcPrice);
+        // console.log("usdcAmount %s", params.usdcAmount);
+        // console.log("ethAmount %s", params.ethAmount);
+        // console.log("osqthAmount %s", params.osqthAmount);
+
         uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(
-            uint256(1e36)
+            uint256(1e18)
         );
         uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
 
         uint256 totalValue = osqthValue.add(params.usdcAmount.mul(uint256(1e12))).add(ethValue);
+
+        // console.log("osqthValue %s", osqthValue);
+        // console.log("ethValue %s", ethValue);
+        // console.log("totalValue %s", totalValue);
 
         return (
             targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).suba(params.ethAmount),

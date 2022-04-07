@@ -84,7 +84,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        console.log("timeRebalance => auctionTriggerTime: %s", auctionTriggerTime);
+        // console.log("timeRebalance => auctionTriggerTime: %s", auctionTriggerTime);
 
         _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
 
@@ -137,9 +137,13 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) internal {
-        console.log("_rebalance => _auctionTriggerTime: %s", _auctionTriggerTime);
         (bool isPriceInc, uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _startAuction(_auctionTriggerTime);
 
+        console.log("_rebalance");
+        console.log("deltaEth %s", deltaEth);
+        console.log("deltaUsdc %s", deltaUsdc);
+        console.log("deltaOsqth %s", deltaOsqth);
+        // console.log("block.timestamp %s", block.timestamp);
         require(isPriceInc == _isPriceIncreased, "Wrong auction type");
 
         if (isPriceInc) {
@@ -183,13 +187,18 @@ contract VaultAuction is IAuction, VaultMath {
 
         uint256 currentOsqthEthPrice = Constants.oracle.getTwap(
             Constants.poolEthOsqth,
-            address(Constants.weth),
             address(Constants.osqth),
+            address(Constants.weth),
             twapPeriod,
             true
         );
 
         bool _isPriceInc = _checkAuctionType(currentEthUsdcPrice);
+
+        // console.log("_getDeltas");
+        // console.log("currentEthUsdcPrice %s", currentEthUsdcPrice);
+        // console.log("currentOsqthEthPrice %s", currentOsqthEthPrice);
+        // console.log("_auctionTriggerTime %s", _auctionTriggerTime);
         (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
             currentEthUsdcPrice,
             currentOsqthEthPrice,

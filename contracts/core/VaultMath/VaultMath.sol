@@ -349,10 +349,10 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
      * @return auction trigger timestamp
      */
     function _isTimeRebalance() public view returns (bool, uint256) {
-        console.log("_isTimeRebalance => timeAtLastRebalance: %s", timeAtLastRebalance);
+        // console.log("_isTimeRebalance => timeAtLastRebalance: %s", timeAtLastRebalance);
         uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
 
-        console.log("_isTimeRebalance => block.timestamp: %s", block.timestamp);
+        // console.log("_isTimeRebalance => block.timestamp: %s", block.timestamp);
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 
@@ -385,6 +385,9 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
      * @return isPriceInc true if price increased
      */
     function _checkAuctionType(uint256 _ethUsdcPrice) public view returns (bool isPriceInc) {
+        // console.log("_checkAuctionType");
+        // console.log(_ethUsdcPrice);
+        // console.log(ethPriceAtLastRebalance);
         isPriceInc = _ethUsdcPrice >= ethPriceAtLastRebalance ? true : false;
     }
 
@@ -413,12 +416,20 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         )
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = getAuctionPrices(
+        // console.log("_getTotalAmounts");
+        // console.log("ethAmount %s", ethAmount);
+        // console.log("usdcAmount %s", usdcAmount);
+        // console.log("osqthAmount %s", osqthAmount);
+
+        (uint256 _auctionOsqthEthPrice, uint256 _auctionEthUsdcPrice) = getAuctionPrices(
             _auctionTriggerTime,
             _currentEthUsdcPrice,
             _currentOsqthEthPrice,
             _isPriceInc
         );
+        // console.log("getAuctionPrices");
+        // console.log("_auctionEthUsdcPrice %s", _auctionEthUsdcPrice);
+        // console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
 
         Constants.DeltasInfo memory params = Constants.DeltasInfo(
             _auctionOsqthEthPrice,

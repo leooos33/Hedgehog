@@ -42,7 +42,7 @@ contract V3Helper {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
-    uint32 twapPeriod = 1 seconds;
+    uint32 twapPeriod = 420 seconds;
 
     ISwapRouter immutable swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
@@ -60,7 +60,7 @@ contract V3Helper {
             sqrtPriceLimitX96: 0
         });
         uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
-        console.log("usdcFromSwap:", usdcFromSwap);
+        // console.log("usdcFromSwap:", usdcFromSwap);
     }
 
     /// @dev Fetches current price in ticks from Uniswap pool.

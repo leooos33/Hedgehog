@@ -1,18 +1,19 @@
 const { expect, assert } = require("chai");
+const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
 const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
-describe("Strategy rebalance", function () {
-    let contract, contractHelper, tx, amount;
+describe.only("Strategy rebalance", function () {
+    let contract, contractHelper, tx, amount, rebalancer;
     it("Should deploy contract", async function () {
         await resetFork();
 
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
             utils.parseUnits("4000000000000", 18),
-            4,
+            10,
             utils.parseUnits("0.05", 18),
             "10",
             "900000000000000000",
@@ -28,6 +29,28 @@ describe("Strategy rebalance", function () {
         const Contract = await ethers.getContractFactory("V3Helper");
         contractHelper = await Contract.deploy();
         await contractHelper.deployed();
+    });
+
+    it("preset", async function () {
+        rebalancer = (await ethers.getSigners())[5];
+
+        tx = await contract.connect(rebalancer).setTimeAtLastRebalance(1648646662);
+        await tx.wait();
+
+        tx = await contract.connect(rebalancer).setEthPriceAtLastRebalance("3391393578000000000000");
+        await tx.wait();
+
+        const wethInput = BigNumber.from("669940479022604000").mul(1).toString();
+        const usdcInput = BigNumber.from("8971727690").mul(1).toString();
+        const osqthInput = BigNumber.from("7566198003354210000").mul(1).toString();
+
+        await getWETH(wethInput, rebalancer.address);
+        await getUSDC(usdcInput, rebalancer.address);
+        await getOSQTH(osqthInput, rebalancer.address);
+
+        await approveERC20(rebalancer, contract.address, wethInput, wethAddress);
+        await approveERC20(rebalancer, contract.address, usdcInput, usdcAddress);
+        await approveERC20(rebalancer, contract.address, osqthInput, osqthAddress);
     });
 
     const wethInput = "18410690015258689749";
@@ -78,7 +101,7 @@ describe("Strategy rebalance", function () {
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
 
         amount = await contractHelper.connect(seller).getTwap();
-        // console.log(amount);
+        console.log(amount);
 
         tx = await contractHelper.connect(seller).swap(
             testAmount
@@ -89,25 +112,40 @@ describe("Strategy rebalance", function () {
             method: "evm_mine",
         });
 
+        await hre.network.provider.request({
+            method: "evm_mine",
+        });
+        
+        await hre.network.provider.request({
+            method: "evm_mine",
+        });
+
+        await hre.network.provider.request({
+            method: "evm_mine",
+        });
+
+        await hre.network.provider.request({
+            method: "evm_mine",
+        });
+
+        await hre.network.provider.request({
+            method: "evm_mine",
+        });
+
         amount = await contractHelper.connect(seller).getTwap();
-        // console.log(amount);
+        console.log(amount);
 
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
     });
 
-    // it("rebalance", async function () {
-    //     const rebalancer = (await ethers.getSigners())[5];
-
-    //     tx = await contract.connect(rebalancer).setTimeAtLastRebalance(1648646662);
-    //     await tx.wait();
-
-    //     tx = await contract.connect(rebalancer).timeRebalance(
-    //         false,
-    //         "34755542168651400000",
-    //         "2140239638",
-    //         "1303193662046230000"
-    //     );
-    //     await tx.wait();
-    // });
+    it("rebalance", async function () {
+        tx = await contract.connect(rebalancer).timeRebalance(
+            false,
+            wethInput,
+            usdcInput,
+            osqthInput
+        );
+        await tx.wait();
+    });
 });
