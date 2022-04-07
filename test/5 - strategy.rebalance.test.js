@@ -2,11 +2,13 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { assertWP, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
+const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
-describe.only("Strategy rebalance", function () {
+describe("Strategy rebalance", function () {
     let contract, contractHelper, tx, amount;
     it("Should deploy contract", async function () {
+        // await resetFork();
+
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
             utils.parseUnits("4000000000000", 18),
@@ -32,7 +34,7 @@ describe.only("Strategy rebalance", function () {
     const usdcInput = "32743712092";
     const osqthInput = "32849750909396941650";
     it("deposit", async function () {
-        const depositor = (await ethers.getSigners())[3];
+        const depositor = (await ethers.getSigners())[4];
 
         await getWETH(wethInput, depositor.address);
         await getUSDC(usdcInput, depositor.address);
@@ -94,18 +96,18 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
     });
 
-    it("rebalance", async function () {
-        const rebalancer = (await ethers.getSigners())[5];
+    // it("rebalance", async function () {
+    //     const rebalancer = (await ethers.getSigners())[5];
 
-        tx = await contract.connect(rebalancer).setTimeAtLastRebalance(1648646662);
-        await tx.wait();
+    //     tx = await contract.connect(rebalancer).setTimeAtLastRebalance(1648646662);
+    //     await tx.wait();
 
-        tx = await contract.connect(rebalancer).timeRebalance(
-            false,
-            "34755542168651400000",
-            "2140239638",
-            "1303193662046230000"
-        );
-        await tx.wait();
-    });
+    //     tx = await contract.connect(rebalancer).timeRebalance(
+    //         false,
+    //         "34755542168651400000",
+    //         "2140239638",
+    //         "1303193662046230000"
+    //     );
+    //     await tx.wait();
+    // });
 });

@@ -12,9 +12,11 @@ const {
     toWEI,
     loadTestDataset,
     assertWP,
+    resetFork,
 } = require('./testHelpers');
 
 module.exports = {
+    resetFork,
     assertWP,
     toWEIS,
     toWEI,

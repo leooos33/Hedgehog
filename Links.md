@@ -117,3 +117,54 @@
   //   }
   // });
   ```
+
+
+  ```
+  //   it("Should calculate automated", async function () {
+
+//     const testsDs = await loadTestDataset("_calcSharesAndAmounts");
+
+//     for (let i in testsDs) {
+//       let test_sute = { ...testsDs[i] };
+
+//       console.log(test_sute);
+//       test_sute = {
+//         totalSupply: toWEIS(test_sute.totalSupply),
+//         _amountEth: toWEIS(test_sute._amountEth),
+//         _amountUsdc: toWEIS(test_sute._amountUsdc, 6),
+//         _amountOsqth: toWEIS(test_sute._amountOsqth),
+//         osqthEthPrice: toWEIS(test_sute.osqthEthPrice),
+//         ethUsdcPrice: toWEIS(test_sute.ethUsdcPrice),
+//         usdcAmount: toWEIS(test_sute.usdcAmount, 6),
+//         ethAmount: toWEIS(test_sute.ethAmount),
+//         osqthAmount: toWEIS(test_sute.osqthAmount),
+//       }
+//       console.log(test_sute);
+
+//       const amount = await contract._calcSharesAndAmounts(
+//         test_sute,
+//       );
+
+//       let test_suteB = {
+//         totalSupply: toWEI(test_sute.totalSupply),
+//         _amountEth: toWEI(test_sute._amountEth),
+//         _amountUsdc: toWEI(test_sute._amountUsdc, 6),
+//         _amountOsqth: toWEI(test_sute._amountOsqth),
+//         osqthEthPrice: toWEI(test_sute.osqthEthPrice),
+//         ethUsdcPrice: toWEI(test_sute.ethUsdcPrice),
+//         usdcAmount: toWEI(test_sute.usdcAmount, 6),
+//         ethAmount: toWEI(test_sute.ethAmount),
+//         osqthAmount: toWEI(test_sute.osqthAmount),
+//       }
+//       const amount2 = await _calcSharesAndAmounts(test_sute);
+//       console.log(amount);
+
+//       expect(amount[0].toString()).to.equal(amount2[0].toString(), `test_sute ${i}: sub 1`);
+//       expect(amount[1].toString()).to.equal(amount2[1].toString(), `test_sute ${i}: sub 1`);
+//       expect(amount[2].toString()).to.equal(amount2[2].toString(), `test_sute ${i}: sub 2`);
+//       expect(amount[3].toString()).to.equal(amount2[3].toString(), `test_sute ${i}: sub 3`);
+
+//     }
+
+//   });
+```
