@@ -84,6 +84,8 @@ contract VaultAuction is IAuction, VaultMath {
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
+        console.log("timeRebalance => auctionTriggerTime: %s", auctionTriggerTime);
+
         _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
 
         emit SharedEvents.TimeRebalance(
@@ -135,6 +137,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) internal {
+        console.log("_rebalance => _auctionTriggerTime: %s", _auctionTriggerTime);
         (bool isPriceInc, uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _startAuction(_auctionTriggerTime);
 
         require(isPriceInc == _isPriceIncreased, "Wrong auction type");

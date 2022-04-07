@@ -93,6 +93,8 @@ abstract contract VaultParams {
         targetOsqthShare = _targetOsqthShare;
 
         governance = msg.sender;
+
+        timeAtLastRebalance = 0;
     }
 
     /**
@@ -113,6 +115,14 @@ abstract contract VaultParams {
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
+
+    // TODO: remove on main
+    /**
+     * Used to for unit testing
+     */
+    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
+        timeAtLastRebalance = _timeAtLastRebalance;
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

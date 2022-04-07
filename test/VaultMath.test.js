@@ -209,8 +209,8 @@ describe("VaultMath", function () {
         assert(amount[0].toString() == "8394376743052387", `test_sute: sub 1`);
     });
 
-    it("_getPriceMultiplier", async function () {
-        const amount = await contract._getPriceMultiplier(
+    it("getAuctionPrices", async function () {
+        const amount = await contract.getAuctionPrices(
             "1632160192",
             "2500000000000000000000",
             "199226590621515000",

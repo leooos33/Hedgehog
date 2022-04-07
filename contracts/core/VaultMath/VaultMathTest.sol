@@ -78,6 +78,9 @@ contract VaultMathTest {
 
     //@dev <tested>
     function _getAuctionPrices(Constants.AuctionInfo memory params) public view returns (uint256, uint256) {
+        console.log("_getAuctionPrices => timestamp: %s", params.timestamp);
+        console.log("_getAuctionPrices => _auctionTriggerTime: %s", params._auctionTriggerTime);
+
         uint256 auctionCompletionRatio = params.timestamp.sub(params._auctionTriggerTime) >= params.auctionTime
             ? 1e18
             : (params.timestamp.sub(params._auctionTriggerTime)).wdiv(params.auctionTime);

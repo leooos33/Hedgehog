@@ -349,8 +349,10 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
      * @return auction trigger timestamp
      */
     function _isTimeRebalance() public view returns (bool, uint256) {
+        console.log("_isTimeRebalance => timeAtLastRebalance: %s", timeAtLastRebalance);
         uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
 
+        console.log("_isTimeRebalance => block.timestamp: %s", block.timestamp);
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 
@@ -411,7 +413,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         )
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = _getPriceMultiplier(
+        (uint256 _auctionEthUsdcPrice, uint256 _auctionOsqthEthPrice) = getAuctionPrices(
             _auctionTriggerTime,
             _currentEthUsdcPrice,
             _currentOsqthEthPrice,
@@ -437,7 +439,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
      * @param _currentOsqthEthPrice current oSQTH/ETH price
      * @param _isPriceInc true if price increased (determine auction direction)
      */
-    function _getPriceMultiplier(
+    function getAuctionPrices(
         uint256 _auctionTriggerTime,
         uint256 _currentEthUsdcPrice,
         uint256 _currentOsqthEthPrice,
@@ -449,7 +451,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             auctionTime,
             _auctionTriggerTime,
             _isPriceInc,
-            uint256(1648646659)
+            block.timestamp
         );
 
         return vaultMathTest._getAuctionPrices(params);
