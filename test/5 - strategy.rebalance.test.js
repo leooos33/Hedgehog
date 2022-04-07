@@ -7,7 +7,7 @@ const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } =
 describe("Strategy rebalance", function () {
     let contract, contractHelper, tx, amount;
     it("Should deploy contract", async function () {
-        // await resetFork();
+        await resetFork();
 
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(

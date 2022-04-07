@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const csv = require('csvtojson');
 const path = require('path');
-const { getForkingParams } = require('../../hardhat.helpers');
+const { getResetParams } = require('../../hardhat.helpers');
 
 const loadTestDataset = async (name) => {
     const csvFilePath = path.join(__dirname, '../ds/', `${name}.csv`);
@@ -49,7 +49,7 @@ const resetFork = async() => {
         method: "hardhat_reset",
         params: [
             {
-                forking: getForkingParams(),
+                forking: getResetParams(),
             }
         ]
     });

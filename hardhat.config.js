@@ -10,9 +10,6 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-const forking = getForkingParams();
-console.log(forking);
-
 const CHAIN_IDS = {
   hardhat: 31337,
 };
@@ -21,7 +18,7 @@ module.exports = {
     hardhat: {
       allowUnlimitedContractSize: true,
       chainId: CHAIN_IDS.hardhat,
-      forking,
+      forking: getForkingParams()
     },
   },
   solidity: {
