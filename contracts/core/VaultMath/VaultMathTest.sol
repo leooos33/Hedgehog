@@ -50,13 +50,9 @@ contract VaultMathTest {
             uint256
         )
     {
-        uint256 depositorValue = _getValue(
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
-            ethUsdcPrice,
-            osqthEthPrice
-        );
+        uint256 depositorValue = (
+            params._amountOsqth.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(uint256(1e36))
+        ).add((params._amountUsdc.mul(uint256(1e12)))).add((params._amountEth.mul(params.ethUsdcPrice).div(1e18)));
 
         if (params.totalSupply == 0) {
             return (
@@ -66,13 +62,11 @@ contract VaultMathTest {
                 depositorValue.mul(targetOsqthShare.mul(1e18)).div(params.osqthEthPrice).div(params.ethUsdcPrice)
             );
         } else {
-            uint256 totalValue = _getValue(
-                ethAmount,
-                usdcAmount,
-                osqthAmount,
-                ethUsdcPrice,
-                osqthEthPrice
-            );
+            uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
+            uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
+
+            uint256 totalValue = osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue);
+
             return (
                 params.totalSupply.mul(depositorValue).div(totalValue),
                 params.ethAmount.mul(depositorValue).div(totalValue),
@@ -128,13 +122,13 @@ contract VaultMathTest {
         // console.log("ethAmount %s", params.ethAmount);
         // console.log("osqthAmount %s", params.osqthAmount);
 
-        uint256 totalValue = _getValue(
-            ethAmount,
-            usdcAmount,
-            osqthAmount,
-            ethUsdcPrice,
-            osqthEthPrice
+        uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(
+            uint256(1e18)
         );
+        uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
+
+        uint256 totalValue = osqthValue.add(params.usdcAmount.mul(uint256(1e12))).add(ethValue);
+
         // console.log("osqthValue %s", osqthValue);
         // console.log("ethValue %s", ethValue);
         // console.log("totalValue %s", totalValue);
@@ -147,20 +141,4 @@ contract VaultMathTest {
             )
         );
     }
-
-    function _getValue(
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amounOsqth,
-        uint256 ethUsdcPrice,
-        uint256 osqthEthPrice
-    ) internal 
-    view
-    returns (uint256) {
-    return (
-        amountOsqth.mul(ethUsdcPrice).mul(osqthEthPrice).div(uint256(1e36)))
-        .add((amountUsdc.mul(uint256(1e12))))
-        .add((amountEth.mul(ethUsdcPrice).div(1e18)));
-    )
-    } 
 }
