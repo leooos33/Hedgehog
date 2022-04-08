@@ -412,7 +412,8 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         returns (
             uint256,
             uint256,
-            uint256
+            uint256,
+            bool
         )
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
@@ -432,14 +433,14 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         // console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
 
         bool isStillPriceInc = _checkAuctionType(_auctionEthUsdcPrice);
-        require(isStillPriceInc == _isPriceInc, "ADC") //auction direction changed
 
         Constants.DeltasInfo memory params = Constants.DeltasInfo(
             _auctionOsqthEthPrice,
             _auctionEthUsdcPrice,
             usdcAmount,
             ethAmount,
-            osqthAmount
+            osqthAmount,
+            isStillPriceInc
         );
 
         return vaultMathTest._getDeltas(params);

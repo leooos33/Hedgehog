@@ -86,7 +86,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         // console.log("timeRebalance => auctionTriggerTime: %s", auctionTriggerTime);
 
-        _rebalance(auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
 
         emit SharedEvents.TimeRebalance(
             msg.sender,
@@ -125,14 +125,12 @@ contract VaultAuction is IAuction, VaultMath {
     /**
      * @notice rebalancing function to adjust proportion of tokens
      * @param _auctionTriggerTime timestamp when auction started
-     * @param _isPriceIncreased auction type, true for sell auction
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function _rebalance(
         uint256 _auctionTriggerTime,
-        bool _isPriceIncreased,
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth
@@ -144,7 +142,6 @@ contract VaultAuction is IAuction, VaultMath {
         console.log("deltaUsdc %s", deltaUsdc);
         console.log("deltaOsqth %s", deltaOsqth);
         // console.log("block.timestamp %s", block.timestamp);
-        require(isPriceInc == _isPriceIncreased, "Wrong auction type");
 
         if (isPriceInc) {
             require(_amountOsqth >= deltaOsqth, "Wrong amount");
@@ -199,7 +196,7 @@ contract VaultAuction is IAuction, VaultMath {
         // console.log("currentEthUsdcPrice %s", currentEthUsdcPrice);
         // console.log("currentOsqthEthPrice %s", currentOsqthEthPrice);
         // console.log("_auctionTriggerTime %s", _auctionTriggerTime);
-        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
+        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth, bool isPriceInc) = _getDeltas(
             currentEthUsdcPrice,
             currentOsqthEthPrice,
             _auctionTriggerTime,
@@ -209,7 +206,7 @@ contract VaultAuction is IAuction, VaultMath {
         timeAtLastRebalance = block.timestamp;
         ethPriceAtLastRebalance = currentEthUsdcPrice;
 
-        return (_isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
+        return (isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
     }
 
     /**

@@ -51,5 +51,6 @@ library Constants {
         uint256 usdcAmount;
         uint256 ethAmount;
         uint256 osqthAmount;
+        bool isPriceInc;
     }
 }

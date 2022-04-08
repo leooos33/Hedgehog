@@ -112,7 +112,8 @@ contract VaultMathTest {
         returns (
             uint256,
             uint256,
-            uint256
+            uint256,
+            bool
         )
     {
         // console.log("__getDeltas");
@@ -137,7 +138,8 @@ contract VaultMathTest {
             targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).suba(params.ethAmount),
             ((targetUsdcShare * totalValue) / 1e30).suba(params.usdcAmount),
             targetOsqthShare.wmul(totalValue).wmul(1e18).wdiv(params.osqthEthPrice).wdiv(params.ethUsdcPrice).suba(
-                params.osqthAmount
+            params.osqthAmount),
+            params.isPriceInc
             )
         );
     }
