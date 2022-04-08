@@ -431,6 +431,9 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         // console.log("_auctionEthUsdcPrice %s", _auctionEthUsdcPrice);
         // console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
 
+        bool isStillPriceInc = _checkAuctionType(_auctionEthUsdcPrice);
+        require(isStillPriceInc == _isPriceInc, "ADC") //auction direction changed
+
         Constants.DeltasInfo memory params = Constants.DeltasInfo(
             _auctionOsqthEthPrice,
             _auctionEthUsdcPrice,
