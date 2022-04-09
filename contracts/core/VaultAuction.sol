@@ -68,13 +68,11 @@ contract VaultAuction is IAuction, VaultMath {
     /**
      * @notice strategy rebalancing based on time threshold
      * @dev need to attach msg.value if buying oSQTH
-     * @param _isPriceIncreased sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function timeRebalance(
-        bool _isPriceIncreased,
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth
@@ -88,14 +86,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         _rebalance(auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
 
-        emit SharedEvents.TimeRebalance(
-            msg.sender,
-            _isPriceIncreased,
-            auctionTriggerTime,
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth
-        );
+        emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /** TODO
@@ -117,9 +108,9 @@ contract VaultAuction is IAuction, VaultMath {
         //check if rebalancing based on price threshold is allowed
         require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
 
-        _rebalance(_auctionTriggerTime, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(_auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
 
-        emit SharedEvents.PriceRebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.PriceRebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /**
@@ -154,7 +145,7 @@ contract VaultAuction is IAuction, VaultMath {
             _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
         }
 
-        emit SharedEvents.Rebalance(msg.sender, _isPriceIncreased, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /**
@@ -232,16 +223,15 @@ contract VaultAuction is IAuction, VaultMath {
 
         if (_isPriceInc) {
             //pull in tokens from sender
-            Constants.osqth.transferFrom(_keeper, address(this), _deltaOsqth);
-
-            //send excess tokens to sender
-            Constants.weth.transfer(_keeper, _deltaEth);
-            Constants.usdc.transfer(_keeper, _deltaUsdc);
-        } else {
             Constants.usdc.transferFrom(_keeper, address(this), _deltaUsdc);
 
             Constants.weth.transfer(_keeper, _deltaEth);
             Constants.osqth.transfer(_keeper, _deltaOsqth);
+        } else {
+            Constants.weth.transferFrom(_keeper, address(this), _deltaEth);
+            Constants.osqth.transferFrom(_keeper, address(this), _deltaOsqth);
+
+            Constants.usdc.transfer(_keeper, _deltaUsdc);
         }
 
         _executeEmptyAuction();

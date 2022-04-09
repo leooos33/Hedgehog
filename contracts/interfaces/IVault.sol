@@ -23,7 +23,6 @@ interface IVault {
 
 interface IAuction {
     function timeRebalance(
-        bool,
         uint256,
         uint256,
         uint256

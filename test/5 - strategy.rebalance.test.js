@@ -154,23 +154,17 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await contract.connect(rebalancer).timeRebalance(
-            true,
             wethInput,
             usdcInput,
             osqthInput
         );
         await tx.wait();
 
-        // 6625553923500135
-        // 13251107847000270
-
-        // 639516585
-        // 1311405557894798376
-
-        // 655702778947399188
-        // 1311405557894798376
         expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("13251107847000270");
         expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("1311405557894798376");
+
+        const amount = await contract._getTotalAmounts();
+        console.log(">>", amount);
     });
 });
