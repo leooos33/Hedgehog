@@ -5,7 +5,7 @@ const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = re
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
-describe.only("Strategy rebalance", function () {
+describe("Strategy rebalance", function () {
     let contract, contractHelper, tx, amount, rebalancer;
     it("Should deploy contract", async function () {
         await resetFork();

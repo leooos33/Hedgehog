@@ -154,8 +154,8 @@ describe("Math", function () {
     );
     console.log(">>", amount);
 
-    assert(assertWP(amount[0].toString(), "51333406548477019722657", 9), `test_sute: sub 1`)
-    assert(assertWP(amount[1].toString(), "18423844171", 4, 6), `test_sute: sub 2`)
-    assert(assertWP(amount[2].toString(), "19294609072462626762", 9), `test_sute: sub 3`)
+    assert(assertWP(amount[0].toString(), "92986063062278283012528", 9), `test_sute: sub 1`)
+    assert(assertWP(amount[1].toString(), "13111334969", 4, 6), `test_sute: sub 2`)
+    assert(assertWP(amount[2].toString(), "12803845416930781791", 9), `test_sute: sub 3`)
   });
 });

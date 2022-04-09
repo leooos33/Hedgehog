@@ -260,9 +260,9 @@ describe("VaultMath", function () {
         );
         console.log(">>", amount);
 
-        assert(assertWP(amount[0].toString(), "51333406548477019722657", 4), `test_sute: sub 1`)
-        assert(assertWP(amount[1].toString(), "18423844171", 4, 6), `test_sute: sub 2`)
-        assert(assertWP(amount[2].toString(), "19294609072462626762", 4), `test_sute: sub 3`)
+        assert(assertWP(amount[0].toString(), "36321946443723310", 4), `test_sute: sub 1`)
+        assert(assertWP(amount[1].toString(), "1309736107", 4, 6), `test_sute: sub 2`)
+        assert(assertWP(amount[2].toString(), "1615214589065691535", 4), `test_sute: sub 3`)
     });
 
 
@@ -279,19 +279,4 @@ describe("VaultMath", function () {
         assert(assertWP(amount[2].toString(), "32743712092", 0), `test_sute: sub 3`)
         assert(assertWP(amount[3].toString(), "32849750909396941650", 0), `test_sute: sub 4`)
     });
-
-    // it("_getWithdrawAmounts", async function () {
-    //     const tx = await contract._getWithdrawAmounts(
-    //         "124875791768594084851645",
-    //         "124875791768594084851645",
-    //     );
-    //     await tx.wait()
-
-    //     console.log(await contract.test1());
-    //     console.log(await contract.test2());
-    //     console.log(await contract.test3());
-    //     // assert(assertWP(, "18410690015258689749"), `test_sute: sub 2`)
-    //     // assert(assertWP(amount[1].toString(), "32743712092", 0), `test_sute: sub 3`)
-    //     // assert(assertWP(amount[2].toString(), "32849750909396941650", 0), `test_sute: sub 4`)
-    // });
 });
