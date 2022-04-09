@@ -154,7 +154,7 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await contract.connect(rebalancer).timeRebalance(
-            false,
+            true,
             wethInput,
             usdcInput,
             osqthInput
