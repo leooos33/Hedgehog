@@ -63,6 +63,23 @@ contract V3Helper {
         // console.log("usdcFromSwap:", usdcFromSwap);
     }
 
+    function swapR(uint256 amount) public {
+        // sell weth for usdc
+        TransferHelper.safeApprove(address(usdc), address(swapRouter), amount);
+        ISwapRouter.ExactInputSingleParams memory paramsWethUSDC = ISwapRouter.ExactInputSingleParams({
+            tokenIn: address(usdc),
+            tokenOut: address(weth),
+            fee: 3000,
+            recipient: address(this),
+            deadline: block.timestamp,
+            amountIn: amount,
+            amountOutMinimum: 0,
+            sqrtPriceLimitX96: 0
+        });
+        uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
+        // console.log("usdcFromSwap:", usdcFromSwap);
+    }
+
     /// @dev Fetches current price in ticks from Uniswap pool.
     function getTick(address pool) public view returns (int24 tick) {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
@@ -72,5 +89,11 @@ contract V3Helper {
         // How much usdc I get for 1 WETH
         console.log("block.timestamp", block.timestamp);
         return (oracle.getTwap(poolEthUsdc, address(weth), address(usdc), twapPeriod, false), getTick(poolEthUsdc));
+    }
+
+    function getTwapR() public view returns (uint256, int24) {
+        // How much usdc I get for 1 WETH
+        console.log("block.timestamp", block.timestamp);
+        return (oracle.getTwap(poolEthUsdc, address(usdc), address(weth), twapPeriod, false), getTick(poolEthUsdc));
     }
 }
