@@ -5,7 +5,7 @@ const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = re
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
-describe("Strategy rebalance", function () {
+describe.only("Strategy rebalance", function () {
     let contract, contractHelper, tx, amount, rebalancer;
     it("Should deploy contract", async function () {
         await resetFork();
@@ -164,7 +164,33 @@ describe("Strategy rebalance", function () {
         expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("1257420148");
         expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
 
-        const amount = await contract._getTotalAmounts();
-        console.log(">>", amount);
+        // const amount = await contract._getTotalAmounts();
+        // console.log(">>", amount);
     });
+
+    // it("_position", async function () {
+    //     console.log(await contract.orderEthUsdcLower());
+    //     console.log(await contract.orderEthUsdcUpper());
+    //     console.log(await contract.orderOsqthEthLower());
+    //     console.log(await contract.orderOsqthEthUpper());
+    //     amount = await contract._position(
+    //         poolEthOsqth,
+    //         "12180",
+    //         "14280"
+    //     );
+    //     console.log(amount);
+
+    //     amount = await contract._position(
+    //         poolEthUsdc,
+    //         "193800",
+    //         "195900",
+    //     );
+    //     console.log(amount);
+
+    //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
+    //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
+    //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
+    //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    // });
+
 });

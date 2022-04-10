@@ -240,22 +240,36 @@ contract VaultAuction is IAuction, VaultMath {
     function _executeEmptyAuction() internal {
         (int24 _ethUsdcLower, int24 _ethUsdcUpper, int24 _osqthEthLower, int24 _osqthEthUpper) = _getBoundaries();
 
+        console.log("_executeEmptyAuction => ticks");
+        console.logInt(_ethUsdcLower);
+        console.logInt(_ethUsdcUpper);
+        console.logInt(_osqthEthLower);
+        console.logInt(_osqthEthUpper);
+
+        console.log("ballances");
+        console.log(getBalance(Constants.weth));
+        console.log(getBalance(Constants.usdc));
+        console.log(getBalance(Constants.osqth));
+
+        // uint128 liquidityEthUsdcForAmounts = 0;
         uint128 liquidityEthUsdcForAmounts = _liquidityForAmounts(
             Constants.poolEthUsdc,
             _ethUsdcLower,
             _ethUsdcUpper,
-            balanceOf(address(Constants.weth)).mul(targetUsdcShare.div(2)),
-            balanceOf(address(Constants.usdc))
+            getBalance(Constants.weth).mul(targetUsdcShare.div(2)),
+            getBalance(Constants.usdc)
         );
 
         uint128 liquidityOsqthEthForAmounts = _liquidityForAmounts(
             Constants.poolEthOsqth,
             _osqthEthLower,
             _osqthEthUpper,
-            balanceOf(address(Constants.weth)),
-            balanceOf(address(Constants.osqth))
+            getBalance(Constants.weth),
+            getBalance(Constants.osqth)
         );
 
+        console.log("liquidityEthUsdcForAmounts %s", liquidityEthUsdcForAmounts);
+        console.log("liquidityOsqthEthForAmounts %s", liquidityOsqthEthForAmounts);
         //place orders on Uniswap
         _mintLiquidity(Constants.poolEthUsdc, _ethUsdcLower, _ethUsdcUpper, liquidityEthUsdcForAmounts);
         _mintLiquidity(Constants.poolEthOsqth, _osqthEthLower, _osqthEthUpper, liquidityOsqthEthForAmounts);

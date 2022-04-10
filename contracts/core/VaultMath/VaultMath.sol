@@ -524,6 +524,12 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         uint256 amount1
     ) public view returns (uint128) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
+        console.log("_liquidityForAmounts");
+        console.log(sqrtRatioX96);
+        console.log(TickMath.getSqrtRatioAtTick(tickLower));
+        console.log(TickMath.getSqrtRatioAtTick(tickUpper));
+        console.log(amount0);
+        console.log(amount1);
         return
             LiquidityAmounts.getLiquidityForAmounts(
                 sqrtRatioX96,
