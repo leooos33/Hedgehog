@@ -169,10 +169,10 @@ describe.only("Strategy rebalance", function () {
     });
 
     // it("_position", async function () {
-    //     console.log(await contract.orderEthUsdcLower());
-    //     console.log(await contract.orderEthUsdcUpper());
-    //     console.log(await contract.orderOsqthEthLower());
-    //     console.log(await contract.orderOsqthEthUpper());
+    //     // console.log(await contract.orderEthUsdcLower());
+    //     // console.log(await contract.orderEthUsdcUpper());
+    //     // console.log(await contract.orderOsqthEthLower());
+    //     // console.log(await contract.orderOsqthEthUpper());
     //     amount = await contract._position(
     //         poolEthOsqth,
     //         "12180",
@@ -187,6 +187,28 @@ describe.only("Strategy rebalance", function () {
     //     );
     //     console.log(amount);
 
+    //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
+    //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
+    //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
+    //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    // });
+
+    // it("_amountsForLiquidity", async function () {
+    //     amount = await contract._amountsForLiquidity(
+    //         poolEthUsdc,
+    //         "193800",
+    //         "195900",
+    //         "36578863"
+    //     );
+    //     console.log(amount);
+
+    //     amount = await contract._amountsForLiquidity(
+    //         poolEthOsqth,
+    //         "12180",
+    //         "14280",
+    //         "340709549703421612825"
+    //     );
+    //     console.log(amount);
     //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
     //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
     //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);

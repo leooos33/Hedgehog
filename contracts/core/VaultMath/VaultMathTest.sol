@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import "../VaultParams.sol";
 import "../../libraries/StrategyMath.sol";
@@ -62,10 +61,13 @@ contract VaultMathTest {
                 depositorValue.mul(targetOsqthShare.mul(1e18)).div(params.osqthEthPrice).div(params.ethUsdcPrice)
             );
         } else {
-            uint256 osqthValue = params.osqthAmount.mul(params.ethUsdcPrice).mul(params.osqthEthPrice).div(1e36);
-            uint256 ethValue = params.ethAmount.mul(params.ethUsdcPrice).div(uint256(1e18));
-
-            uint256 totalValue = osqthValue.add((params.usdcAmount.mul(uint256(1e12)))).add(ethValue);
+            uint256 totalValue = getTotalValue(
+                params.osqthAmount,
+                params.ethUsdcPrice,
+                params.ethAmount,
+                params.osqthEthPrice,
+                params.usdcAmount
+            );
 
             return (
                 params.totalSupply.mul(depositorValue).div(totalValue),
@@ -123,16 +125,13 @@ contract VaultMathTest {
         // console.log("ethAmount %s", params.ethAmount);
         // console.log("osqthAmount %s", params.osqthAmount);
 
-        uint256 osqthValue = params.osqthAmount.wmul(params.ethUsdcPrice).wmul(params.osqthEthPrice).wdiv(
-            uint256(1e18)
+        uint256 totalValue = getTotalValue(
+            params.osqthAmount,
+            params.ethUsdcPrice,
+            params.ethAmount,
+            params.osqthEthPrice,
+            params.usdcAmount
         );
-        uint256 ethValue = params.ethAmount.wmul(params.ethUsdcPrice).wdiv(1e18);
-
-        uint256 totalValue = osqthValue.add(params.usdcAmount.mul(uint256(1e12))).add(ethValue);
-
-        // console.log("osqthValue %s", osqthValue);
-        // console.log("ethValue %s", ethValue);
-        // console.log("totalValue %s", totalValue);
 
         return (
             targetEthShare.wmul(totalValue.wdiv(params.ethUsdcPrice)).suba(params.ethAmount),
@@ -142,5 +141,23 @@ contract VaultMathTest {
             ),
             params.isPriceInc
         );
+    }
+
+    function getTotalValue(
+        uint256 osqthAmount,
+        uint256 ethUsdcPrice,
+        uint256 ethAmount,
+        uint256 osqthEthPrice,
+        uint256 usdcAmount
+    ) public view returns (uint256) {
+        uint256 osqthValue = osqthAmount.wmul(ethUsdcPrice).wmul(osqthEthPrice).wdiv(uint256(1e18));
+        uint256 ethValue = ethAmount.wmul(ethUsdcPrice).wdiv(1e18);
+
+        uint256 totalValue = osqthValue.add(usdcAmount.mul(uint256(1e12))).add(ethValue);
+
+        // console.log("osqthValue %s", osqthValue);
+        // console.log("ethValue %s", ethValue);
+        // console.log("totalValue %s", totalValue);
+        return totalValue;
     }
 }

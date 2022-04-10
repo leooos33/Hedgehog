@@ -180,7 +180,7 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             uint256
         )
     {
-        console.log("totalSupply %s", totalSupply);
+        // console.log("totalSupply %s", totalSupply);
 
         uint256 unusedAmountEth = getBalance(Constants.weth).mul(shares).div(totalSupply);
         uint256 unusedAmountUsdc = getBalance(Constants.usdc).mul(shares).div(totalSupply);
@@ -475,23 +475,14 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
     //@dev <tested>
     /**
      * @notice calculate lower and upper tick for liquidity provision on Uniswap
-     * @return ethUsdcLower tick lower for eth:usdc pool
-     * @return ethUsdcUpper tick upper for eth:usdc pool
-     * @return osqthEthLower tick lower for osqth:eth pool
-     * @return osqthEthUpper tick upper for osqth:eth pool
      */
-    function _getBoundaries()
+    function _getBoundaries(uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice)
         public
         view
-        returns (
-            int24 ethUsdcLower,
-            int24 ethUsdcUpper,
-            int24 osqthEthLower,
-            int24 osqthEthUpper
-        )
+        returns (Constants.Boundaries memory)
     {
-        int24 tickEthUsdc = getTick(Constants.poolEthUsdc);
-        int24 tickOsqthEth = getTick(Constants.poolEthOsqth);
+        uint256 tickEthUsdc =  sqrt(1/auctionEthUsdcPrice) * 2 ** 96;
+        uint256 tickOsqthEth =  sqrt(1/auctionOsqthEthPrice) * 2 ** 96;
 
         int24 tickFloorEthUsdc = _floor(tickEthUsdc, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(tickOsqthEth, tickSpacingOsqthEth);
@@ -502,10 +493,13 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         int24 ethUsdcThreshold = 1020;
         int24 osqthEthThreshold = 1020;
 
-        ethUsdcLower = tickFloorEthUsdc - ethUsdcThreshold;
-        ethUsdcUpper = tickCeilEthUsdc + ethUsdcThreshold;
-        osqthEthLower = tickFloorOsqthEth - osqthEthThreshold;
-        osqthEthUpper = tickCeilOsqthEth + osqthEthThreshold;
+        return
+            Constants.Boundaries(
+                tickFloorEthUsdc - ethUsdcThreshold,
+                tickCeilEthUsdc + ethUsdcThreshold,
+                tickFloorOsqthEth - osqthEthThreshold,
+                tickCeilOsqthEth + osqthEthThreshold
+            );
     }
 
     //@dev <tested>
@@ -524,12 +518,12 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         uint256 amount1
     ) public view returns (uint128) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
-        console.log("_liquidityForAmounts");
-        console.log(sqrtRatioX96);
-        console.log(TickMath.getSqrtRatioAtTick(tickLower));
-        console.log(TickMath.getSqrtRatioAtTick(tickUpper));
-        console.log(amount0);
-        console.log(amount1);
+        // console.log("_liquidityForAmounts");
+        // console.log(sqrtRatioX96);
+        // console.log(TickMath.getSqrtRatioAtTick(tickLower));
+        // console.log(TickMath.getSqrtRatioAtTick(tickUpper));
+        // console.log(amount0);
+        // console.log(amount1);
         return
             LiquidityAmounts.getLiquidityForAmounts(
                 sqrtRatioX96,
@@ -546,8 +540,23 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint128 liquidity
+        uint256 amount0,
+        uint256 amount1
     ) public {
+        // amount0 = uint256(29723872225);
+        // amount1 = uint256(8760257699100622726);
+        console.log("amount %s", amount0);
+        console.log("amount %s", amount1);
+        console.log("tickLower %s", uint256(tickLower));
+        console.log("tickUpper %s", uint256(tickUpper));
+        console.log("tick %s", uint256(getTick(pool)));
+
+        uint128 liquidity = _liquidityForAmounts(pool, tickLower, tickUpper, amount0, amount1);
+        console.log("_mintLiquidity => liquidity %s", liquidity);
+        (uint256 a, uint256 b) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+        console.log(a);
+        console.log(b);
+
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
@@ -572,16 +581,19 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
     }
 
-    /// @dev Callback for Uniswap V3 pool.
+    // @dev Callback for Uniswap V3 pool.
     function uniswapV3SwapCallback(
         int256 amount0Delta,
         int256 amount1Delta,
         bytes calldata data
     ) external override {
-        // TODO: fix
-        // require(msg.sender == address(pool));
-        // if (amount0Delta > 0) Constants.weth.safeTransfer(msg.sender, uint256(amount0Delta));
-        // if (amount1Delta > 0) Constants.osqth.safeTransfer(msg.sender, uint256(amount1Delta));
+        (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
+        console.log("!callback on %s: %s", token0, uint256(amount0Delta));
+        console.log("!callback on %s: %s", token1, uint256(amount1Delta));
+
+        require(msg.sender == pool);
+        if (amount0Delta > 0) IERC20(token0).safeTransfer(msg.sender, uint256(amount0Delta));
+        if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
     }
 
     //@dev <tested>

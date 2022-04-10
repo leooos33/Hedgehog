@@ -5,7 +5,6 @@ pragma experimental ABIEncoderV2;
 
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
-import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import "../../libraries/StrategyMath.sol";
 import "../../libraries/Constants.sol";

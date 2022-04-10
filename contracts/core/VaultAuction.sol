@@ -10,7 +10,6 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
@@ -128,21 +127,75 @@ contract VaultAuction is IAuction, VaultMath {
     ) internal {
         (bool isPriceInc, uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _startAuction(_auctionTriggerTime);
 
-        console.log("_rebalance");
-        console.log("deltaEth %s", deltaEth);
-        console.log("deltaUsdc %s", deltaUsdc);
-        console.log("deltaOsqth %s", deltaOsqth);
+        // console.log("_rebalance");
+        // console.log("deltaEth %s", deltaEth);
+        // console.log("deltaUsdc %s", deltaUsdc);
+        // console.log("deltaOsqth %s", deltaOsqth);
         // console.log("block.timestamp %s", block.timestamp);
+
+        uint256 currentEthUsdcPrice = Constants.oracle.getTwap(
+            Constants.poolEthUsdc,
+            address(Constants.weth),
+            address(Constants.usdc),
+            twapPeriod,
+            true
+        );
+
+        uint256 currentOsqthEthPrice = Constants.oracle.getTwap(
+            Constants.poolEthOsqth,
+            address(Constants.osqth),
+            address(Constants.weth),
+            twapPeriod,
+            true
+        );
+
+        bool _isPriceInc = _checkAuctionType(currentEthUsdcPrice);
+
+        (uint256 _auctionOsqthEthPrice, uint256 _auctionEthUsdcPrice) = getAuctionPrices(
+            _auctionTriggerTime,
+            currentEthUsdcPrice,
+            currentOsqthEthPrice,
+            _isPriceInc
+        );
+
+        console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
+        console.log("_auctionEthUsdcPrice %s", _auctionEthUsdcPrice);
+
+        uint256 totalValue = vaultMathTest.getTotalValue(
+            getBalance(Constants.osqth),
+            _auctionEthUsdcPrice,
+            getBalance(Constants.weth),
+            _auctionOsqthEthPrice,
+            getBalance(Constants.usdc)
+        );
 
         if (isPriceInc) {
             require(_amountOsqth >= deltaOsqth, "Wrong amount");
 
-            _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
+            _executeAuction(
+                msg.sender,
+                deltaEth,
+                deltaUsdc,
+                deltaOsqth,
+                isPriceInc,
+                totalValue,
+                _auctionEthUsdcPrice,
+                _auctionOsqthEthPrice
+            );
         } else {
             require(_amountEth >= deltaEth, "Wrong amount");
             require(_amountUsdc >= deltaUsdc, "Wrong amount");
 
-            _executeAuction(msg.sender, deltaEth, deltaUsdc, deltaOsqth, isPriceInc);
+            _executeAuction(
+                msg.sender,
+                deltaEth,
+                deltaUsdc,
+                deltaOsqth,
+                isPriceInc,
+                totalValue,
+                _auctionEthUsdcPrice,
+                _auctionOsqthEthPrice
+            );
         }
 
         emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
@@ -212,7 +265,10 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _deltaEth,
         uint256 _deltaUsdc,
         uint256 _deltaOsqth,
-        bool _isPriceInc
+        bool _isPriceInc,
+        uint256 totalValue,
+        uint256 auctionEthUsdcPrice,
+        uint256 auctionOsqthEthPrice
     ) internal {
         (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
 
@@ -234,51 +290,59 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.usdc.transfer(_keeper, _deltaUsdc);
         }
 
-        _executeEmptyAuction();
-    }
-
-    function _executeEmptyAuction() internal {
-        (int24 _ethUsdcLower, int24 _ethUsdcUpper, int24 _osqthEthLower, int24 _osqthEthUpper) = _getBoundaries();
-
-        console.log("_executeEmptyAuction => ticks");
-        console.logInt(_ethUsdcLower);
-        console.logInt(_ethUsdcUpper);
-        console.logInt(_osqthEthLower);
-        console.logInt(_osqthEthUpper);
-
-        console.log("ballances");
-        console.log(getBalance(Constants.weth));
-        console.log(getBalance(Constants.usdc));
-        console.log(getBalance(Constants.osqth));
-
-        // uint128 liquidityEthUsdcForAmounts = 0;
-        uint128 liquidityEthUsdcForAmounts = _liquidityForAmounts(
-            Constants.poolEthUsdc,
-            _ethUsdcLower,
-            _ethUsdcUpper,
-            getBalance(Constants.weth).mul(targetUsdcShare.div(2)),
-            getBalance(Constants.usdc)
+        uint256 balanceEth = uint256(1e18).mul(totalValue.div(2).sub(getBalance(Constants.usdc).mul(1e12))).div(
+            auctionEthUsdcPrice
         );
 
-        uint128 liquidityOsqthEthForAmounts = _liquidityForAmounts(
+        console.log("balanceEth %s", balanceEth);
+        _executeEmptyAuction(balanceEth, auctionEthUsdcPrice, auctionOsqthEthPrice);
+    }
+
+    function _executeEmptyAuction(
+        uint256 balanceEth,
+        uint256 auctionEthUsdcPrice,
+        uint256 auctionOsqthEthPrice
+    ) internal {
+        Constants.Boundaries memory boundaries = _getBoundaries(auctionEthUsdcPrice, auctionOsqthEthPrice);
+
+        // console.log("> _executeEmptyAuction => ticks start");
+        // console.logInt(boundaries._ethUsdcLower);
+        // console.logInt(boundaries._ethUsdcUpper);
+        // console.logInt(boundaries._osqthEthLower);
+        // console.logInt(boundaries._osqthEthUpper);
+        // console.log("> endregion");
+
+        console.log("before first mint");
+        console.log("ballance weth %s", getBalance(Constants.weth));
+        console.log("ballance usdc %s", getBalance(Constants.usdc));
+        console.log("ballance osqth %s", getBalance(Constants.osqth));
+
+        //place orders on Uniswap
+        _mintLiquidity(
+            Constants.poolEthUsdc,
+            boundaries._ethUsdcLower,
+            boundaries._ethUsdcUpper,
+            getBalance(Constants.usdc),
+            balanceEth
+        );
+
+        console.log("before second mint");
+        console.log("ballance weth %s", getBalance(Constants.weth));
+        console.log("ballance usdc %s", getBalance(Constants.usdc));
+        console.log("ballance osqth %s", getBalance(Constants.osqth));
+        _mintLiquidity(
             Constants.poolEthOsqth,
-            _osqthEthLower,
-            _osqthEthUpper,
+            boundaries._osqthEthLower,
+            boundaries._osqthEthUpper,
             getBalance(Constants.weth),
             getBalance(Constants.osqth)
         );
 
-        console.log("liquidityEthUsdcForAmounts %s", liquidityEthUsdcForAmounts);
-        console.log("liquidityOsqthEthForAmounts %s", liquidityOsqthEthForAmounts);
-        //place orders on Uniswap
-        _mintLiquidity(Constants.poolEthUsdc, _ethUsdcLower, _ethUsdcUpper, liquidityEthUsdcForAmounts);
-        _mintLiquidity(Constants.poolEthOsqth, _osqthEthLower, _osqthEthUpper, liquidityOsqthEthForAmounts);
-
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
-            _ethUsdcLower,
-            _ethUsdcUpper,
-            _osqthEthLower,
-            _osqthEthUpper
+            boundaries._ethUsdcLower,
+            boundaries._ethUsdcUpper,
+            boundaries._osqthEthLower,
+            boundaries._osqthEthUpper
         );
     }
 }

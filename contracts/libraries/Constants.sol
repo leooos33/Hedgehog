@@ -53,4 +53,11 @@ library Constants {
         uint256 osqthAmount;
         bool isPriceInc;
     }
+
+    struct Boundaries {
+        int24 _ethUsdcLower;
+        int24 _ethUsdcUpper;
+        int24 _osqthEthLower;
+        int24 _osqthEthUpper;
+    }
 }

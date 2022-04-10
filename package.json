@@ -23,6 +23,7 @@
     "dotenv": "^16.0.0",
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.1",
+    "prb-math": "^2.4.3",
     "solhint": "^3.3.7",
     "truffle-contract-size": "^2.0.1"
   }
