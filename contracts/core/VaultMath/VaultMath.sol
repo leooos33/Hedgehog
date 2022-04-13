@@ -481,8 +481,8 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         view
         returns (Constants.Boundaries memory)
     {
-        uint256 tickEthUsdc =  sqrt(1/auctionEthUsdcPrice) * 2 ** 96;
-        uint256 tickOsqthEth =  sqrt(1/auctionOsqthEthPrice) * 2 ** 96;
+        int24 tickEthUsdc = calculateTick(auctionEthUsdcPrice);
+        int24 tickOsqthEth = calculateTick(auctionOsqthEthPrice);
 
         int24 tickFloorEthUsdc = _floor(tickEthUsdc, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(tickOsqthEth, tickSpacingOsqthEth);
@@ -500,6 +500,23 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
                 tickFloorOsqthEth - osqthEthThreshold,
                 tickCeilOsqthEth + osqthEthThreshold
             );
+    }
+
+    function calculateTick(uint256 price) public view returns (int24 tick) {
+        return int24(sqrt(1 / price) * 2**96);
+    }
+
+    function sqrt(uint256 y) internal pure returns (uint256 z) {
+        if (y > 3) {
+            z = y;
+            uint256 x = y / 2 + 1;
+            while (x < z) {
+                z = x;
+                x = (y / x + x) / 2;
+            }
+        } else if (y != 0) {
+            z = 1;
+        }
     }
 
     //@dev <tested>
