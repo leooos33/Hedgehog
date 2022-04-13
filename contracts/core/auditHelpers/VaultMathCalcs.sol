@@ -3,16 +3,12 @@
 pragma solidity ^0.6.6;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-
-import "./VaultParams.sol";
-import "../libraries/StrategyMath.sol";
+import "../VaultParams.sol";
+import "../../libraries/StrategyMath.sol";
 
 import "hardhat/console.sol";
 
 contract VaultMathTest {
-    // using SafeMath for uint256;
     using StrategyMath for uint256;
 
     uint256 public minPriceMultiplier;

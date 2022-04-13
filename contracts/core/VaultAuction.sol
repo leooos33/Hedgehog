@@ -3,29 +3,16 @@
 pragma solidity ^0.6.6;
 pragma experimental ABIEncoderV2;
 
-import "@openzeppelin/contracts/math/Math.sol";
-import "@openzeppelin/contracts/math/SafeMath.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
-import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
-import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
-
 import "../interfaces/IVault.sol";
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
 import "../libraries/StrategyMath.sol";
-
-import "./VaultParams.sol";
 import "./VaultMath.sol";
 
 import "hardhat/console.sol";
 
 contract VaultAuction is IAuction, VaultMath {
-    // using SafeMath for uint256;
-    // using StrategyMath for uint256;
+    using StrategyMath for uint256;
 
     /**
      * @notice strategy constructor
@@ -161,7 +148,7 @@ contract VaultAuction is IAuction, VaultMath {
         console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
         console.log("_auctionEthUsdcPrice %s", _auctionEthUsdcPrice);
 
-        uint256 totalValue = vaultMathTest.getTotalValue(
+        uint256 totalValue = getTotalValue(
             getBalance(Constants.osqth),
             _auctionEthUsdcPrice,
             getBalance(Constants.weth),
