@@ -8,7 +8,7 @@ import "../../libraries/StrategyMath.sol";
 
 import "hardhat/console.sol";
 
-contract VaultMathTest {
+contract VaultMathCalcs {
     using StrategyMath for uint256;
 
     uint256 public minPriceMultiplier;

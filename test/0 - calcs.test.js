@@ -3,21 +3,25 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { assertWP } = require('./helpers');
 
-describe("Math", function () {
+describe("Calcs", function () {
   let contract, tx;
   it("Should deploy contract", async function () {
-    const Contract = await ethers.getContractFactory("VaultMathTest");
+    const Contract = await ethers.getContractFactory("VaultMath");
     contract = await Contract.deploy(
-      "900000000000000000",
-      "1100000000000000000",
-      "500000000000000000",
-      "262210246107746000",
-      "237789753892254000",
+        utils.parseUnits("40", 18),
+        1000,
+        utils.parseUnits("0.05", 18),
+        "1000000000000000000000",
+        "900000000000000000",
+        "1100000000000000000",
+        "500000000000000000",
+        "262210246107746000",
+        "237789753892254000",
     );
     await contract.deployed();
   });
 
-  it("_calcSharesAndAmounts case 1", async function () {
+  it("__calcSharesAndAmounts case 1", async function () {
 
     const test_sute = {
       targetEthShare: "500000000000000000",
@@ -35,7 +39,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._calcSharesAndAmounts(
+    const amount = await contract.__calcSharesAndAmounts(
       test_sute,
     );
     console.log(">>", amount);
@@ -46,7 +50,7 @@ describe("Math", function () {
     assert(assertWP(amount[3].toString(), "22507157451405300000"), `test_sute: sub 4`)
   });
 
-  it("_calcSharesAndAmounts case 2", async function () {
+  it("__calcSharesAndAmounts case 2", async function () {
 
     const test_sute = {
       targetEthShare: "500000000000000000",
@@ -64,7 +68,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._calcSharesAndAmounts(
+    const amount = await contract.__calcSharesAndAmounts(
       test_sute,
     );
     console.log(">>", amount);
@@ -75,7 +79,7 @@ describe("Math", function () {
     assert(assertWP(amount[3].toString(), "9135567790632050000"), `test_sute: sub 4`)
   });
 
-  it("_getAuctionPrices", async function () {
+  it("__getAuctionPrices", async function () {
 
     const test_sute = {
       osqthEthPrice: "199226590621515000",
@@ -87,7 +91,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._getAuctionPrices(
+    const amount = await contract.__getAuctionPrices(
       test_sute,
     );
     console.log(">>", amount);
@@ -96,7 +100,7 @@ describe("Math", function () {
     assert(assertWP(amount[1].toString(), "2362500000000000000000"), `test_sute: sub 2`)
   });
 
-  it("_getDeltas", async function () {
+  it("__getDeltas", async function () {
 
     const test_sute = {
       osqthEthPrice: "219149249683667000",
@@ -107,7 +111,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._getDeltas(
+    const amount = await contract.__getDeltas(
       test_sute,
     );
     console.log(">>", amount);
@@ -117,7 +121,7 @@ describe("Math", function () {
     assert(assertWP(amount[2].toString(), "41887449738930900000", 9), `test_sute: sub 3`)
   });
 
-  it("_getAuctionPrices", async function () {
+  it("__getAuctionPrices", async function () {
 
     const test_sute = {
       osqthEthPrice: "199226590621515000",
@@ -129,7 +133,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._getAuctionPrices(
+    const amount = await contract.__getAuctionPrices(
       test_sute,
     );
     console.log(">>", amount);
@@ -138,7 +142,7 @@ describe("Math", function () {
     assert(assertWP(amount[1].toString(), "2250000000000010000000"), `test_sute: sub 2`)
   });
 
-  it("_getDeltas", async function () {
+  it("__getDeltas", async function () {
 
     const test_sute = {
       osqthEthPrice: "3051898194732165000000",
@@ -149,7 +153,7 @@ describe("Math", function () {
     }
     console.log(test_sute);
 
-    const amount = await contract._getDeltas(
+    const amount = await contract.__getDeltas(
       test_sute,
     );
     console.log(">>", amount);
