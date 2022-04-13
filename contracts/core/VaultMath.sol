@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.6.6;
-pragma experimental ABIEncoderV2;
+pragma solidity =0.7.6;
+pragma abicoder v2;
 
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {IUniswapV3MintCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import {IUniswapV3SwapCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
@@ -21,6 +22,7 @@ import "hardhat/console.sol";
 // remove  due to not implementing this function
 contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUniswapV3SwapCallback {
     using StrategyMath for uint256;
+    using SafeERC20 for IERC20;
 
     /**
      * @notice strategy constructor

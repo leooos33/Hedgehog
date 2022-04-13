@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: agpl-3.0
-pragma solidity ^0.8.0;
+pragma solidity ^0.7.6;
 
 interface IWETH {
     function allowance(address owner, address spender) external view returns (uint256 remaining);

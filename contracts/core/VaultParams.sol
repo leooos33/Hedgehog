@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.6.6;
+pragma solidity =0.7.6;
 
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -12,8 +11,6 @@ import "../libraries/Constants.sol";
 import "hardhat/console.sol";
 
 abstract contract VaultParams is IERC20, ERC20 {
-    using SafeERC20 for IERC20;
-
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
     int24 public immutable tickSpacingOsqthEth;
@@ -78,7 +75,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
         uint256 _targetOsqthShare
-    ) public ERC20("Hedging DL", "HDL") {
+    ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
         tickSpacingEthUsdc = IUniswapV3Pool(Constants.poolEthUsdc).tickSpacing();

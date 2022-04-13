@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.6.6;
-pragma experimental ABIEncoderV2;
+pragma solidity =0.7.6;
+pragma abicoder v2;
 
 import "../interfaces/IVault.sol";
 import "../libraries/SharedEvents.sol";

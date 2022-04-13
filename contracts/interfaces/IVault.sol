@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity ^0.6.6;
+pragma solidity =0.7.6;
 
 interface IVault {
     function deposit(
