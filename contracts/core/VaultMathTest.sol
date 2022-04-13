@@ -6,8 +6,8 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/math/Math.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-import "../VaultParams.sol";
-import "../../libraries/StrategyMath.sol";
+import "./VaultParams.sol";
+import "../libraries/StrategyMath.sol";
 
 import "hardhat/console.sol";
 

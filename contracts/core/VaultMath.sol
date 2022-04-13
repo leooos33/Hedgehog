@@ -16,12 +16,11 @@ import "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
 
-import "../../libraries/SharedEvents.sol";
-import "../../libraries/Constants.sol";
-import "../../libraries/StrategyMath.sol";
+import "../libraries/SharedEvents.sol";
+import "../libraries/Constants.sol";
+import "../libraries/StrategyMath.sol";
 
 import "./VaultMathTest.sol";
-import "./VaultMathOracle.sol";
 
 import "hardhat/console.sol";
 
@@ -68,7 +67,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
             _targetOsqthShare
         )
     {
-        vaultMathOracle = new VaultMathOracle();
         vaultMathTest = new VaultMathTest(
             _minPriceMultiplier,
             _maxPriceMultiplier,
@@ -78,7 +76,6 @@ contract VaultMath is IERC20, ERC20, VaultParams, ReentrancyGuard, IUniswapV3Min
         );
     }
 
-    VaultMathOracle vaultMathOracle;
     VaultMathTest vaultMathTest;
 
     /**
