@@ -136,4 +136,10 @@ abstract contract VaultParams is IERC20, ERC20 {
         assert(x <= type(uint128).max);
         return uint128(x);
     }
+
+    /// @dev Casts uint256 to uint160 with overflow check.
+    function _toUint160(uint256 x) internal pure returns (uint160) {
+        assert(x <= type(uint160).max);
+        return uint160(x);
+    }
 }

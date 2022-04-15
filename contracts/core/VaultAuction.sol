@@ -59,20 +59,18 @@ contract VaultAuction is IAuction, VaultMath {
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function timeRebalance(
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
     ) external override nonReentrant {
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = _isTimeRebalance();
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        // console.log("timeRebalance => auctionTriggerTime: %s", auctionTriggerTime);
+        _rebalance(auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
 
-        _rebalance(auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
-
-        emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
     /** TODO
@@ -112,132 +110,11 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) internal {
-        (bool isPriceInc, uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _startAuction(_auctionTriggerTime);
+        Constants.AuctionParams params = _updateAuctionParams(_auctionTriggerTime);
 
-        // console.log("_rebalance");
-        // console.log("deltaEth %s", deltaEth);
-        // console.log("deltaUsdc %s", deltaUsdc);
-        // console.log("deltaOsqth %s", deltaOsqth);
-        // console.log("block.timestamp %s", block.timestamp);
-
-        uint256 currentEthUsdcPrice = Constants.oracle.getTwap(
-            Constants.poolEthUsdc,
-            address(Constants.weth),
-            address(Constants.usdc),
-            twapPeriod,
-            true
-        );
-
-        uint256 currentOsqthEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthOsqth,
-            address(Constants.osqth),
-            address(Constants.weth),
-            twapPeriod,
-            true
-        );
-
-        bool _isPriceInc = _checkAuctionType(currentEthUsdcPrice);
-
-        (uint256 _auctionOsqthEthPrice, uint256 _auctionEthUsdcPrice) = getAuctionPrices(
-            _auctionTriggerTime,
-            currentEthUsdcPrice,
-            currentOsqthEthPrice,
-            _isPriceInc
-        );
-
-        console.log("_auctionOsqthEthPrice %s", _auctionOsqthEthPrice);
-        console.log("_auctionEthUsdcPrice %s", _auctionEthUsdcPrice);
-
-        uint256 totalValue = getTotalValue(
-            getBalance(Constants.osqth),
-            _auctionEthUsdcPrice,
-            getBalance(Constants.weth),
-            _auctionOsqthEthPrice,
-            getBalance(Constants.usdc)
-        );
-
-        if (isPriceInc) {
-            require(_amountOsqth >= deltaOsqth, "Wrong amount");
-
-            _executeAuction(
-                msg.sender,
-                deltaEth,
-                deltaUsdc,
-                deltaOsqth,
-                isPriceInc,
-                totalValue,
-                _auctionEthUsdcPrice,
-                _auctionOsqthEthPrice
-            );
-        } else {
-            require(_amountEth >= deltaEth, "Wrong amount");
-            require(_amountUsdc >= deltaUsdc, "Wrong amount");
-
-            _executeAuction(
-                msg.sender,
-                deltaEth,
-                deltaUsdc,
-                deltaOsqth,
-                isPriceInc,
-                totalValue,
-                _auctionEthUsdcPrice,
-                _auctionOsqthEthPrice
-            );
-        }
+        _executeAuction(params);
 
         emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
-    }
-
-    /**
-     * @notice determine auction direction, price, and ensure auction hasn't switched directions
-     * @param _auctionTriggerTime auction starting time
-     * @return auction type
-     * @return wETH to sell/buy
-     * @return USDC to sell/buy
-     * @return oSQTH amount to sell or buy
-     */
-    function _startAuction(uint256 _auctionTriggerTime)
-        internal
-        returns (
-            bool,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 currentEthUsdcPrice = Constants.oracle.getTwap(
-            Constants.poolEthUsdc,
-            address(Constants.weth),
-            address(Constants.usdc),
-            twapPeriod,
-            true
-        );
-
-        uint256 currentOsqthEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthOsqth,
-            address(Constants.osqth),
-            address(Constants.weth),
-            twapPeriod,
-            true
-        );
-
-        bool _isPriceInc = _checkAuctionType(currentEthUsdcPrice);
-
-        // console.log("_getDeltas");
-        // console.log("currentEthUsdcPrice %s", currentEthUsdcPrice);
-        // console.log("currentOsqthEthPrice %s", currentOsqthEthPrice);
-        // console.log("_auctionTriggerTime %s", _auctionTriggerTime);
-        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth, bool isPriceInc) = _getDeltas(
-            currentEthUsdcPrice,
-            currentOsqthEthPrice,
-            _auctionTriggerTime,
-            _isPriceInc
-        );
-
-        timeAtLastRebalance = block.timestamp;
-        ethPriceAtLastRebalance = currentEthUsdcPrice;
-
-        return (isPriceInc, deltaEth, deltaUsdc, deltaOsqth);
     }
 
     /**
@@ -247,42 +124,26 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(
-        address _keeper,
-        uint256 _deltaEth,
-        uint256 _deltaUsdc,
-        uint256 _deltaOsqth,
-        bool _isPriceInc,
-        uint256 totalValue,
-        uint256 auctionEthUsdcPrice,
-        uint256 auctionOsqthEthPrice
-    ) internal {
-        (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-
-        (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper);
-
-        _burnAndCollect(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
-        _burnAndCollect(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
-
-        if (_isPriceInc) {
-            //pull in tokens from sender
-            Constants.usdc.transferFrom(_keeper, address(this), _deltaUsdc);
-
-            Constants.weth.transfer(_keeper, _deltaEth);
-            Constants.osqth.transfer(_keeper, _deltaOsqth);
-        } else {
-            Constants.weth.transferFrom(_keeper, address(this), _deltaEth);
-            Constants.osqth.transferFrom(_keeper, address(this), _deltaOsqth);
-
-            Constants.usdc.transfer(_keeper, _deltaUsdc);
-        }
-
-        uint256 balanceEth = uint256(1e18).mul(totalValue.div(2).sub(getBalance(Constants.usdc).mul(1e12))).div(
-            auctionEthUsdcPrice
-        );
-
-        console.log("balanceEth %s", balanceEth);
-        _executeEmptyAuction(balanceEth, auctionEthUsdcPrice, auctionOsqthEthPrice);
+    function _executeAuction(Constants.AuctionParams memory params) internal {
+        // (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
+        // (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper);
+        // _burnAndCollect(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
+        // _burnAndCollect(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
+        // if (_isPriceInc) {
+        //     //pull in tokens from sender
+        //     Constants.usdc.transferFrom(_keeper, address(this), _deltaUsdc);
+        //     Constants.weth.transfer(_keeper, _deltaEth);
+        //     Constants.osqth.transfer(_keeper, _deltaOsqth);
+        // } else {
+        //     Constants.weth.transferFrom(_keeper, address(this), _deltaEth);
+        //     Constants.osqth.transferFrom(_keeper, address(this), _deltaOsqth);
+        //     Constants.usdc.transfer(_keeper, _deltaUsdc);
+        // }
+        // uint256 balanceEth = uint256(1e18).mul(totalValue.div(2).sub(getBalance(Constants.usdc).mul(1e12))).div(
+        //     auctionEthUsdcPrice
+        // );
+        // console.log("balanceEth %s", balanceEth);
+        // _executeEmptyAuction(balanceEth, auctionEthUsdcPrice, auctionOsqthEthPrice);
     }
 
     function _executeEmptyAuction(

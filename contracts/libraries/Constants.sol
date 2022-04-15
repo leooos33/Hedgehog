@@ -45,19 +45,20 @@ library Constants {
         uint256 timestamp;
     }
 
-    struct DeltasInfo {
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
-        bool isPriceInc;
-    }
-
     struct Boundaries {
         int24 _ethUsdcLower;
         int24 _ethUsdcUpper;
         int24 _osqthEthLower;
         int24 _osqthEthUpper;
+    }
+
+    struct AuctionParams {
+        bool isPriceInc;
+        uint256 deltaEth;
+        uint256 deltaUsdc;
+        uint256 deltaOsqth;
+        Boundaries boundaries;
+        uint128 liquidityEthUsdc;
+        uint128 liquidityOsqthEth;
     }
 }
