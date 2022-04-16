@@ -10,10 +10,10 @@ import {IUniswapV3SwapCallback} from "@uniswap/v3-core/contracts/interfaces/call
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
+import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
-import "../libraries/TickMathAdaptor.sol";
 import "../libraries/StrategyMath.sol";
 import {IPrbMathCalculus} from "../interfaces/IPrbMathCalculus.sol";
 import "./VaultParams.sol";
@@ -266,8 +266,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return
             LiquidityAmounts.getAmountsForLiquidity(
                 sqrtRatioX96,
-                TickMathAdaptor.getSqrtRatioAtTick(tickLower),
-                TickMathAdaptor.getSqrtRatioAtTick(tickUpper),
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
                 liquidity
             );
     }
@@ -380,7 +380,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
         //uint x = 162714639867323407420353073371;
-        return (uint256(TickMathAdaptor.getSqrtRatioAtTick(tick)).rpow(uint256(2e18)).mul(1e36).div(const));
+        return (uint256(TickMath.getSqrtRatioAtTick(tick)).rpow(uint256(2e18)).mul(1e36).div(const));
     }
 
     function _getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPriceInc) internal view returns (uint256) {
@@ -523,15 +523,15 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         // console.log("_liquidityForAmounts");
         // console.log(sqrtRatioX96);
-        // console.log(TickMathAdaptor.getSqrtRatioAtTick(tickLower));
-        // console.log(TickMathAdaptor.getSqrtRatioAtTick(tickUpper));
+        // console.log(TickMath.getSqrtRatioAtTick(tickLower));
+        // console.log(TickMath.getSqrtRatioAtTick(tickUpper));
         // console.log(amount0);
         // console.log(amount1);
         return
             LiquidityAmounts.getLiquidityForAmounts(
                 sqrtRatioX96,
-                TickMathAdaptor.getSqrtRatioAtTick(tickLower),
-                TickMathAdaptor.getSqrtRatioAtTick(tickUpper),
+                TickMath.getSqrtRatioAtTick(tickLower),
+                TickMath.getSqrtRatioAtTick(tickUpper),
                 amount0,
                 amount1
             );

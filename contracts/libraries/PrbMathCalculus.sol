@@ -7,7 +7,7 @@ import {PRBMathUD60x18} from "@prb/math/contracts/PRBMathUD60x18.sol";
 
 import "hardhat/console.sol";
 
-library PrbMathCalculus {
+contract PrbMathCalculus {
     using PRBMathUD60x18 for uint256;
 
     function getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) public pure returns (uint160, uint160) {
@@ -25,7 +25,7 @@ library PrbMathCalculus {
         uint256 p,
         uint256 pL,
         uint256 pH
-    ) public view returns (uint128) {
+    ) public pure returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(1e9));
     }
 

@@ -6,9 +6,13 @@ const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
 describe.only("Strategy rebalance", function () {
-    let contract, contractHelper, tx, amount, rebalancer;
+    let contract, library, contractHelper, tx, amount, rebalancer;
     it("Should deploy contract", async function () {
         await resetFork();
+
+        const Library = await ethers.getContractFactory("PrbMathCalculus");
+        library = await Library.deploy();
+        await library.deployed();
 
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
@@ -21,6 +25,7 @@ describe.only("Strategy rebalance", function () {
             "500000000000000000",
             "262210246107746000",
             "237789753892254000",
+            library.address
         );
         await contract.deployed();
     });
