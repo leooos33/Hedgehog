@@ -15,6 +15,7 @@ import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
 import "../libraries/TickMathAdaptor.sol";
 import "../libraries/StrategyMath.sol";
+import {IPrbMathCalculus} from "../interfaces/IPrbMathCalculus.sol";
 import "./VaultParams.sol";
 
 import "hardhat/console.sol";
@@ -44,7 +45,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _maxPriceMultiplier,
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
-        uint256 _targetOsqthShare
+        uint256 _targetOsqthShare,
+        address iprbCalculusLib //TODO: move to constants
     )
         public
         VaultParams(
@@ -58,7 +60,11 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             _targetUsdcShare,
             _targetOsqthShare
         )
-    {}
+    {
+        IPrbMathCalculus prbMathCalculus = IPrbMathCalculus(iprbCalculusLib);
+    }
+
+    IPrbMathCalculus prbMathCalculus;
 
     /**
      * @dev Do zero-burns to poke a position on Uniswap so earned fees are
@@ -374,13 +380,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
         //uint x = 162714639867323407420353073371;
-        return ((TickMathAdaptor.getSqrtRatioAtTick(tick)).pow(uint256(2e18)).mul(1e36).div(const));
+        return (uint256(TickMathAdaptor.getSqrtRatioAtTick(tick)).rpow(uint256(2e18)).mul(1e36).div(const));
     }
 
     function _getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPriceInc) internal view returns (uint256) {
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
-            : (block.timestamp.sub(_auctionTriggerTime)).div(params.auctionTime);
+            : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
         uint256 priceMultiplier;
         if (_isPriceInc) {
@@ -422,37 +428,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return __getAuctionPrices(params);
     }
 
-    //@dev <tested>
-    /**
-     * @notice calculate lower and upper tick for liquidity provision on Uniswap
-     */
-    function _getBoundaries(uint256 auctionEthUsdcPrice, uint256 auctionOsqthEthPrice)
-        public
-        view
-        returns (Constants.Boundaries memory)
-    {
-        int24 tickEthUsdc = calculateTick(auctionEthUsdcPrice);
-        int24 tickOsqthEth = calculateTick(auctionOsqthEthPrice);
-
-        int24 tickFloorEthUsdc = _floor(tickEthUsdc, tickSpacingEthUsdc);
-        int24 tickFloorOsqthEth = _floor(tickOsqthEth, tickSpacingOsqthEth);
-
-        int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
-        int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
-
-        int24 ethUsdcThreshold = 1020;
-        int24 osqthEthThreshold = 1020;
-    }
-
-    function _getLiquidityForValue(
-        uint256 v,
-        uint256 p,
-        uint256 pL,
-        uint256 pH
-    ) internal view returns (uint128) {
-        return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(1e9));
-    }
-
     function _getValue(
         uint256 amountEth,
         uint256 amountUsdc,
@@ -468,12 +443,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth
-    ) internal view {
-        (, uint160 ethUsdcTick, , , , , ) = poolEthUsdc.slot0();
-        (, uint160 osqthEthTick, , , , , ) = poolEthOsqth.slot0();
-
-        uint256 ethUsdcPrice = uint256(1e30).div(_getPriceTick(ethUsdcTick));
-        uint256 osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
+    ) internal view returns (Constants.AuctionParams memory) {
+        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getAuctionPurePrices();
 
         bool _isPriceInc = _checkAuctionType(ethUsdcPrice);
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime, _isPriceInc);
@@ -482,7 +453,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 aEthUsdcPrice = ethUsdcPrice.mul(priceMultiplier);
         uint256 aOqsthEthPrice = osqthEthPrice.mul(priceMultiplier);
 
-        Constants.Boundaries boundaries = _getBoundaries(aEthUsdcPrice, aOqsthEthPrice);
+        Constants.Boundaries memory boundaries = _getBoundaries(aEthUsdcPrice, aOqsthEthPrice);
 
         uint256 totalValue = _getValue(
             getBalance(Constants.weth),
@@ -494,14 +465,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18))); //Value multiplier
 
-        uint128 liquidityEthUsdc = _getLiquidityForValue(
+        uint128 liquidityEthUsdc = prbMathCalculus.getLiquidityForValue(
             totalValue.mul(vm).div(1e18),
             ethUsdcPrice,
-            uint256(1e30).div(_getPriceTick(boundaries.ethUsdcUpper)), //проверить порядок
-            uint256(1e30).div(_getPriceTick(boundaries.ethUsdcLower))
+            uint256(1e30).div(_getPriceFromTick(boundaries.ethUsdcUpper)), //проверить порядок
+            uint256(1e30).div(_getPriceFromTick(boundaries.ethUsdcLower))
         );
 
-        uint128 liquidityOsqthEth = _getLiquidityForValue(
+        uint128 liquidityOsqthEth = prbMathCalculus.getLiquidityForValue(
             totalValue.mul(uint256(1e18).sub(vm)),
             osqthEthPrice,
             uint256(1e18).div(_getPriceFromTick(boundaries.osqthEthLower)),
@@ -515,8 +486,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         );
 
         return
-            new Constants.AuctionParams(
-                isPriceInc,
+            Constants.AuctionParams(
+                _isPriceInc,
                 deltaEth,
                 deltaUsdc,
                 deltaOsqth,
@@ -526,68 +497,12 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             );
     }
 
-    struct AuctionParams {
-        bool isPriceInc;
-        uint256 deltaEth;
-        uint256 deltaUsdc;
-        uint256 deltaOsqth;
-        int24 ethUsdcLower;
-        int24 ethUsdcUpper;
-        int24 osqthEthLower;
-        int24 osqthEthUpper;
-        uint128 liquidityEthUsdc;
-        uint128 liquidityOsqthEth;
-    }
+    function _getAuctionPurePrices() internal view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
+        int24 ethUsdcTick = getTick(Constants.poolEthUsdc);
+        int24 osqthEthTick = getTick(Constants.poolEthOsqth);
 
-    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
-        public
-        view
-        returns (Constants.Boundaries memory)
-    {
-        int24 aEthUsdcTick = TickMathAdaptor.getTickAtSqrtRatio(
-            _toUint160(
-                //sqrt(price)*2**96
-                ((aEthUsdcPrice.div(1e18)).sqrt()).mul(79228162514264337593543950336)
-            )
-        );
-
-        int24 aOsqthEthTick = TickMathAdaptor.getTickAtSqrtRatio(
-            _toUint160(((uint256(1e18).div(aOsqthEthPrice)).sqrt()).mul(79228162514264337593543950336))
-        );
-
-        int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
-        int24 tickFloorOsqthEth = _floor(aEthUsdcTick, tickSpacingOsqthEth);
-
-        int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
-        int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
-
-        int24 ethUsdcThreshold = 960;
-        int24 osqthEthThreshold = 960;
-
-        return
-            Constants.Boundaries(
-                tickFloorEthUsdc - ethUsdcThreshold,
-                tickCeilEthUsdc + ethUsdcThreshold,
-                tickFloorOsqthEth - osqthEthThreshold,
-                tickCeilOsqthEth + osqthEthThreshold
-            );
-    }
-
-    function calculateTick(uint256 price) public view returns (int24 tick) {
-        return int24(sqrt(1 / price) * 2**96);
-    }
-
-    function sqrt(uint256 y) internal pure returns (uint256 z) {
-        if (y > 3) {
-            z = y;
-            uint256 x = y / 2 + 1;
-            while (x < z) {
-                z = x;
-                x = (y / x + x) / 2;
-            }
-        } else if (y != 0) {
-            z = 1;
-        }
+        ethUsdcPrice = uint256(1e30).div(_getPriceFromTick(ethUsdcTick));
+        osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
     }
 
     //@dev <tested>
@@ -682,15 +597,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         require(msg.sender == pool);
         if (amount0Delta > 0) IERC20(token0).safeTransfer(msg.sender, uint256(amount0Delta));
         if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
-    }
-
-    //@dev <tested>
-    /// @dev Rounds tick down towards negative infinity so that it's a multiple
-    /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) public pure returns (int24) {
-        int24 compressed = tick / tickSpacing;
-        if (tick < 0 && tick % tickSpacing != 0) compressed--;
-        return compressed * tickSpacing;
     }
 
     // TODO: add to new function
@@ -791,9 +697,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             liquidityOsqthEth
         );
         return (
-            abs(getBalance(Constants.weth).sub(ethAmount0).sub(ethAmount1)),
-            abs(getBalance(Constants.usdc).sub(usdcAmount)),
-            abs(getBalance(Constants.osqth).sub(osqthAmount))
+            getBalance(Constants.weth).suba(ethAmount0).suba(ethAmount1),
+            getBalance(Constants.usdc).suba(usdcAmount),
+            getBalance(Constants.osqth).suba(osqthAmount)
         );
     }
 
@@ -813,5 +719,43 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         // console.log("ethValue %s", ethValue);
         // console.log("totalValue %s", totalValue);
         return totalValue;
+    }
+
+    //@dev <tested>
+    /// @dev Rounds tick down towards negative infinity so that it's a multiple
+    /// of `tickSpacing`.
+    function _floor(int24 tick, int24 tickSpacing) public pure returns (int24) {
+        int24 compressed = tick / tickSpacing;
+        if (tick < 0 && tick % tickSpacing != 0) compressed--;
+        return compressed * tickSpacing;
+    }
+
+    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
+        public
+        view
+        returns (Constants.Boundaries memory)
+    {
+        (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = prbMathCalculus.getTicks(aEthUsdcPrice, aOsqthEthPrice);
+
+        int24 aEthUsdcTick = TickMath.getTickAtSqrtRatio(_aEthUsdcTick);
+
+        int24 aOsqthEthTick = TickMath.getTickAtSqrtRatio(_aOsqthEthTick);
+
+        int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
+        int24 tickFloorOsqthEth = _floor(aEthUsdcTick, tickSpacingOsqthEth);
+
+        int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
+        int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
+
+        int24 ethUsdcThreshold = 960;
+        int24 osqthEthThreshold = 960;
+
+        return
+            Constants.Boundaries(
+                tickFloorEthUsdc - ethUsdcThreshold,
+                tickCeilEthUsdc + ethUsdcThreshold,
+                tickFloorOsqthEth - osqthEthThreshold,
+                tickCeilOsqthEth + osqthEthThreshold
+            );
     }
 }

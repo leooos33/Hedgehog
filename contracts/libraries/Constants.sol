@@ -46,10 +46,10 @@ library Constants {
     }
 
     struct Boundaries {
-        int24 _ethUsdcLower;
-        int24 _ethUsdcUpper;
-        int24 _osqthEthLower;
-        int24 _osqthEthUpper;
+        int24 ethUsdcLower;
+        int24 ethUsdcUpper;
+        int24 osqthEthLower;
+        int24 osqthEthUpper;
     }
 
     struct AuctionParams {

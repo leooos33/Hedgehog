@@ -37,7 +37,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _maxPriceMultiplier,
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
-        uint256 _targetOsqthShare
+        uint256 _targetOsqthShare,
+        address iprbCalculusLib
     )
         public
         VaultAuction(
@@ -49,7 +50,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _maxPriceMultiplier,
             _targetEthShare,
             _targetUsdcShare,
-            _targetOsqthShare
+            _targetOsqthShare,
+            iprbCalculusLib
         )
     {}
 

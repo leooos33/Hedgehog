@@ -35,7 +35,8 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _maxPriceMultiplier,
         uint256 _targetEthShare,
         uint256 _targetUsdcShare,
-        uint256 _targetOsqthShare
+        uint256 _targetOsqthShare,
+        address iprbCalculusLib
     )
         public
         VaultMath(
@@ -47,16 +48,17 @@ contract VaultAuction is IAuction, VaultMath {
             _maxPriceMultiplier,
             _targetEthShare,
             _targetUsdcShare,
-            _targetOsqthShare
+            _targetOsqthShare,
+            iprbCalculusLib
         )
     {}
 
     /**
      * @notice strategy rebalancing based on time threshold
      * @dev need to attach msg.value if buying oSQTH
-     * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
+     * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
+     * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function timeRebalance(
         uint256 amountEth,
@@ -110,7 +112,12 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) internal {
-        Constants.AuctionParams params = _updateAuctionParams(_auctionTriggerTime);
+        Constants.AuctionParams memory params = _getAuctionParams(
+            _auctionTriggerTime,
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth
+        );
 
         _executeAuction(params);
 
@@ -154,10 +161,10 @@ contract VaultAuction is IAuction, VaultMath {
         Constants.Boundaries memory boundaries = _getBoundaries(auctionEthUsdcPrice, auctionOsqthEthPrice);
 
         // console.log("> _executeEmptyAuction => ticks start");
-        // console.logInt(boundaries._ethUsdcLower);
-        // console.logInt(boundaries._ethUsdcUpper);
-        // console.logInt(boundaries._osqthEthLower);
-        // console.logInt(boundaries._osqthEthUpper);
+        // console.logInt(boundaries.ethUsdcLower);
+        // console.logInt(boundaries.ethUsdcUpper);
+        // console.logInt(boundaries.osqthEthLower);
+        // console.logInt(boundaries.osqthEthUpper);
         // console.log("> endregion");
 
         console.log("before first mint");
@@ -168,8 +175,8 @@ contract VaultAuction is IAuction, VaultMath {
         //place orders on Uniswap
         _mintLiquidity(
             Constants.poolEthUsdc,
-            boundaries._ethUsdcLower,
-            boundaries._ethUsdcUpper,
+            boundaries.ethUsdcLower,
+            boundaries.ethUsdcUpper,
             getBalance(Constants.usdc),
             balanceEth
         );
@@ -180,17 +187,17 @@ contract VaultAuction is IAuction, VaultMath {
         console.log("ballance osqth %s", getBalance(Constants.osqth));
         _mintLiquidity(
             Constants.poolEthOsqth,
-            boundaries._osqthEthLower,
-            boundaries._osqthEthUpper,
+            boundaries.osqthEthLower,
+            boundaries.osqthEthUpper,
             getBalance(Constants.weth),
             getBalance(Constants.osqth)
         );
 
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
-            boundaries._ethUsdcLower,
-            boundaries._ethUsdcUpper,
-            boundaries._osqthEthLower,
-            boundaries._osqthEthUpper
+            boundaries.ethUsdcLower,
+            boundaries.ethUsdcUpper,
+            boundaries.osqthEthLower,
+            boundaries.osqthEthUpper
         );
     }
 }
