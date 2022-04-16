@@ -22,9 +22,6 @@ library Constants {
     IOracle public constant oracle = IOracle(0x65D66c76447ccB45dAf1e8044e918fA786A483A1);
 
     struct SharesInfo {
-        uint256 targetEthShare;
-        uint256 targetUsdcShare;
-        uint256 targetOsqthShare;
         uint256 totalSupply;
         uint256 _amountEth;
         uint256 _amountUsdc;

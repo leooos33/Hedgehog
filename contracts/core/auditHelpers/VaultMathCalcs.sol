@@ -14,24 +14,13 @@ pragma abicoder v2;
 //     uint256 public minPriceMultiplier;
 //     uint256 public maxPriceMultiplier;
 
-//     //@dev targeted share of value in a certain token (0.5*100 = 50%)
-//     uint256 public targetEthShare;
-//     uint256 public targetUsdcShare;
-//     uint256 public targetOsqthShare;
 
 //     constructor(
 //         uint256 _minPriceMultiplier,
-//         uint256 _maxPriceMultiplier,
-//         uint256 _targetEthShare,
-//         uint256 _targetUsdcShare,
-//         uint256 _targetOsqthShare
+//         uint256 _maxPriceMultiplier
 //     ) public {
 //         minPriceMultiplier = _minPriceMultiplier;
 //         maxPriceMultiplier = _maxPriceMultiplier;
-
-//         targetEthShare = _targetEthShare;
-//         targetUsdcShare = _targetUsdcShare;
-//         targetOsqthShare = _targetOsqthShare;
 //     }
 
 //     //@dev <tested>
