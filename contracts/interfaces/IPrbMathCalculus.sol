@@ -20,4 +20,6 @@ interface IPrbMathCalculus {
         uint256 pL,
         uint256 pH
     ) external pure returns (uint128);
+
+    function getPriceFromTick(uint160 sqrtRatioAtTick) external pure returns (uint256);
 }

@@ -143,14 +143,14 @@ contract VaultAuction is IAuction, VaultMath {
         address _keeper = msg.sender; // what is it?
         _burnAndCollect(
             Constants.poolEthUsdc,
-            params.boundaries.orderEthUsdcLower,
-            params.boundaries.orderEthUsdcUpper,
+            params.boundaries.ethUsdcLower,
+            params.boundaries.ethUsdcUpper,
             params.liquidityEthUsdc
         );
         _burnAndCollect(
             Constants.poolEthOsqth,
-            params.boundaries.orderEthUsdcLower,
-            params.boundaries.orderOsqthEthUpper,
+            params.boundaries.osqthEthLower,
+            params.boundaries.osqthEthUpper,
             params.liquidityOsqthEth
         );
 

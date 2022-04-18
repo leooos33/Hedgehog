@@ -14,6 +14,9 @@ describe.only("Strategy rebalance", function () {
         library = await Library.deploy();
         await library.deployed();
 
+        console.log(await library.getPriceFromTick("162714639867323407420353073371"));
+        console.log(library.address);
+
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
             utils.parseUnits("4000000000000", 18),
@@ -28,6 +31,8 @@ describe.only("Strategy rebalance", function () {
             library.address
         );
         await contract.deployed();
+
+        // console.log(contract.address);
     });
 
     it("Should deploy V3Helper", async function () {

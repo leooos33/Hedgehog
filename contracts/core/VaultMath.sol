@@ -61,7 +61,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             _targetOsqthShare
         )
     {
-        IPrbMathCalculus prbMathCalculus = IPrbMathCalculus(iprbCalculusLib);
+        prbMathCalculus = IPrbMathCalculus(iprbCalculusLib);
     }
 
     IPrbMathCalculus prbMathCalculus;
@@ -377,10 +377,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     function _getPriceFromTick(int24 tick) internal view returns (uint256) {
-        //const = 2^192
-        uint256 const = 6277101735386680763835789423207666416102355444464034512896;
         //uint x = 162714639867323407420353073371;
-        return (uint256(TickMath.getSqrtRatioAtTick(tick)).rpow(uint256(2e18)).mul(1e36).div(const));
+
+        console.log(uint256(TickMath.getSqrtRatioAtTick(tick)));
+        return prbMathCalculus.getPriceFromTick(TickMath.getSqrtRatioAtTick(tick));
     }
 
     function _getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPriceInc) internal view returns (uint256) {

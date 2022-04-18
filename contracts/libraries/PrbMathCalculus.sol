@@ -10,7 +10,8 @@ import "hardhat/console.sol";
 contract PrbMathCalculus {
     using PRBMathUD60x18 for uint256;
 
-    function getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) public pure returns (uint160, uint160) {
+    function getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) public view returns (uint160, uint160) {
+        console.log("getTicks %s", aOsqthEthPrice);
         return (
             _toUint160(
                 //sqrt(price)*2**96
@@ -27,6 +28,13 @@ contract PrbMathCalculus {
         uint256 pH
     ) public pure returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(1e9));
+    }
+
+    function getPriceFromTick(uint160 sqrtRatioAtTick) public pure returns (uint256) {
+        //const = 2^192
+        uint256 const = 6277101735386680763835789423207666416102355444464034512896;
+
+        return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
     //@dev <tested>
