@@ -48,11 +48,6 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public minPriceMultiplier;
     uint256 public maxPriceMultiplier;
 
-    //@dev targeted share of value in a certain token (0.5*100 = 50%)
-    uint256 public targetEthShare;
-    uint256 public targetUsdcShare;
-    uint256 public targetOsqthShare;
-
     /**
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
@@ -61,9 +56,6 @@ abstract contract VaultParams is IERC20, ERC20 {
        @param _auctionTime auction duration (seconds)
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
-       @param _targetEthShare targeted share of value in wETH (0.5*1e18 = 50% of total value(in usd) in wETH)
-       @param _targetUsdcShare targeted share of value in USDC (~0.2622*1e18 = 26.22% of total value(in usd) in USDC)
-       @param _targetOsqthShare targeted share of value in oSQTH (~0.2378*1e18 = 23.78% of total value(in usd) in oSQTH)
      */
     constructor(
         uint256 _cap,
@@ -71,10 +63,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier,
-        uint256 _targetEthShare,
-        uint256 _targetUsdcShare,
-        uint256 _targetOsqthShare
+        uint256 _maxPriceMultiplier
     ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
@@ -86,9 +75,6 @@ abstract contract VaultParams is IERC20, ERC20 {
         auctionTime = _auctionTime;
         minPriceMultiplier = _minPriceMultiplier;
         maxPriceMultiplier = _maxPriceMultiplier;
-        targetEthShare = _targetEthShare;
-        targetUsdcShare = _targetUsdcShare;
-        targetOsqthShare = _targetOsqthShare;
 
         governance = msg.sender;
 

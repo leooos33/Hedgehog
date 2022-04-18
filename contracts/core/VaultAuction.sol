@@ -22,9 +22,6 @@ contract VaultAuction is IAuction, VaultMath {
        @param _auctionTime auction duration (seconds)
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
-       @param _targetEthShare targeted share of value in wETH (0.5*1e18 = 50% of total value(in usd) in wETH)
-       @param _targetUsdcShare targeted share of value in USDC (~0.2622*1e18 = 26.22% of total value(in usd) in USDC)
-       @param _targetOsqthShare targeted share of value in oSQTH (~0.2378*1e18 = 23.78% of total value(in usd) in oSQTH)
      */
     constructor(
         uint256 _cap,
@@ -32,10 +29,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier,
-        uint256 _targetEthShare,
-        uint256 _targetUsdcShare,
-        uint256 _targetOsqthShare,
+        uint256 _maxPriceMultiplier
         address iprbCalculusLib
     )
         public
@@ -45,10 +39,7 @@ contract VaultAuction is IAuction, VaultMath {
             _rebalancePriceThreshold,
             _auctionTime,
             _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _targetEthShare,
-            _targetUsdcShare,
-            _targetOsqthShare,
+            _maxPriceMultiplier
             iprbCalculusLib
         )
     {}
@@ -72,7 +63,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         _rebalance(auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
 
-        emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        //emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
     /** TODO
@@ -113,13 +104,14 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountOsqth
     ) internal {
         Constants.AuctionParams memory params = _getAuctionParams(
-            _auctionTriggerTime,
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth
+            _auctionTriggerTime
         );
 
-        _executeAuction(params);
+        _executeAuction(
+            params,             
+            _amountEth,
+            _amountUsdc,
+            _amountOsqth);
 
         emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
     }
