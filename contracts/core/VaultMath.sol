@@ -543,22 +543,12 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint256 amount0,
-        uint256 amount1
+        uint128 liquidity
     ) public {
-        // amount0 = uint256(29723872225);
-        // amount1 = uint256(8760257699100622726);
-        console.log("amount %s", amount0);
-        console.log("amount %s", amount1);
+        console.log("pool %s", pool);
         console.log("tickLower %s", uint256(tickLower));
         console.log("tickUpper %s", uint256(tickUpper));
-        console.log("tick %s", uint256(getTick(pool)));
-
-        uint128 liquidity = _liquidityForAmounts(pool, tickLower, tickUpper, amount0, amount1);
-        console.log("_mintLiquidity => liquidity %s", liquidity);
-        (uint256 a, uint256 b) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
-        console.log(a);
-        console.log(b);
+        console.log("liquidity %s", uint256(liquidity));
 
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);

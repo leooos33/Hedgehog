@@ -124,6 +124,14 @@ contract VaultAuction is IAuction, VaultMath {
         emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
     }
 
+    // bool isPriceInc;
+    // uint256 deltaEth;
+    // uint256 deltaUsdc;
+    // uint256 deltaOsqth;
+    // Boundaries boundaries;
+    // uint128 liquidityEthUsdc;
+    // uint128 liquidityOsqthEth;
+
     /**
      * @notice execute auction based on the parameters calculated
      * @dev withdraw all liquidity from the positions
@@ -132,72 +140,65 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
     function _executeAuction(Constants.AuctionParams memory params) internal {
-        // (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        // (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper);
-        // _burnAndCollect(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper, liquidityEthUsdc);
-        // _burnAndCollect(Constants.poolEthOsqth, orderEthUsdcLower, orderOsqthEthUpper, liquidityOsqthEth);
-        // if (_isPriceInc) {
-        //     //pull in tokens from sender
-        //     Constants.usdc.transferFrom(_keeper, address(this), _deltaUsdc);
-        //     Constants.weth.transfer(_keeper, _deltaEth);
-        //     Constants.osqth.transfer(_keeper, _deltaOsqth);
-        // } else {
-        //     Constants.weth.transferFrom(_keeper, address(this), _deltaEth);
-        //     Constants.osqth.transferFrom(_keeper, address(this), _deltaOsqth);
-        //     Constants.usdc.transfer(_keeper, _deltaUsdc);
-        // }
-        // uint256 balanceEth = uint256(1e18).mul(totalValue.div(2).sub(getBalance(Constants.usdc).mul(1e12))).div(
-        //     auctionEthUsdcPrice
-        // );
-        // console.log("balanceEth %s", balanceEth);
-        // _executeEmptyAuction(balanceEth, auctionEthUsdcPrice, auctionOsqthEthPrice);
+        address _keeper = msg.sender; // what is it?
+        _burnAndCollect(
+            Constants.poolEthUsdc,
+            params.boundaries.orderEthUsdcLower,
+            params.boundaries.orderEthUsdcUpper,
+            params.liquidityEthUsdc
+        );
+        _burnAndCollect(
+            Constants.poolEthOsqth,
+            params.boundaries.orderEthUsdcLower,
+            params.boundaries.orderOsqthEthUpper,
+            params.liquidityOsqthEth
+        );
+
+        if (params.isPriceInc) {
+            //pull in tokens from sender
+            Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc);
+            Constants.weth.transfer(_keeper, params.deltaEth);
+            Constants.osqth.transfer(_keeper, params.deltaOsqth);
+        } else {
+            Constants.weth.transferFrom(_keeper, address(this), params.deltaEth);
+            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth);
+            Constants.usdc.transfer(_keeper, params.deltaUsdc);
+        }
+
+        _executeEmptyAuction(params);
     }
 
-    function _executeEmptyAuction(
-        uint256 balanceEth,
-        uint256 auctionEthUsdcPrice,
-        uint256 auctionOsqthEthPrice
-    ) internal {
-        Constants.Boundaries memory boundaries = _getBoundaries(auctionEthUsdcPrice, auctionOsqthEthPrice);
-
-        // console.log("> _executeEmptyAuction => ticks start");
-        // console.logInt(boundaries.ethUsdcLower);
-        // console.logInt(boundaries.ethUsdcUpper);
-        // console.logInt(boundaries.osqthEthLower);
-        // console.logInt(boundaries.osqthEthUpper);
-        // console.log("> endregion");
-
-        console.log("before first mint");
-        console.log("ballance weth %s", getBalance(Constants.weth));
-        console.log("ballance usdc %s", getBalance(Constants.usdc));
-        console.log("ballance osqth %s", getBalance(Constants.osqth));
+    function _executeEmptyAuction(Constants.AuctionParams memory params) internal {
+        // console.log("before first mint");
+        // console.log("ballance weth %s", getBalance(Constants.weth));
+        // console.log("ballance usdc %s", getBalance(Constants.usdc));
+        // console.log("ballance osqth %s", getBalance(Constants.osqth));
 
         //place orders on Uniswap
         _mintLiquidity(
             Constants.poolEthUsdc,
-            boundaries.ethUsdcLower,
-            boundaries.ethUsdcUpper,
-            getBalance(Constants.usdc),
-            balanceEth
+            params.boundaries.ethUsdcLower,
+            params.boundaries.ethUsdcUpper,
+            params.liquidityEthUsdc
         );
 
-        console.log("before second mint");
-        console.log("ballance weth %s", getBalance(Constants.weth));
-        console.log("ballance usdc %s", getBalance(Constants.usdc));
-        console.log("ballance osqth %s", getBalance(Constants.osqth));
+        // console.log("before second mint");
+        // console.log("ballance weth %s", getBalance(Constants.weth));
+        // console.log("ballance usdc %s", getBalance(Constants.usdc));
+        // console.log("ballance osqth %s", getBalance(Constants.osqth));
+
         _mintLiquidity(
             Constants.poolEthOsqth,
-            boundaries.osqthEthLower,
-            boundaries.osqthEthUpper,
-            getBalance(Constants.weth),
-            getBalance(Constants.osqth)
+            params.boundaries.osqthEthLower,
+            params.boundaries.osqthEthUpper,
+            params.liquidityOsqthEth
         );
 
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
-            boundaries.ethUsdcLower,
-            boundaries.ethUsdcUpper,
-            boundaries.osqthEthLower,
-            boundaries.osqthEthUpper
+            params.boundaries.ethUsdcLower,
+            params.boundaries.ethUsdcUpper,
+            params.boundaries.osqthEthLower,
+            params.boundaries.osqthEthUpper
         );
     }
 }
