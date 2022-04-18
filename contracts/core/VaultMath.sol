@@ -39,7 +39,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier
+        uint256 _maxPriceMultiplier,
         address iprbCalculusLib //TODO: move to constants
     )
         public
@@ -378,10 +378,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         uint256 priceMultiplier;
         if (_isPriceInc) {
-                priceMultiplier = minPriceMultiplier.add(
+            priceMultiplier = minPriceMultiplier.add(
                 auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
             );
-
         } else {
             priceMultiplier = maxPriceMultiplier.sub(
                 auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
@@ -401,10 +400,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
     }
 
-    function _getAuctionParams(
-        uint256 _auctionTriggerTime
-    ) 
-    internal view returns (Constants.AuctionParams memory) {
+    function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
         bool _isPriceInc = _checkAuctionType(ethUsdcPrice);
@@ -412,20 +408,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         //boundaries for auction prices (current price * multiplier)
         Constants.Boundaries memory boundaries = _getBoundaries(
-            ethUsdcPrice.mul(priceMultiplier), 
+            ethUsdcPrice.mul(priceMultiplier),
             osqthEthPrice.mul(priceMultiplier)
         );
 
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = _getTotalAmounts();
 
         //Value for LPing
-        uint256 totalValue=_getValue(
-            ethBalance,
-            usdcBalance,
-            osqthBalance,
-            ethUsdcPrice,
-            osqthEthPrice
-        ).mul(uint256(2e18) - priceMultiplier);
+        uint256 totalValue = _getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
+            uint256(2e18) - priceMultiplier
+        );
 
         uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18))); //Value multiplier
 
@@ -503,6 +495,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
                 amount1
             );
     }
+
     //TODO
     //@dev <tested>
     /// @dev Deposits liquidity in a range on the Uniswap pool.
@@ -569,9 +562,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         )
     {
         uint256 depositorValue = _getValue(
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
+            params._amountEth,
+            params._amountUsdc,
+            params._amountOsqth,
             params.ethUsdcPrice,
             params.osqthEthPrice
         );
@@ -583,9 +576,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
                 depositorValue.mul(507924136843192000).div(params.ethUsdcPrice),
                 depositorValue.mul(243509747368953000).div(uint256(1e30)),
                 depositorValue.mul(248566115787854000).div(params.osqthEthPrice).div(params.ethUsdcPrice)
-                );
+            );
         } else {
-            uint256 totalValue = getValue(
+            uint256 totalValue = _getValue(
                 params.osqthAmount,
                 params.ethUsdcPrice,
                 params.ethAmount,

@@ -31,7 +31,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier
+        uint256 _maxPriceMultiplier,
         address iprbCalculusLib
     )
         public
@@ -41,7 +41,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _rebalancePriceThreshold,
             _auctionTime,
             _minPriceMultiplier,
-            _maxPriceMultiplier
+            _maxPriceMultiplier,
             iprbCalculusLib
         )
     {}
@@ -79,6 +79,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         if (amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, address(this), _amountOsqth);
 
         //Mint shares to user
+        console.log(totalSupply());
+        console.log("_shares %s", _shares);
         _mint(to, _shares);
         require(totalSupply() <= cap, "Cap is reached");
 

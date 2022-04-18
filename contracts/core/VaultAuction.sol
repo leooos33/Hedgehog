@@ -29,7 +29,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier
+        uint256 _maxPriceMultiplier,
         address iprbCalculusLib
     )
         public
@@ -39,7 +39,7 @@ contract VaultAuction is IAuction, VaultMath {
             _rebalancePriceThreshold,
             _auctionTime,
             _minPriceMultiplier,
-            _maxPriceMultiplier
+            _maxPriceMultiplier,
             iprbCalculusLib
         )
     {}
@@ -103,26 +103,12 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) internal {
-        Constants.AuctionParams memory params = _getAuctionParams(
-            _auctionTriggerTime
-        );
+        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-        _executeAuction(
-            params,             
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth);
+        _executeAuction(params, _amountEth, _amountUsdc, _amountOsqth);
 
         emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
     }
-
-    // bool isPriceInc;
-    // uint256 deltaEth;
-    // uint256 deltaUsdc;
-    // uint256 deltaOsqth;
-    // Boundaries boundaries;
-    // uint128 liquidityEthUsdc;
-    // uint128 liquidityOsqthEth;
 
     /**
      * @notice execute auction based on the parameters calculated
@@ -131,7 +117,12 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(Constants.AuctionParams memory params) internal {
+    function _executeAuction(
+        Constants.AuctionParams memory params,
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth
+    ) internal {
         address _keeper = msg.sender; // what is it?
         _burnAndCollect(
             Constants.poolEthUsdc,

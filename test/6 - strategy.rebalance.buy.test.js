@@ -14,8 +14,7 @@ describe.only("Strategy rebalance", function () {
         library = await Library.deploy();
         await library.deployed();
 
-        console.log(await library.getPriceFromTick("162714639867323407420353073371"));
-        console.log(library.address);
+        // console.log(await library.getPriceFromTick("162714639867323407420353073371"));
 
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
@@ -25,14 +24,9 @@ describe.only("Strategy rebalance", function () {
             "10",
             "900000000000000000",
             "1100000000000000000",
-            "500000000000000000",
-            "262210246107746000",
-            "237789753892254000",
             library.address
         );
         await contract.deployed();
-
-        // console.log(contract.address);
     });
 
     it("Should deploy V3Helper", async function () {
@@ -104,125 +98,125 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
     });
 
-    it("swap", async function () {
-        const seller = (await ethers.getSigners())[6];
+    // it("swap", async function () {
+    //     const seller = (await ethers.getSigners())[6];
 
-        const testAmount = utils.parseUnits("10", 12).toString();
-        console.log(testAmount);
+    //     const testAmount = utils.parseUnits("10", 12).toString();
+    //     console.log(testAmount);
 
-        await getUSDC(testAmount, contractHelper.address);
+    //     await getUSDC(testAmount, contractHelper.address);
 
-        expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal(testAmount);
-        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
+    //     expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal(testAmount);
+    //     expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
 
-        amount = await contractHelper.connect(seller).getTwapR();
-        // console.log(amount);
+    //     amount = await contractHelper.connect(seller).getTwapR();
+    //     // console.log(amount);
 
-        tx = await contractHelper.connect(seller).swapR(
-            testAmount
-        );
-        await tx.wait();
+    //     tx = await contractHelper.connect(seller).swapR(
+    //         testAmount
+    //     );
+    //     await tx.wait();
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
         
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
+    //     await hre.network.provider.request({
+    //         method: "evm_mine",
+    //     });
 
-        amount = await contractHelper.connect(seller).getTwapR();
-        // console.log(amount);
+    //     amount = await contractHelper.connect(seller).getTwapR();
+    //     // console.log(amount);
 
-        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("2914653369323031873696");
-        expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
-    });
-
-    it("rebalance", async function () {
-        const wethInput = wethInputR;
-        const usdcInput = usdcInputR;
-        const osqthInput = osqthInputR;
-
-        expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal(wethInput);
-        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal(usdcInput);
-        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
-
-        tx = await contract.connect(rebalancer).timeRebalance(
-            wethInput,
-            usdcInput,
-            osqthInput
-        );
-        await tx.wait();
-
-        expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("0");
-        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("1257420148");
-        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
-
-        // const amount = await contract._getTotalAmounts();
-        // console.log(">>", amount);
-    });
-
-    // it("_position", async function () {
-    //     // console.log(await contract.orderEthUsdcLower());
-    //     // console.log(await contract.orderEthUsdcUpper());
-    //     // console.log(await contract.orderOsqthEthLower());
-    //     // console.log(await contract.orderOsqthEthUpper());
-    //     amount = await contract._position(
-    //         poolEthOsqth,
-    //         "12180",
-    //         "14280"
-    //     );
-    //     console.log(amount);
-
-    //     amount = await contract._position(
-    //         poolEthUsdc,
-    //         "193800",
-    //         "195900",
-    //     );
-    //     console.log(amount);
-
-    //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
-    //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
-    //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
-    //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    //     expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("2914653369323031873696");
+    //     expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
     // });
 
-    // it("_amountsForLiquidity", async function () {
-    //     amount = await contract._amountsForLiquidity(
-    //         poolEthUsdc,
-    //         "193800",
-    //         "195900",
-    //         "36578863"
-    //     );
-    //     console.log(amount);
+    // it("rebalance", async function () {
+    //     const wethInput = wethInputR;
+    //     const usdcInput = usdcInputR;
+    //     const osqthInput = osqthInputR;
 
-    //     amount = await contract._amountsForLiquidity(
-    //         poolEthOsqth,
-    //         "12180",
-    //         "14280",
-    //         "340709549703421612825"
+    //     expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal(wethInput);
+    //     expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal(usdcInput);
+    //     expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
+
+    //     tx = await contract.connect(rebalancer).timeRebalance(
+    //         wethInput,
+    //         usdcInput,
+    //         osqthInput
     //     );
-    //     console.log(amount);
-    //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
-    //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
-    //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
-    //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    //     await tx.wait();
+
+    //     expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("0");
+    //     expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("1257420148");
+    //     expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
+
+    //     // const amount = await contract._getTotalAmounts();
+    //     // console.log(">>", amount);
     // });
+
+    // // it("_position", async function () {
+    // //     // console.log(await contract.orderEthUsdcLower());
+    // //     // console.log(await contract.orderEthUsdcUpper());
+    // //     // console.log(await contract.orderOsqthEthLower());
+    // //     // console.log(await contract.orderOsqthEthUpper());
+    // //     amount = await contract._position(
+    // //         poolEthOsqth,
+    // //         "12180",
+    // //         "14280"
+    // //     );
+    // //     console.log(amount);
+
+    // //     amount = await contract._position(
+    // //         poolEthUsdc,
+    // //         "193800",
+    // //         "195900",
+    // //     );
+    // //     console.log(amount);
+
+    // //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
+    // //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
+    // //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
+    // //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    // // });
+
+    // // it("_amountsForLiquidity", async function () {
+    // //     amount = await contract._amountsForLiquidity(
+    // //         poolEthUsdc,
+    // //         "193800",
+    // //         "195900",
+    // //         "36578863"
+    // //     );
+    // //     console.log(amount);
+
+    // //     amount = await contract._amountsForLiquidity(
+    // //         poolEthOsqth,
+    // //         "12180",
+    // //         "14280",
+    // //         "340709549703421612825"
+    // //     );
+    // //     console.log(amount);
+    // //     // assert(amount[0].toString() == "0", `test_sute: sub 1`);
+    // //     // assert(amount[1].toString() == "0", `test_sute: sub 2`);
+    // //     // assert(amount[2].toString() == "0", `test_sute: sub 3`);
+    // //     // assert(amount[3].toString() == "0", `test_sute: sub 4`);
+    // // });
 
 });

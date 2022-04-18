@@ -14,7 +14,6 @@ pragma abicoder v2;
 //     uint256 public minPriceMultiplier;
 //     uint256 public maxPriceMultiplier;
 
-
 //     constructor(
 //         uint256 _minPriceMultiplier,
 //         uint256 _maxPriceMultiplier
