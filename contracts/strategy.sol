@@ -69,6 +69,11 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _amountOsqth
         );
 
+        console.log("_shares %s", _shares);
+        console.log("amountEth %s", amountEth);
+        console.log("amountUsdc %s", amountUsdc);
+        console.log("amountOsqth %s", amountOsqth);
+
         require(amountEth >= _amountEthMin, "Amount ETH min");
         require(amountUsdc >= _amountUsdcMin, "Amount USDC min");
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
@@ -79,8 +84,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         if (amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, address(this), _amountOsqth);
 
         //Mint shares to user
-        console.log(totalSupply());
-        console.log("_shares %s", _shares);
         _mint(to, _shares);
         require(totalSupply() <= cap, "Cap is reached");
 

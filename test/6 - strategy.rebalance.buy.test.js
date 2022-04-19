@@ -95,7 +95,7 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
 
         // Shares
-        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725783");
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725881");
     });
 
     // it("swap", async function () {

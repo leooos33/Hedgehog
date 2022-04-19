@@ -22,4 +22,12 @@ interface IPrbMathCalculus {
     ) external pure returns (uint128);
 
     function getPriceFromTick(uint160 sqrtRatioAtTick) external pure returns (uint256);
+
+    function getValue(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        uint256 ethUsdcPrice,
+        uint256 osqthEthPrice
+    ) external view returns (uint256);
 }

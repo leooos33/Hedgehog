@@ -130,6 +130,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             true
         );
 
+        // console.log("calcSharesAndAmounts");
+        // console.log("osqthEthPrice %s", osqthEthPrice);
+        // console.log("ethUsdcPrice %s", ethUsdcPrice);
+        // console.log("ethAmount %s", ethAmount);
+        // console.log("usdcAmount %s", usdcAmount);
+        // console.log("osqthAmount %s", osqthAmount);
+
         Constants.SharesInfo memory params = Constants.SharesInfo(
             totalSupply(),
             _amountEth,
@@ -143,6 +150,54 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         );
 
         return __calcSharesAndAmounts(params);
+    }
+
+    // TODO: add to new function
+    //@dev <tested>
+    function __calcSharesAndAmounts(Constants.SharesInfo memory params)
+        public
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        uint256 depositorValue = prbMathCalculus.getValue(
+            params._amountEth,
+            params._amountUsdc,
+            params._amountOsqth,
+            params.ethUsdcPrice,
+            params.osqthEthPrice
+        );
+
+        // console.log("depositorValue %s", depositorValue);
+
+        if (params.totalSupply == 0) {
+            //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
+            return (
+                depositorValue,
+                depositorValue.mul(507924136843192000).div(params.ethUsdcPrice),
+                depositorValue.mul(243509747368953000).div(uint256(1e30)),
+                depositorValue.mul(248566115787854000).div(params.osqthEthPrice).div(params.ethUsdcPrice)
+            );
+        } else {
+            uint256 totalValue = prbMathCalculus.getValue(
+                params.osqthAmount,
+                params.ethUsdcPrice,
+                params.ethAmount,
+                params.osqthEthPrice,
+                params.usdcAmount
+            );
+
+            return (
+                params.totalSupply.mul(depositorValue).div(totalValue),
+                params.ethAmount.mul(depositorValue).div(totalValue),
+                params.usdcAmount.mul(depositorValue).div(totalValue),
+                params.osqthAmount.mul(depositorValue).div(totalValue)
+            );
+        }
     }
 
     function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
@@ -390,16 +445,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return priceMultiplier;
     }
 
-    function _getValue(
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth,
-        uint256 ethUsdcPrice,
-        uint256 osqthEthPrice
-    ) internal view returns (uint256) {
-        return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
-    }
-
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
@@ -415,9 +460,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = _getTotalAmounts();
 
         //Value for LPing
-        uint256 totalValue = _getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
-            uint256(2e18) - priceMultiplier
-        );
+        uint256 totalValue = prbMathCalculus
+            .getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice)
+            .mul(uint256(2e18) - priceMultiplier);
 
         uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18))); //Value multiplier
 
@@ -547,52 +592,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         require(msg.sender == pool);
         if (amount0Delta > 0) IERC20(token0).safeTransfer(msg.sender, uint256(amount0Delta));
         if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
-    }
-
-    // TODO: add to new function
-    //@dev <tested>
-    function __calcSharesAndAmounts(Constants.SharesInfo memory params)
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 depositorValue = _getValue(
-            params._amountEth,
-            params._amountUsdc,
-            params._amountOsqth,
-            params.ethUsdcPrice,
-            params.osqthEthPrice
-        );
-
-        if (params.totalSupply == 0) {
-            //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
-            return (
-                depositorValue,
-                depositorValue.mul(507924136843192000).div(params.ethUsdcPrice),
-                depositorValue.mul(243509747368953000).div(uint256(1e30)),
-                depositorValue.mul(248566115787854000).div(params.osqthEthPrice).div(params.ethUsdcPrice)
-            );
-        } else {
-            uint256 totalValue = _getValue(
-                params.osqthAmount,
-                params.ethUsdcPrice,
-                params.ethAmount,
-                params.osqthEthPrice,
-                params.usdcAmount
-            );
-
-            return (
-                params.totalSupply.mul(depositorValue).div(totalValue),
-                params.ethAmount.mul(depositorValue).div(totalValue),
-                params.usdcAmount.mul(depositorValue).div(totalValue),
-                params.osqthAmount.mul(depositorValue).div(totalValue)
-            );
-        }
     }
 
     //@dev <tested>

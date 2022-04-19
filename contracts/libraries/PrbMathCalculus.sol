@@ -37,10 +37,27 @@ contract PrbMathCalculus {
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
+    function getValue(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        uint256 ethUsdcPrice,
+        uint256 osqthEthPrice
+    ) public view returns (uint256) {
+        // console.log("_getValue");
+        // console.log("amountEth %s", amountEth);
+        // console.log("amountUsdc %s", amountUsdc);
+        // console.log("amountOsqth %s", amountOsqth);
+        // console.log("ethUsdcPrice %s", ethUsdcPrice);
+        // console.log("osqthEthPrice %s", osqthEthPrice);
+
+        return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
+    }
+
     //@dev <tested>
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) public pure returns (int24) {
+    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
         int24 compressed = tick / tickSpacing;
         if (tick < 0 && tick % tickSpacing != 0) compressed--;
         return compressed * tickSpacing;
