@@ -10,7 +10,7 @@ describe.only("Strategy rebalance", function () {
     it("Should deploy contract", async function () {
         await resetFork();
 
-        const Library = await ethers.getContractFactory("PrbMathCalculus");
+        const Library = await ethers.getContractFactory("UniswapAdaptor");
         library = await Library.deploy();
         await library.deployed();
 

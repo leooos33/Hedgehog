@@ -160,7 +160,11 @@ library PRBMathUD60x18 {
     }
 
     function sub(uint256 x, uint256 y) internal pure returns (uint256 z) {
-        require((z = x - y) <= x, "ds-math-sub-underflow");
+        z = x - y;
+    }
+
+    function add(uint256 x, uint256 y) internal pure returns (uint256 z) {
+        z = x + y;
     }
 
     function suba(uint256 x, uint256 y) internal pure returns (uint256) {

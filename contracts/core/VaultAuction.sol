@@ -6,7 +6,7 @@ pragma abicoder v2;
 import "../interfaces/IVault.sol";
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
-import "../libraries/StrategyMath.sol";
+import "../libraries/math/StrategyMath.sol";
 import "./VaultMath.sol";
 
 import "hardhat/console.sol";
@@ -30,7 +30,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address iprbCalculusLib
+        address uniswapAdaptorAddress
     )
         public
         VaultMath(
@@ -40,7 +40,7 @@ contract VaultAuction is IAuction, VaultMath {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            iprbCalculusLib
+            uniswapAdaptorAddress
         )
     {}
 

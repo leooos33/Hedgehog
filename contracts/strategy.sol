@@ -8,7 +8,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import "./interfaces/IVault.sol";
 import "./libraries/SharedEvents.sol";
 import "./libraries/Constants.sol";
-import "./libraries/StrategyMath.sol";
+import "./libraries/math/StrategyMath.sol";
 import "./core/VaultAuction.sol";
 
 import "hardhat/console.sol";
@@ -32,7 +32,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address iprbCalculusLib
+        address uniswapAdaptorAddress
     )
         public
         VaultAuction(
@@ -42,7 +42,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            iprbCalculusLib
+            uniswapAdaptorAddress
         )
     {}
 
