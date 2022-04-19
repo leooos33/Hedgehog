@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Unlicense
-pragma solidity =0.7.6;
+pragma solidity =0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";

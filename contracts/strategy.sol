@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity =0.7.6;
+pragma solidity =0.8.4;
 pragma abicoder v2;
 
-import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 import "./interfaces/IVault.sol";
 import "./libraries/SharedEvents.sol";

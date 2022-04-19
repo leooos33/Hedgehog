@@ -1,27 +1,26 @@
 // SPDX-License-Identifier: Unlicense
 
-pragma solidity =0.7.6;
+pragma solidity =0.8.4;
 pragma abicoder v2;
 
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/SafeERC20.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IUniswapV3MintCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
 import {IUniswapV3SwapCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
-import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
+// import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
-import "../libraries/StrategyMath.sol";
+import {PRBMathUD60x18} from "../libraries/PRBMathUD60x18.sol";
 import {IPrbMathCalculus} from "../interfaces/IPrbMathCalculus.sol";
 import "./VaultParams.sol";
 
 import "hardhat/console.sol";
 
 contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUniswapV3SwapCallback {
-    using StrategyMath for uint256;
+    using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
     /**
