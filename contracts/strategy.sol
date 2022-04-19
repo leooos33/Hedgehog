@@ -79,9 +79,9 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
 
         //Pull in tokens
-        if (amountEth > 0) Constants.weth.transferFrom(msg.sender, address(this), _amountEth);
-        if (amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, address(this), _amountUsdc);
-        if (amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, address(this), _amountOsqth);
+        if (amountEth > 0) Constants.weth.transferFrom(msg.sender, address(this), amountEth);
+        if (amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, address(this), amountUsdc);
+        if (amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, address(this), amountOsqth);
 
         //Mint shares to user
         _mint(to, _shares);
