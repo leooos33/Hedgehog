@@ -143,9 +143,9 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
             Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
         } else {
-            Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc);
-            Constants.weth.transfer(_keeper, params.deltaEth);
-            Constants.osqth.transfer(_keeper, params.deltaOsqth);
+            Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
+            Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
+            Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
         }
 
         _executeEmptyAuction(params);
