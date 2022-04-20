@@ -246,6 +246,11 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("15471521092706281128");
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("26219903217");
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("45604281980007161308");
+
+        const amount = await contract._getTotalAmounts();
+        expect(amount[0].toString()).to.equal("3");
+        expect(amount[1].toString()).to.equal("2");
+        expect(amount[2].toString()).to.equal("1");
     });
 
 });
