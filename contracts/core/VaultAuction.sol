@@ -105,9 +105,9 @@ contract VaultAuction is IAuction, VaultMath {
     ) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-        _executeAuction(params, _amountEth, _amountUsdc, _amountOsqth);
+        _executeAuction(params);
 
-        emit SharedEvents.Rebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.Rebalance(msg.sender, params.deltaEth, params.deltaUsdc, params.deltaOsqth);
     }
 
     /**
@@ -117,47 +117,46 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(
-        Constants.AuctionParams memory params,
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
-    ) internal {
-        address _keeper = msg.sender; // what is it?
+    function _executeAuction(Constants.AuctionParams memory params) internal {
+        address _keeper = msg.sender;
+
+        (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
         _burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
-            params.liquidityEthUsdc
+            liquidityEthUsdc
         );
+
+        (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
         _burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
-            params.liquidityOsqthEth
+            liquidityOsqthEth
         );
 
+        console.log(params.isPriceInc);
         if (params.isPriceInc) {
             //pull in tokens from sender
+            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
+            Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
+            Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
+        } else {
             Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc);
             Constants.weth.transfer(_keeper, params.deltaEth);
             Constants.osqth.transfer(_keeper, params.deltaOsqth);
-        } else {
-            Constants.weth.transferFrom(_keeper, address(this), params.deltaEth);
-            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth);
-            Constants.usdc.transfer(_keeper, params.deltaUsdc);
         }
 
         _executeEmptyAuction(params);
     }
 
     function _executeEmptyAuction(Constants.AuctionParams memory params) internal {
-        // console.log("before first mint");
-        // console.log("ballance weth %s", getBalance(Constants.weth));
-        // console.log("ballance usdc %s", getBalance(Constants.usdc));
-        // console.log("ballance osqth %s", getBalance(Constants.osqth));
+        console.log("before first mint");
+        console.log("ballance weth %s", getBalance(Constants.weth));
+        console.log("ballance usdc %s", getBalance(Constants.usdc));
+        console.log("ballance osqth %s", getBalance(Constants.osqth));
 
-        //place orders on Uniswap
         _mintLiquidity(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
@@ -165,10 +164,10 @@ contract VaultAuction is IAuction, VaultMath {
             params.liquidityEthUsdc
         );
 
-        // console.log("before second mint");
-        // console.log("ballance weth %s", getBalance(Constants.weth));
-        // console.log("ballance usdc %s", getBalance(Constants.usdc));
-        // console.log("ballance osqth %s", getBalance(Constants.osqth));
+        console.log("before second mint");
+        console.log("ballance weth %s", getBalance(Constants.weth));
+        console.log("ballance usdc %s", getBalance(Constants.usdc));
+        console.log("ballance osqth %s", getBalance(Constants.osqth));
 
         _mintLiquidity(
             Constants.poolEthOsqth,

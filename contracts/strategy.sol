@@ -112,9 +112,12 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
 
         (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, oldTotalSupply);
 
-        // console.log(amountEth);
-        // console.log(amountUsdc);
-        // console.log(amountOsqth);
+        console.log("amountEth %s", amountEth);
+        console.log("amountUsdc %s", amountUsdc);
+        console.log("amountOsqth %s", amountOsqth);
+        console.log("ballance weth %s", getBalance(Constants.weth));
+        console.log("ballance usdc %s", getBalance(Constants.usdc));
+        console.log("ballance osqth %s", getBalance(Constants.osqth));
 
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
