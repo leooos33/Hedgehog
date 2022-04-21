@@ -121,6 +121,8 @@ contract VaultAuction is IAuction, VaultMath {
         address _keeper = msg.sender;
 
         (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
+        (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
+
         _burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
@@ -128,7 +130,6 @@ contract VaultAuction is IAuction, VaultMath {
             liquidityEthUsdc
         );
 
-        (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
         _burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
