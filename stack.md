@@ -1,0 +1,120 @@
+_getAuctionParams
+block.timestamp 1648646679
+ethUsdcPrice 3367737897410690652239
+osqthEthPrice 266539217285974319
+priceMultiplier 960000000000000000
+_getBoundaries
+aEthUsdcPrice 3233028381514263026149
+aOsqthEthPrice 255877648594535346
+_aEthUsdcTick 1393396852468620481842283963243953
+_aOsqthEthTick 156625838206472720512575242533
+aEthUsdcTick
+195508
+aOsqthEthTick
+13631
+tickFloorEthUsdc
+195480
+tickFloorOsqthEth
+13620
+>boundaries
+boundaries.ethUsdcUpper
+196500
+boundaries.ethUsdcLower
+194520
+boundaries.osqthEthLower
+12660
+boundaries.osqthEthUpper
+14640
+getPositionAmounts
+oneMinusFee 1000000
+amount0 0
+tokensOwed0 0
+amount1 0
+tokensOwed1 0
+getPositionAmounts
+oneMinusFee 1000000
+amount0 0
+tokensOwed0 0
+amount1 0
+tokensOwed1 0
+_getTotalAmounts
+usdcAmount 0
+amountWeth0 0
+amountWeth1 0
+osqthAmount 0
+ethBalance 18702958066838460455
+usdcBalance 30406229225
+osqthBalance 34339364744543638154
+_getPriceFromTick(boundaries.ethUsdcUpper)
+341554415024386956370873340
+_getPriceFromTick(boundaries.ethUsdcLower)
+280203719110303210804967168
+getLiquidityForValue
+63274658965200692359075
+3367737897410690652239
+2927791168878903481606
+3568832002570052866760
+getLiquidityForValue
+19571328023902021595
+266539217285974319
+231326116369604686
+281975045182683102
+liquidityEthUsdc 11335824747103747
+liquidityOsqthEth 394262137402066098292
+__getDeltas
+usdcAmount 44471639441
+ethAmount0 5583278775549317233
+ethAmount1 13920027966409116172
+osqthAmount 21202508688385778321
+deltaEth 800348675119972950
+deltaUsdc 14065410216
+deltaOsqth 13136856056157859833
+_burnAndCollect
+194520
+196500
+0
+burned0 0 
+burned1 0 
+_burnAndCollect
+12660
+14640
+0
+burned0 0 
+burned1 0 
+false
+before first mint
+ballance weth 19503306741958433415
+ballance usdc 44471639451
+ballance osqth 21202508688385778331
+pool 0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8
+callback on  0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48: 44471639442
+callback on  0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2: 5583278775549317234
+before second mint
+ballance weth 13920027966409116181
+ballance usdc 9
+ballance osqth 21202508688385778331
+pool 0x82c427adfdf2d245ec51d8046b41c4ee87f0d29c
+callback on  0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2: 13920027966409116173
+callback on  0xf1b99e3e573a1a9c5e6b2ce818b617f0e664e86b: 21202508688385778322
+getPositionAmounts
+oneMinusFee 1000000
+amount0 44471639441
+tokensOwed0 0
+amount1 5583278775549317233
+tokensOwed1 0
+getPositionAmounts
+oneMinusFee 1000000
+amount0 13920027966409116172
+tokensOwed0 0
+amount1 21202508688385778321
+tokensOwed1 0
+_getTotalAmounts
+usdcAmount 44471639441
+amountWeth0 5583279000000000000
+amountWeth1 13920028000000000000
+osqthAmount 21202509000000000000
+[
+  BigNumber { value: "19503307000000000008" },
+  BigNumber { value: "44471639450" },
+  BigNumber { value: "21202509000000000009" }
+]
