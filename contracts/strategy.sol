@@ -54,7 +54,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _amountEthMin,
         uint256 _amountUsdcMin,
         uint256 _amountOsqthMin
-    ) external override nonReentrant returns (uint256 shares) {
+    ) external override nonReentrant returns (uint256) {
         require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "ZA"); //Zero amount
         require(to != address(0) && to != address(this), "WA"); //Wrong address
 
@@ -88,6 +88,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         require(totalSupply() <= cap, "Cap is reached");
 
         emit SharedEvents.Deposit(to, _shares);
+        return _shares;
     }
 
     /**

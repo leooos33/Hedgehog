@@ -41,6 +41,12 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
 
+    uint256 _protocolFee = 0;
+
+    uint256 accruedFeesEth = 0;
+    uint256 accruedFeesUsdc = 0;
+    uint256 accruedFeesOsqth = 0;
+
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
 
@@ -107,6 +113,14 @@ abstract contract VaultParams is IERC20, ERC20 {
      */
     function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
         timeAtLastRebalance = _timeAtLastRebalance;
+    }
+
+    // TODO: only owner!
+    /**
+     * Used to for unit testing
+     */
+    function setProtocolFee(uint256 protocolFee) public {
+        _protocolFee = protocolFee;
     }
 
     // TODO: remove on main

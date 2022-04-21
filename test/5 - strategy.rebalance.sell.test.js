@@ -34,10 +34,10 @@ describe.only("Strategy rebalance", function () {
         contractHelper = await Contract.deploy();
         await contractHelper.deployed();
     });
-
-    const wethInputR = "800805084661562875";
-    const usdcInputR = "14063089446";
-    const osqthInputR = "13135992616194200980";
+ 
+    const wethInputR = "800348675119972960";
+    const usdcInputR = "14065410226";
+    const osqthInputR = "13136856056157859843";
     it("preset", async function () {
         rebalancer = (await ethers.getSigners())[5];
 
@@ -63,13 +63,9 @@ describe.only("Strategy rebalance", function () {
     it("deposit", async function () {
         const depositor = (await ethers.getSigners())[4];
 
-        const wethInputS = "18410690015258689749";
-        const usdcInputS = "32743712092";
-        const osqthInputS = "32849750909396941650";
-
-        const wethInput =  "18702467669294407718";
-        const usdcInput = "30408472505";
-        const osqthInput = "34338464355414022257";
+        const wethInput =  "18702958066838460455";
+        const usdcInput = "30406229225";
+        const osqthInput = "34339364744543638154";
 
         await getWETH(wethInput, depositor.address);
         await getUSDC(usdcInput, depositor.address);
@@ -84,9 +80,9 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await contract.connect(depositor).deposit(
-            wethInputS,
-            usdcInputS,
-            osqthInputS,
+            "18410690015258689749",
+            "32743712092",
+            "32849750909396941650",
             depositor.address,
             '0',
             '0',
@@ -99,7 +95,7 @@ describe.only("Strategy rebalance", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
 
         // Shares
-        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725881");
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
     });
 
     it("swap", async function () {
@@ -170,12 +166,13 @@ describe.only("Strategy rebalance", function () {
 
         expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("0");
-        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("26271985232388401950");
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("26273712112315719666");
 
         const amount = await contract._getTotalAmounts();
-        expect(amount[0].toString()).to.equal("19503272753955970591");
-        expect(amount[1].toString()).to.equal("44471561950");
-        expect(amount[2].toString()).to.equal("21202471739219821286");
+        console.log(amount);
+        expect(amount[0].toString()).to.equal("19503307000000000008");
+        expect(amount[1].toString()).to.equal("44471639450");
+        expect(amount[2].toString()).to.equal("21202509000000000009");
     });
 
     it("swap", async function () {
@@ -224,7 +221,7 @@ describe.only("Strategy rebalance", function () {
         // amount = await contractHelper.connect(seller).getTwapR();
         // console.log(amount);
 
-        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("2932067220206984462645");
+        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("2932067220234871219116");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
     });
 
@@ -232,10 +229,10 @@ describe.only("Strategy rebalance", function () {
         const depositor = (await ethers.getSigners())[4];
 
         // Shares
-        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124875791768051387725881");
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
 
         tx = await contract.connect(depositor).withdraw(
-            "124875791768051387725881",
+            "124866579487341572537626",
             '0',
             '0',
             '0',
@@ -243,13 +240,13 @@ describe.only("Strategy rebalance", function () {
         await tx.wait();
 
         // Shares
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("17729813229394221103");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("50516957965");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("21202471739219821285");
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("17729844128458954111");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("50517045994");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("21202508688385778328");
 
         const amount = await contract._getTotalAmounts();
-        expect(amount[0].toString()).to.equal("338");
+        expect(amount[0].toString()).to.equal("1");
         expect(amount[1].toString()).to.equal("2");
-        expect(amount[2].toString()).to.equal("1");
+        expect(amount[2].toString()).to.equal("2");
     });
 });

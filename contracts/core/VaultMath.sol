@@ -113,9 +113,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
-        // console.log("calcSharesAndAmounts");
-        // console.log("osqthEthPrice %s", osqthEthPrice);
-        // console.log("ethUsdcPrice %s", ethUsdcPrice);
+        console.log("calcSharesAndAmounts");
+        console.log("osqthEthPrice %s", osqthEthPrice);
+        console.log("ethUsdcPrice %s", ethUsdcPrice);
         // console.log("ethAmount %s", ethAmount);
         // console.log("usdcAmount %s", usdcAmount);
         // console.log("osqthAmount %s", osqthAmount);
@@ -282,13 +282,27 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) public view returns (uint256 total0, uint256 total1) {
+    ) public view returns (uint256, uint256) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
         (uint256 amount0, uint256 amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
 
-        uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
-        total0 = amount0.add(tokensOwed0).mul(oneMinusFee).div(1e6));
-        total1 = amount1.add(tokensOwed1).mul(oneMinusFee).div(1e6));
+        uint256 oneMinusFee = uint256(1e6).sub(_protocolFee);
+        console.log("getPositionAmounts");
+        console.log("oneMinusFee %s", oneMinusFee);
+        // console.log("amount0 %s", amount0);
+        // console.log("tokensOwed0 %s", tokensOwed0);
+        // console.log("amount1 %s", amount1);
+        // console.log("tokensOwed1 %s", tokensOwed1);
+
+        uint256 total0;
+        if (pool == Constants.poolEthUsdc) {
+            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee.mul(1e30));
+        } else {
+            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee).div(1e6);
+        }
+
+        // console.log("total0 %s", total0);
+        return (total0, (amount1.add(tokensOwed1)).mul(oneMinusFee).div(1e6));
     }
 
     function getBalance(IERC20 token) public view returns (uint256) {
@@ -371,15 +385,22 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         feesToVault0 = collect0.sub(burned0);
         feesToVault1 = collect1.sub(burned1);
 
-        uint256 feeToProtocol0;
-        uint256 feeToProtocol1;
-        if (protocolFee > 0) {
-            feesToProtocol0 = feesToVault0.mul(_protocolFee).div(1e6);
-            feesToProtocol1 = feesToVault1.mul(_protocolFee).div(1e6);
+        if (_protocolFee > 0) {
+            uint256 feesToProtocol0 = feesToVault0.mul(_protocolFee).div(1e6);
+            uint256 feesToProtocol1 = feesToVault1.mul(_protocolFee).div(1e6);
             feesToVault0 = feesToVault0.sub(feesToProtocol0);
             feesToVault1 = feesToVault1.sub(feesToProtocol1);
-            accruedProtocolFees0 = accruedProtocolFees0.add(feesToProtocol0);
-            accruedProtocolFees1 = accruedProtocolFees1.add(feesToProtocol1);
+            if (pool == Constants.poolEthUsdc) {
+                accruedFeesUsdc = accruedFeesUsdc.add(feesToProtocol0);
+                accruedFeesEth = accruedFeesEth.add(feesToProtocol1);
+            } else if (pool == Constants.poolEthOsqth) {
+                accruedFeesEth = accruedFeesEth.add(feesToProtocol0);
+                accruedFeesOsqth = accruedFeesOsqth.add(feesToProtocol1);
+            }
+
+            console.log("accruedFeesUsdc %s", accruedFeesUsdc);
+            console.log("accruedFeesEth %s", accruedFeesEth);
+            console.log("accruedFeesOsqth %s", accruedFeesOsqth);
         }
         //emit CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
     }
