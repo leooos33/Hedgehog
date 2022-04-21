@@ -38,7 +38,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address uniswapAdaptorAddress //TODO: move to constants
+        address uniswapAdaptorAddress, //TODO: move to constants
+        uint256 protocolFee
     )
         public
         VaultParams(
@@ -47,7 +48,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             _rebalancePriceThreshold,
             _auctionTime,
             _minPriceMultiplier,
-            _maxPriceMultiplier
+            _maxPriceMultiplier,
+            protocolFee
         )
     {
         uniswapAdaptor = IUniswapAdaptor(uniswapAdaptorAddress);
@@ -289,10 +291,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 oneMinusFee = uint256(1e6).sub(_protocolFee);
         console.log("getPositionAmounts");
         console.log("oneMinusFee %s", oneMinusFee);
-        // console.log("amount0 %s", amount0);
-        // console.log("tokensOwed0 %s", tokensOwed0);
-        // console.log("amount1 %s", amount1);
-        // console.log("tokensOwed1 %s", tokensOwed1);
+        console.log("amount0 %s", amount0);
+        console.log("tokensOwed0 %s", tokensOwed0);
+        console.log("amount1 %s", amount1);
+        console.log("tokensOwed1 %s", tokensOwed1);
 
         uint256 total0;
         if (pool == Constants.poolEthUsdc) {
@@ -370,9 +372,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.logInt(tickLower);
         console.logInt(tickUpper);
         console.log(liquidity);
+
         if (liquidity > 0) {
-            IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
+            (burned0, burned1) = IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
         }
+
+        console.log("burned0 %s ", burned0);
+        console.log("burned1 %s ", burned1);
 
         (uint256 collect0, uint256 collect1) = IUniswapV3Pool(pool).collect(
             address(this),
@@ -388,6 +394,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         if (_protocolFee > 0) {
             uint256 feesToProtocol0 = feesToVault0.mul(_protocolFee).div(1e6);
             uint256 feesToProtocol1 = feesToVault1.mul(_protocolFee).div(1e6);
+
+            console.log("feesToProtocol0 %s", feesToProtocol0);
+            console.log("feesToProtocol1 %s", feesToProtocol1);
+
             feesToVault0 = feesToVault0.sub(feesToProtocol0);
             feesToVault1 = feesToVault1.sub(feesToProtocol1);
             if (pool == Constants.poolEthUsdc) {

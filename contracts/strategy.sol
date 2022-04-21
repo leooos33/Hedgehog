@@ -32,7 +32,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address uniswapAdaptorAddress
+        address uniswapAdaptorAddress,
+        uint256 protocolFee
     )
         public
         VaultAuction(
@@ -42,7 +43,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            uniswapAdaptorAddress
+            uniswapAdaptorAddress,
+            protocolFee
         )
     {}
 

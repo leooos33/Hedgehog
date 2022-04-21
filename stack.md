@@ -26,13 +26,13 @@ boundaries.osqthEthLower
 boundaries.osqthEthUpper
 14640
 getPositionAmounts
-oneMinusFee 1000000
+oneMinusFee 900000
 amount0 0
 tokensOwed0 0
 amount1 0
 tokensOwed1 0
 getPositionAmounts
-oneMinusFee 1000000
+oneMinusFee 900000
 amount0 0
 tokensOwed0 0
 amount1 0
@@ -75,12 +75,22 @@ _burnAndCollect
 0
 burned0 0 
 burned1 0 
+feesToProtocol0 0
+feesToProtocol1 0
+accruedFeesUsdc 0
+accruedFeesEth 0
+accruedFeesOsqth 0
 _burnAndCollect
 12660
 14640
 0
 burned0 0 
 burned1 0 
+feesToProtocol0 0
+feesToProtocol1 0
+accruedFeesUsdc 0
+accruedFeesEth 0
+accruedFeesOsqth 0
 false
 before first mint
 ballance weth 19503306741958433415
@@ -97,24 +107,24 @@ pool 0x82c427adfdf2d245ec51d8046b41c4ee87f0d29c
 callback on  0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2: 13920027966409116173
 callback on  0xf1b99e3e573a1a9c5e6b2ce818b617f0e664e86b: 21202508688385778322
 getPositionAmounts
-oneMinusFee 1000000
+oneMinusFee 900000
 amount0 44471639441
 tokensOwed0 0
 amount1 5583278775549317233
 tokensOwed1 0
 getPositionAmounts
-oneMinusFee 1000000
+oneMinusFee 900000
 amount0 13920027966409116172
 tokensOwed0 0
 amount1 21202508688385778321
 tokensOwed1 0
 _getTotalAmounts
-usdcAmount 44471639441
-amountWeth0 5583279000000000000
-amountWeth1 13920028000000000000
-osqthAmount 21202509000000000000
+usdcAmount 40024475497
+amountWeth0 5024951000000000000
+amountWeth1 12528025000000000000
+osqthAmount 19082258000000000000
 [
-  BigNumber { value: "19503307000000000008" },
-  BigNumber { value: "44471639450" },
-  BigNumber { value: "21202509000000000009" }
+  BigNumber { value: "17552976000000000008" },
+  BigNumber { value: "40024475506" },
+  BigNumber { value: "19082258000000000009" }
 ]

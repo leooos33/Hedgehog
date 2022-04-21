@@ -69,9 +69,12 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _rebalancePriceThreshold,
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier
+        uint256 _maxPriceMultiplier,
+        uint256 protocolFee
     ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
+
+        _protocolFee = protocolFee;
 
         tickSpacingEthUsdc = IUniswapV3Pool(Constants.poolEthUsdc).tickSpacing();
         tickSpacingOsqthEth = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
