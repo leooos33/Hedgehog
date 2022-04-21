@@ -112,22 +112,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
-        uint256 osqthEthPrice = Constants.oracle.getTwap(
-            Constants.poolEthOsqth,
-            address(Constants.osqth),
-            address(Constants.weth),
-            twapPeriod,
-            true
-        );
-
-        uint256 ethUsdcPrice = Constants.oracle.getTwap(
-            Constants.poolEthUsdc,
-            address(Constants.weth),
-            address(Constants.usdc),
-            twapPeriod,
-            true
-        );
-
+        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
         // console.log("calcSharesAndAmounts");
         // console.log("osqthEthPrice %s", osqthEthPrice);
         // console.log("ethUsdcPrice %s", ethUsdcPrice);
