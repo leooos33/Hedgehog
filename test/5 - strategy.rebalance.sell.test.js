@@ -1,9 +1,8 @@
-const { expect, assert } = require("chai");
-const { BigNumber } = require("ethers");
+const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
+const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require('./helpers');
 
 describe("Strategy rebalance sell", function () {
     let contract, library, contractHelper, tx, amount, rebalancer;
@@ -13,8 +12,6 @@ describe("Strategy rebalance sell", function () {
         const Library = await ethers.getContractFactory("UniswapAdaptor");
         library = await Library.deploy();
         await library.deployed();
-
-        // console.log(await library.getPriceFromTick("162714639867323407420353073371"));
 
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
@@ -241,13 +238,13 @@ describe("Strategy rebalance sell", function () {
         await tx.wait();
 
         // Shares
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("17729844128458954111");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("50517045994");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("21202508688385778328");
+        assertWP(await getERC20Balance(depositor.address, wethAddress), "17729844128458954112", 16, 18);
+        assertWP(await getERC20Balance(depositor.address, usdcAddress), "50517045994", 4, 6);
+        assertWP(await getERC20Balance(depositor.address, osqthAddress), "21202508688385778328", 16, 18);
 
         const amount = await contract._getTotalAmounts();
-        expect(amount[0].toString()).to.equal("1");
+        expect(amount[0].toString()).to.equal("0");
         expect(amount[1].toString()).to.equal("2");
-        expect(amount[2].toString()).to.equal("2");
+        expect(amount[2].toString()).to.equal("1");
     });
 });

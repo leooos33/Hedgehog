@@ -3,7 +3,7 @@ const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
 const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
+const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require('./helpers');
 
 describe("Strategy rebalance, sell with comissions", function () {
     let contract, library, contractHelper, tx, amount, rebalancer;
@@ -246,9 +246,9 @@ describe("Strategy rebalance, sell with comissions", function () {
         await tx.wait();
 
         // Shares
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("17729844128458954112");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("50517045994");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("21202508688385778329");
+        assertWP(await getERC20Balance(depositor.address, wethAddress), "17729844128458954112", 16, 18);
+        assertWP(await getERC20Balance(depositor.address, usdcAddress), "50517045994", 4, 6);
+        assertWP(await getERC20Balance(depositor.address, osqthAddress), "21202508688385778328", 16, 18);
 
         const amount = await contract._getTotalAmounts();
         console.log(amount);

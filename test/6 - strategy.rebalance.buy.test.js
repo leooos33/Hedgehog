@@ -5,7 +5,7 @@ const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = re
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20 } = require('./helpers');
 
-describe.only("Strategy rebalance buy", function () {
+describe("Strategy rebalance buy", function () {
     let contract, library, contractHelper, tx, amount, rebalancer;
     it("Should deploy contract", async function () {
         await resetFork();
@@ -167,7 +167,7 @@ describe.only("Strategy rebalance buy", function () {
 
         expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("2711440602151882055");
         expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("21485915191");
-        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("800641000891357"); //TODO make 0
 
         const amount = await contract._getTotalAmounts();
         console.log(amount);

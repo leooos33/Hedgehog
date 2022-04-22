@@ -115,6 +115,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
 
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
+
         console.log("calcSharesAndAmounts");
         console.log("osqthEthPrice %s", osqthEthPrice);
         console.log("ethUsdcPrice %s", ethUsdcPrice);
@@ -122,65 +123,26 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         // console.log("usdcAmount %s", usdcAmount);
         // console.log("osqthAmount %s", osqthAmount);
 
-        Constants.SharesInfo memory params = Constants.SharesInfo(
-            totalSupply(),
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
-            osqthEthPrice,
-            ethUsdcPrice,
-            usdcAmount,
-            ethAmount,
-            osqthAmount
-        );
-
-        return __calcSharesAndAmounts(params);
-    }
-
-    // TODO: add to new function
-    //@dev <tested>
-    function __calcSharesAndAmounts(Constants.SharesInfo memory params)
-        public
-        view
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        uint256 depositorValue = getValue(
-            params._amountEth,
-            params._amountUsdc,
-            params._amountOsqth,
-            params.ethUsdcPrice,
-            params.osqthEthPrice
-        );
+        uint256 depositorValue = getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
         // console.log("depositorValue %s", depositorValue);
 
-        if (params.totalSupply == 0) {
+        if (totalSupply() == 0) {
             //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
             return (
                 depositorValue,
-                depositorValue.mul(507924136843192000).div(params.ethUsdcPrice),
+                depositorValue.mul(507924136843192000).div(ethUsdcPrice),
                 depositorValue.mul(243509747368953000).div(uint256(1e30)),
-                depositorValue.mul(248566115787854000).div(params.osqthEthPrice).div(params.ethUsdcPrice)
+                depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
             );
         } else {
-            uint256 totalValue = getValue(
-                params.osqthAmount,
-                params.ethUsdcPrice,
-                params.ethAmount,
-                params.osqthEthPrice,
-                params.usdcAmount
-            );
+            uint256 totalValue = getValue(osqthAmount, ethUsdcPrice, ethAmount, osqthEthPrice, usdcAmount);
 
             return (
-                params.totalSupply.mul(depositorValue).div(totalValue),
-                params.ethAmount.mul(depositorValue).div(totalValue),
-                params.usdcAmount.mul(depositorValue).div(totalValue),
-                params.osqthAmount.mul(depositorValue).div(totalValue)
+                totalSupply().mul(depositorValue).div(totalValue),
+                ethAmount.mul(depositorValue).div(totalValue),
+                usdcAmount.mul(depositorValue).div(totalValue),
+                osqthAmount.mul(depositorValue).div(totalValue)
             );
         }
     }
