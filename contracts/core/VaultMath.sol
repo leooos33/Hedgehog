@@ -773,4 +773,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         if (tick < 0 && tick % tickSpacing != 0) compressed--;
         return compressed * tickSpacing;
     }
+
+    /// @dev Casts uint256 to uint128 with overflow check.
+    function _toUint128(uint256 x) internal pure returns (uint128) {
+        assert(x <= type(uint128).max);
+        return uint128(x);
+    }
+
+    /// @dev Casts uint256 to uint160 with overflow check.
+    function _toUint160(uint256 x) internal pure returns (uint160) {
+        assert(x <= type(uint160).max);
+        return uint160(x);
+    }
 }

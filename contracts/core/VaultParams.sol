@@ -93,14 +93,50 @@ abstract contract VaultParams is IERC20, ERC20 {
         timeAtLastRebalance = 0;
     }
 
-    /**
-        All strategy getters and setters will be here
-     */
+    function setTwapPeriod(uint32 _twapPeriod) external onlyGovernance {
+        twapPeriod = _twapPeriod;
+    }
 
-    // TODO: remove on main
+    function setCap(uint256 _cap) external onlyGovernance {
+        cap = _cap;
+    }
+
+    function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external onlyGovernance {
+        rebalanceTimeThreshold = _rebalanceTimeThreshold;
+    }
+
+    function setRebalancePriceThreshold(uint256 _rebalancePriceThreshold) external onlyGovernance {
+        rebalancePriceThreshold = _rebalancePriceThreshold;
+    }
+
+    function setEthUsdcThreshold(int24 _ethUsdcThreshold) external onlyGovernance {
+        ethUsdcThreshold = _ethUsdcThreshold;
+    }
+
+    function setOsqthEthThreshold(int24 _osqthEthThreshold) external onlyGovernance {
+        osqthEthThreshold = _osqthEthThreshold;
+    }
+
+    function setAuctionTime(uint256 _auctionTime) external onlyGovernance {
+        auctionTime = _auctionTime;
+    }
+
+    function setMinPriceMultiplier(uint256 _minPriceMultiplier) external onlyGovernance {
+        minPriceMultiplier = _minPriceMultiplier;
+    }
+
+    function setMaxPriceMultiplier(uint256 _maxPriceMultiplier) external onlyGovernance {
+        maxPriceMultiplier = _maxPriceMultiplier;
+    }
+
+    function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
+        protocolFee = _protocolFee;
+    }
+
     /**
      * Used to for _getTotalAmounts unit testing
      */
+    // TODO: remove on main
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
@@ -113,39 +149,28 @@ abstract contract VaultParams is IERC20, ERC20 {
         orderOsqthEthUpper = _orderOsqthEthUpper;
     }
 
-    // TODO: remove on main
     /**
      * Used to for unit testing
      */
+    // TODO: remove on main
     function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
         timeAtLastRebalance = _timeAtLastRebalance;
     }
 
-    // TODO: only owner!
     /**
      * Used to for unit testing
      */
-    function setProtocolFee(uint256 _protocolFee) public {
-        protocolFee = _protocolFee;
-    }
-
     // TODO: remove on main
-    /**
-     * Used to for unit testing
-     */
     function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
-    /// @dev Casts uint256 to uint128 with overflow check.
-    function _toUint128(uint256 x) internal pure returns (uint128) {
-        assert(x <= type(uint128).max);
-        return uint128(x);
+    function setGovernance(address _governance) external onlyGovernance {
+        governance = _governance;
     }
 
-    /// @dev Casts uint256 to uint160 with overflow check.
-    function _toUint160(uint256 x) internal pure returns (uint160) {
-        assert(x <= type(uint160).max);
-        return uint160(x);
+    modifier onlyGovernance() {
+        require(msg.sender == governance, "governance");
+        _;
     }
 }
