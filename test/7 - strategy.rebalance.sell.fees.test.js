@@ -1,7 +1,6 @@
-const { expect, assert } = require("chai");
-const { BigNumber } = require("ethers");
+const { expect } = require("chai");
 const { ethers } = require("hardhat");
-const { poolEthUsdc, poolEthOsqth, wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require('./helpers');
 
@@ -14,8 +13,6 @@ describe("Strategy rebalance, sell with comissions", function () {
         library = await Library.deploy();
         await library.deployed();
 
-        // console.log(await library.getPriceFromTick("162714639867323407420353073371"));
-
         const Contract = await ethers.getContractFactory("Vault");
         contract = await Contract.deploy(
             utils.parseUnits("4000000000000", 18),
@@ -24,7 +21,6 @@ describe("Strategy rebalance, sell with comissions", function () {
             "10",
             "900000000000000000",
             "1100000000000000000",
-            library.address,
             "100000"
         );
         await contract.deployed();

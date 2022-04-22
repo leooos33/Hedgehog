@@ -13,7 +13,7 @@ import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey
 import "../libraries/SharedEvents.sol";
 import "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
-import {IUniswapAdaptor} from "../interfaces/IUniswapAdaptor.sol";
+
 import "./VaultParams.sol";
 
 import "hardhat/console.sol";
@@ -38,7 +38,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address uniswapAdaptorAddress, //TODO: move to constants
         uint256 protocolFee
     )
         public
@@ -51,11 +50,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             _maxPriceMultiplier,
             protocolFee
         )
-    {
-        uniswapAdaptor = IUniswapAdaptor(uniswapAdaptorAddress);
-    }
-
-    IUniswapAdaptor uniswapAdaptor;
+    {}
 
     /**
      * @dev Do zero-burns to poke a position on Uniswap so earned fees are
@@ -282,10 +277,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     ) public view returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
-            uniswapAdaptor.getAmountsForLiquidity(
+            Constants.uniswapAdaptor.getAmountsForLiquidity(
                 sqrtRatioX96,
-                uniswapAdaptor.getSqrtRatioAtTick(tickLower),
-                uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
+                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickLower),
+                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
                 liquidity
             );
     }
@@ -430,7 +425,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
 
-        uint160 sqrtRatioAtTick = uniswapAdaptor.getSqrtRatioAtTick(tick);
+        uint160 sqrtRatioAtTick = Constants.uniswapAdaptor.getSqrtRatioAtTick(tick);
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
@@ -575,15 +570,15 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         // console.log("_liquidityForAmounts");
         // console.log(sqrtRatioX96);
-        // console.log(uniswapAdaptor.getSqrtRatioAtTick(tickLower));
-        // console.log(uniswapAdaptor.getSqrtRatioAtTick(tickUpper));
+        // console.log(Constants.uniswapAdaptor.getSqrtRatioAtTick(tickLower));
+        // console.log(Constants.uniswapAdaptor.getSqrtRatioAtTick(tickUpper));
         // console.log(amount0);
         // console.log(amount1);
         return
-            uniswapAdaptor.getLiquidityForAmounts(
+            Constants.uniswapAdaptor.getLiquidityForAmounts(
                 sqrtRatioX96,
-                uniswapAdaptor.getSqrtRatioAtTick(tickLower),
-                uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
+                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickLower),
+                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
                 amount0,
                 amount1
             );
@@ -699,8 +694,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("_aEthUsdcTick %s", _aEthUsdcTick);
         console.log("_aOsqthEthTick %s", _aOsqthEthTick);
 
-        int24 aEthUsdcTick = uniswapAdaptor.getTickAtSqrtRatio(_aEthUsdcTick);
-        int24 aOsqthEthTick = uniswapAdaptor.getTickAtSqrtRatio(_aOsqthEthTick);
+        int24 aEthUsdcTick = Constants.uniswapAdaptor.getTickAtSqrtRatio(_aEthUsdcTick);
+        int24 aOsqthEthTick = Constants.uniswapAdaptor.getTickAtSqrtRatio(_aOsqthEthTick);
 
         int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(aOsqthEthTick, tickSpacingOsqthEth);

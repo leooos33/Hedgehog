@@ -21,7 +21,6 @@ describe("Strategy rebalance sell", function () {
             "10",
             "900000000000000000",
             "1100000000000000000",
-            library.address,
             "0"
         );
         await contract.deployed();

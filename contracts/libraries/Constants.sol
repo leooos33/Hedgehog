@@ -4,7 +4,8 @@ pragma solidity =0.8.4;
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../interfaces/IOracle.sol";
+import {IOracle} from "../interfaces/IOracle.sol";
+import {IUniswapAdaptor} from "../interfaces/IUniswapAdaptor.sol";
 
 library Constants {
     //@dev ETH-USDC Uniswap pool
@@ -21,6 +22,9 @@ library Constants {
     //@dev strategy Uniswap oracle
     IOracle public constant oracle = IOracle(0x65D66c76447ccB45dAf1e8044e918fA786A483A1);
 
+    //TODO: change this before maiinet deploy
+    IUniswapAdaptor public constant uniswapAdaptor = IUniswapAdaptor(0x870526b7973b56163a6997bB7C886F5E4EA53638);
+
     struct SharesInfo {
         uint256 totalSupply;
         uint256 _amountEth;
@@ -31,15 +35,6 @@ library Constants {
         uint256 usdcAmount;
         uint256 ethAmount;
         uint256 osqthAmount;
-    }
-
-    struct AuctionInfo {
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 auctionTime;
-        uint256 _auctionTriggerTime;
-        bool _isPriceInc;
-        uint256 timestamp;
     }
 
     struct Boundaries {

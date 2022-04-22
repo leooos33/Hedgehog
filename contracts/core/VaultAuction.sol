@@ -30,7 +30,6 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        address uniswapAdaptorAddress,
         uint256 protocolFee
     )
         public
@@ -41,7 +40,6 @@ contract VaultAuction is IAuction, VaultMath {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            uniswapAdaptorAddress,
             protocolFee
         )
     {}
