@@ -41,11 +41,18 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
 
-    uint256 _protocolFee = 0;
+    uint256 public ethProportion = 507924136843192000;
+    uint256 public usdcProportion = 243509747368953000;
+    uint256 public osqthProportion = 248566115787854000;
 
-    uint256 accruedFeesEth = 0;
-    uint256 accruedFeesUsdc = 0;
-    uint256 accruedFeesOsqth = 0;
+    int24 public ethUsdcThreshold = 960;
+    int24 public osqthEthThreshold = 960;
+
+    uint256 public protocolFee = 0;
+
+    uint256 public accruedFeesEth = 0;
+    uint256 public accruedFeesUsdc = 0;
+    uint256 public accruedFeesOsqth = 0;
 
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
@@ -70,11 +77,11 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 protocolFee
+        uint256 _protocolFee
     ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
-        _protocolFee = protocolFee;
+        protocolFee = _protocolFee;
 
         tickSpacingEthUsdc = IUniswapV3Pool(Constants.poolEthUsdc).tickSpacing();
         tickSpacingOsqthEth = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
@@ -122,8 +129,8 @@ abstract contract VaultParams is IERC20, ERC20 {
     /**
      * Used to for unit testing
      */
-    function setProtocolFee(uint256 protocolFee) public {
-        _protocolFee = protocolFee;
+    function setProtocolFee(uint256 _protocolFee) public {
+        protocolFee = _protocolFee;
     }
 
     // TODO: remove on main

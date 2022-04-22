@@ -34,7 +34,6 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _maxPriceMultiplier,
         uint256 protocolFee
     )
-        public
         VaultAuction(
             _cap,
             _rebalanceTimeThreshold,

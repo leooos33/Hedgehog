@@ -32,7 +32,6 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _maxPriceMultiplier,
         uint256 protocolFee
     )
-        public
         VaultMath(
             _cap,
             _rebalanceTimeThreshold,

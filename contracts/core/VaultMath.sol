@@ -40,7 +40,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _maxPriceMultiplier,
         uint256 protocolFee
     )
-        public
         VaultParams(
             _cap,
             _rebalanceTimeThreshold,
@@ -126,9 +125,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
             return (
                 depositorValue,
-                depositorValue.mul(507924136843192000).div(ethUsdcPrice),
-                depositorValue.mul(243509747368953000).div(uint256(1e30)),
-                depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
+                depositorValue.mul(ethProportion).div(ethUsdcPrice),
+                depositorValue.mul(usdcProportion).div(uint256(1e30)),
+                depositorValue.mul(osqthProportion).div(osqthEthPrice).div(ethUsdcPrice)
             );
         } else {
             uint256 totalValue = getValue(osqthAmount, ethUsdcPrice, ethAmount, osqthEthPrice, usdcAmount);
@@ -245,7 +244,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
         (uint256 amount0, uint256 amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
 
-        uint256 oneMinusFee = uint256(1e6).sub(_protocolFee);
+        uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
         console.log("getPositionAmounts");
         console.log("oneMinusFee %s", oneMinusFee);
         console.log("amount0 %s", amount0);
@@ -348,9 +347,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         feesToVault0 = collect0.sub(burned0);
         feesToVault1 = collect1.sub(burned1);
 
-        if (_protocolFee > 0) {
-            uint256 feesToProtocol0 = feesToVault0.mul(_protocolFee).div(1e6);
-            uint256 feesToProtocol1 = feesToVault1.mul(_protocolFee).div(1e6);
+        if (protocolFee > 0) {
+            uint256 feesToProtocol0 = feesToVault0.mul(protocolFee).div(1e6);
+            uint256 feesToProtocol1 = feesToVault1.mul(protocolFee).div(1e6);
 
             console.log("feesToProtocol0 %s", feesToProtocol0);
             console.log("feesToProtocol1 %s", feesToProtocol1);
@@ -520,7 +519,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("liquidityEthUsdc %s", liquidityEthUsdc);
         console.log("liquidityOsqthEth %s", liquidityOsqthEth);
 
-        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = __getDeltas(
+        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
             boundaries,
             liquidityEthUsdc,
             liquidityOsqthEth,
@@ -638,7 +637,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     //@dev <tested>
-    function __getDeltas(
+    function _getDeltas(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
         uint128 liquidityOsqthEth,
@@ -668,7 +667,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             liquidityOsqthEth
         );
 
-        console.log("__getDeltas");
+        console.log("_getDeltas");
         console.log("usdcAmount %s", usdcAmount);
         console.log("ethAmount0 %s", ethAmount0);
         console.log("ethAmount1 %s", ethAmount1);
@@ -702,9 +701,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
         int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
-
-        int24 ethUsdcThreshold = 960;
-        int24 osqthEthThreshold = 960;
 
         console.log("aEthUsdcTick");
         console.logInt(aEthUsdcTick);
