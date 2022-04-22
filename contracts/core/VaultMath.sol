@@ -252,16 +252,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("amount1 %s", amount1);
         console.log("tokensOwed1 %s", tokensOwed1);
 
-        // uint256 total0;
-        // if (pool == Constants.poolEthUsdc) {
-        //     total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee.mul(1e30));
-        // } else {
-        //     total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee).div(1e6);
-        // }
+        uint256 total0;
+        if (pool == Constants.poolEthUsdc) {
+            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee.mul(1e30));
+        } else {
+            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee).div(1e6);
+        }
 
-        // // console.log("total0 %s", total0);
-        // return (total0, (amount1.add(tokensOwed1)).mul(oneMinusFee).div(1e6));
-        return (amount0.add(tokensOwed0), amount1.add(tokensOwed1));
+        // console.log("total0 %s", total0);
+        return (total0, (amount1.add(tokensOwed1)).mul(oneMinusFee).div(1e6));
+        // return (amount0.add(tokensOwed0), amount1.add(tokensOwed1));
     }
 
     function getBalance(IERC20 token) public view returns (uint256) {
