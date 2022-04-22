@@ -125,9 +125,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
             return (
                 depositorValue,
-                depositorValue.mul(ethProportion).div(ethUsdcPrice),
-                depositorValue.mul(usdcProportion).div(uint256(1e30)),
-                depositorValue.mul(osqthProportion).div(osqthEthPrice).div(ethUsdcPrice)
+                depositorValue.mul(507924136843192000).div(ethUsdcPrice),
+                depositorValue.mul(243509747368953000).div(uint256(1e30)),
+                depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
             );
         } else {
             uint256 totalValue = getValue(osqthAmount, ethUsdcPrice, ethAmount, osqthEthPrice, usdcAmount);

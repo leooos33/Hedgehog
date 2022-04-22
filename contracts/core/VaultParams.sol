@@ -41,10 +41,6 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
 
-    uint256 public ethProportion = 507924136843192000;
-    uint256 public usdcProportion = 243509747368953000;
-    uint256 public osqthProportion = 248566115787854000;
-
     int24 public ethUsdcThreshold = 960;
     int24 public osqthEthThreshold = 960;
 
