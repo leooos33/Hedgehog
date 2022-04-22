@@ -1,19 +1,14 @@
-const { getOSQTH,
+const {
+    getOSQTH,
     approveERC20,
     getUSDC,
     getWETH,
     toHexdigital,
     getERC20Allowance,
     getERC20Balance,
-} = require('./tokenHelpers');
+} = require("./tokenHelpers");
 
-const {
-    toWEIS,
-    toWEI,
-    loadTestDataset,
-    assertWP,
-    resetFork,
-} = require('./testHelpers');
+const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork } = require("./testHelpers");
 
 module.exports = {
     resetFork,
@@ -28,4 +23,4 @@ module.exports = {
     getERC20Allowance,
     loadTestDataset,
     getERC20Balance,
-}
+};

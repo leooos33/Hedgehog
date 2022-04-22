@@ -2,7 +2,7 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require('./helpers');
+const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require("./helpers");
 
 describe("Strategy rebalance, sell with comissions", function () {
     let contract, library, contractHelper, tx, amount, rebalancer;
@@ -31,7 +31,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         contractHelper = await Contract.deploy();
         await contractHelper.deployed();
     });
- 
+
     // deltaEth 1372221087323376193
     // deltaUsdc 20200033241
     // deltaOsqth 19348960827455603626
@@ -48,7 +48,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         await tx.wait();
 
         // await contract.setProtocolFee(100000);
-        
+
         const _wethInput = wethInputR;
         const _usdcInput = usdcInputR;
         const _osqthInput = osqthInputR;
@@ -65,7 +65,7 @@ describe("Strategy rebalance, sell with comissions", function () {
     it("deposit", async function () {
         const depositor = (await ethers.getSigners())[4];
 
-        const wethInput =  "18702958066838460455";
+        const wethInput = "18702958066838460455";
         const usdcInput = "30406229225";
         const osqthInput = "34339364744543638154";
 
@@ -81,15 +81,9 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await contract.connect(depositor).deposit(
-            "18410690015258689749",
-            "32743712092",
-            "32849750909396941650",
-            depositor.address,
-            '0',
-            '0',
-            '0',
-        );
+        tx = await contract
+            .connect(depositor)
+            .deposit("18410690015258689749", "32743712092", "32849750909396941650", depositor.address, "0", "0", "0");
         await tx.wait();
 
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
@@ -114,9 +108,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         amount = await contractHelper.connect(seller).getTwap();
         // console.log(amount);
 
-        tx = await contractHelper.connect(seller).swap(
-            testAmount
-        );
+        tx = await contractHelper.connect(seller).swap(testAmount);
         await tx.wait();
 
         await hre.network.provider.request({
@@ -126,7 +118,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         await hre.network.provider.request({
             method: "evm_mine",
         });
-        
+
         await hre.network.provider.request({
             method: "evm_mine",
         });
@@ -159,12 +151,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await contract.connect(rebalancer).timeRebalance(
-            rebalancer.address,
-            wethInput,
-            usdcInput,
-            osqthInput
-        );
+        tx = await contract.connect(rebalancer).timeRebalance(rebalancer.address, wethInput, usdcInput, osqthInput);
         await tx.wait();
 
         expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("0");
@@ -192,9 +179,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         // amount = await contractHelper.connect(seller).getTwapR();
         // console.log(amount);
 
-        tx = await contractHelper.connect(seller).swapR(
-            testAmount
-        );
+        tx = await contractHelper.connect(seller).swapR(testAmount);
         await tx.wait();
 
         await hre.network.provider.request({
@@ -204,7 +189,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         await hre.network.provider.request({
             method: "evm_mine",
         });
-        
+
         await hre.network.provider.request({
             method: "evm_mine",
         });
@@ -234,12 +219,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         // Shares
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
 
-        tx = await contract.connect(depositor).withdraw(
-            "124866579487341572537626",
-            '0',
-            '0',
-            '0',
-        );
+        tx = await contract.connect(depositor).withdraw("124866579487341572537626", "0", "0", "0");
         await tx.wait();
 
         // Shares

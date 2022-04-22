@@ -1,5 +1,5 @@
 const { ethers, network } = require("hardhat");
-const { wethAddress, usdcAddress, osqthAddress } = require('../common');
+const { wethAddress, usdcAddress, osqthAddress } = require("../common");
 
 const gasToSend = 100812679875357878208;
 
@@ -11,14 +11,11 @@ async function getToken(amount, account, tokenAddress, accountHolder) {
 
     const signer = await ethers.getSigner(accountHolder);
 
-    const ERC20 = await ethers.getContractAt('IWETH', tokenAddress);
+    const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
 
     // console.log((await ERC20.balanceOf(signer.address)).toString());
 
-    await network.provider.send("hardhat_setBalance", [
-        signer.address,
-        toHexdigital(gasToSend)
-    ]);
+    await network.provider.send("hardhat_setBalance", [signer.address, toHexdigital(gasToSend)]);
 
     await ERC20.connect(signer).transfer(account, amount);
     // console.log((await ERC20.balanceOf(account)).toString());
@@ -45,23 +42,23 @@ async function getOSQTH(amount, account) {
 }
 
 const toHexdigital = (amount) => {
-    return "0x" + (amount).toString(16);
-}
+    return "0x" + amount.toString(16);
+};
 
 const getERC20Balance = async (account, tokenAddress) => {
-    const ERC20 = await ethers.getContractAt('IWETH', tokenAddress);
+    const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
     return (await ERC20.balanceOf(account)).toString();
-}
+};
 
 const approveERC20 = async (owner, account, amount, tokenAddress) => {
-    const ERC20 = await ethers.getContractAt('IWETH', tokenAddress);
+    const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
     await ERC20.connect(owner).approve(account, amount);
-}
+};
 
 const getERC20Allowance = async (owner, spender, tokenAddress) => {
-    const ERC20 = await ethers.getContractAt('IWETH', tokenAddress);
+    const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
     return (await ERC20.allowance(owner, spender)).toString();
-}
+};
 
 module.exports = {
     getOSQTH,
@@ -71,4 +68,4 @@ module.exports = {
     toHexdigital,
     getERC20Allowance,
     getERC20Balance,
-}
+};

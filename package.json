@@ -2,6 +2,7 @@
   "name": "hardhat-project",
   "scripts": {
     "format": "prettier --write 'contracts/**/*.sol'",
+    "formatjs": "prettier --write 'test/**/*.js'",
     "compile": "npx hardhat compile --verbose",
     "lint": "solhint 'contracts/**/*.sol'",
     "test": "npm run format && npx hardhat compile && npx hardhat test",

@@ -38,7 +38,6 @@
 //         assert(amount.toString() == "195000", `should not fail`);
 //     });
 
-
 //     it("_floor", async function () {
 
 //         const test_sute = [
@@ -54,7 +53,6 @@
 
 //         assert(amount.toString() == "13200", `should not fail`);
 //     });
-
 
 //     it("getTick", async function () {
 
@@ -186,7 +184,6 @@
 //         //+1
 //         await getUSDC("24972947409", contract.address);
 
-
 //         console.log(await getERC20Balance(contract.address, wethAddress));
 //         console.log(await getERC20Balance(contract.address, usdcAddress));
 
@@ -264,7 +261,6 @@
 //         assert(assertWP(amount[1].toString(), "1309736107", 4, 6), `test_sute: sub 2`)
 //         assert(assertWP(amount[2].toString(), "1615214589065691535", 4), `test_sute: sub 3`)
 //     });
-
 
 //     it("calcSharesAndAmounts", async function () {
 //         const amount = await contract.calcSharesAndAmounts(
