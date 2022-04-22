@@ -3,16 +3,16 @@
 pragma solidity =0.8.4;
 pragma abicoder v2;
 
-import "../interfaces/IVault.sol";
-import "../libraries/SharedEvents.sol";
-import "../libraries/Constants.sol";
-import "../libraries/math/StrategyMath.sol";
-import "./VaultMath.sol";
+import {IVault, IAuction} from "../interfaces/IVault.sol";
+import {SharedEvents} from "../libraries/SharedEvents.sol";
+import {Constants} from "../libraries/Constants.sol";
+import {VaultMath} from "./VaultMath.sol";
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 
 import "hardhat/console.sol";
 
 contract VaultAuction is IAuction, VaultMath {
-    using StrategyMath for uint256;
+    using PRBMathUD60x18 for uint256;
 
     /**
      * @notice strategy constructor
@@ -152,10 +152,6 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
         }
 
-        _executeEmptyAuction(params);
-    }
-
-    function _executeEmptyAuction(Constants.AuctionParams memory params) internal {
         console.log("before first mint");
         console.log("ballance weth %s", getBalance(Constants.weth));
         console.log("ballance usdc %s", getBalance(Constants.usdc));

@@ -5,16 +5,16 @@ pragma abicoder v2;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-import "./interfaces/IVault.sol";
-import "./libraries/SharedEvents.sol";
-import "./libraries/Constants.sol";
-import "./libraries/math/StrategyMath.sol";
-import "./core/VaultAuction.sol";
+import {IVault, IAuction} from "./interfaces/IVault.sol";
+import {SharedEvents} from "./libraries/SharedEvents.sol";
+import {Constants} from "./libraries/Constants.sol";
+import {PRBMathUD60x18} from "./libraries/math/PRBMathUD60x18.sol";
+import {VaultAuction} from "./core/VaultAuction.sol";
 
 import "hardhat/console.sol";
 
 contract Vault is IVault, ReentrancyGuard, VaultAuction {
-    using StrategyMath for uint256;
+    using PRBMathUD60x18 for uint256;
 
     /**
      * @notice strategy constructor
