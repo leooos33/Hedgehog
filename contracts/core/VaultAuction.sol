@@ -46,11 +46,13 @@ contract VaultAuction is IAuction, VaultMath {
     /**
      * @notice strategy rebalancing based on time threshold
      * @dev need to attach msg.value if buying oSQTH
+     * @param keeper keeper address
      * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function timeRebalance(
+        address keeper,
         uint256 amountEth,
         uint256 amountUsdc,
         uint256 amountOsqth
@@ -60,14 +62,15 @@ contract VaultAuction is IAuction, VaultMath {
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        _rebalance(auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        _rebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
 
-        //emit SharedEvents.TimeRebalance(msg.sender, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        //emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
     /** TODO
      * @notice strategy rebalancing based on price threshold
      * @dev need to attach msg.value if buying oSQTH
+     * @param keeper keeper address
      * @param _auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
      * @param _isPriceIncreased sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
@@ -75,6 +78,7 @@ contract VaultAuction is IAuction, VaultMath {
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function priceRebalance(
+        address keeper,
         uint256 _auctionTriggerTime,
         bool _isPriceIncreased,
         uint256 _amountEth,
@@ -84,19 +88,21 @@ contract VaultAuction is IAuction, VaultMath {
         //check if rebalancing based on price threshold is allowed
         require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
 
-        _rebalance(_auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(keeper, _auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
 
-        emit SharedEvents.PriceRebalance(msg.sender, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.PriceRebalance(keeper, _amountEth, _amountUsdc, _amountOsqth);
     }
 
     /**
      * @notice rebalancing function to adjust proportion of tokens
+     * @param keeper keeper address
      * @param _auctionTriggerTime timestamp when auction started
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function _rebalance(
+        address keeper,
         uint256 _auctionTriggerTime,
         uint256 _amountEth,
         uint256 _amountUsdc,
@@ -104,9 +110,9 @@ contract VaultAuction is IAuction, VaultMath {
     ) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-        _executeAuction(params);
+        _executeAuction(keeper, params);
 
-        emit SharedEvents.Rebalance(msg.sender, params.deltaEth, params.deltaUsdc, params.deltaOsqth);
+        emit SharedEvents.Rebalance(keeper, params.deltaEth, params.deltaUsdc, params.deltaOsqth);
     }
 
     /**
@@ -116,9 +122,7 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(Constants.AuctionParams memory params) internal {
-        address _keeper = msg.sender;
-
+    function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
         (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
         (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
 

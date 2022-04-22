@@ -736,7 +736,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 p,
         uint256 pL,
         uint256 pH,
-        uint256 pres
+        uint256 digits
     ) public view returns (uint128) {
         console.log("getLiquidityForValue");
         console.log(v);
@@ -744,7 +744,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log(pL);
         console.log(pH);
 
-        return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(pres));
+        return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
     function getValue(
