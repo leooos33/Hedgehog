@@ -1,4 +1,4 @@
-const { expect } = require("chai");
+const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
@@ -223,9 +223,12 @@ describe("Strategy rebalance, sell with comissions", function () {
         await tx.wait();
 
         // Shares
-        assertWP(await getERC20Balance(depositor.address, wethAddress), "17729844128458954112", 16, 18);
-        assertWP(await getERC20Balance(depositor.address, usdcAddress), "50517045994", 4, 6);
-        assertWP(await getERC20Balance(depositor.address, osqthAddress), "21202508688385778328", 16, 18);
+        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "17729844128458954112", 16, 18), "test");
+        assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "50517045994", 4, 6), "test");
+        assert(
+            assertWP(await getERC20Balance(depositor.address, osqthAddress), "21202508688385778328", 16, 18),
+            "test"
+        );
 
         const amount = await contract._getTotalAmounts();
         console.log(amount);
