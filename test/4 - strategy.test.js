@@ -2,10 +2,10 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { assertWP, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, resetFork } = require("./helpers");
+const { assertWP, getAndApprove, getERC20Balance, resetFork } = require("./helpers");
 
 describe("Strategy deposit", function () {
-    let contract, library, contractHelper, tx, amount, rebalancer;
+    let contract, library, tx;
     it("Should deploy contract", async function () {
         await resetFork();
 
@@ -26,9 +26,13 @@ describe("Strategy deposit", function () {
         await contract.deployed();
     });
 
-    it("deposit", async function () {
-        const depositor = (await ethers.getSigners())[3];
+    let depositor;
+    it("Should set actors", async function () {
+        const signers = await ethers.getSigners();
+        depositor = signers[4];
+    });
 
+    it("deposit", async function () {
         const amount = await contract
             .connect(depositor)
             .calcSharesAndAmounts("19855700000000000000", "41326682043", "17933300000000000000");
@@ -38,17 +42,12 @@ describe("Strategy deposit", function () {
         const usdcInput = amount[2].toString();
         const osqthInput = amount[3].toString();
 
-        await getWETH(wethInput, depositor.address);
-        await getUSDC(usdcInput, depositor.address);
-        await getOSQTH(osqthInput, depositor.address);
+        await getAndApprove(depositor, contract.address, wethInput, usdcInput, osqthInput);
 
+        // Balances
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
-
-        await approveERC20(depositor, contract.address, wethInput, wethAddress);
-        await approveERC20(depositor, contract.address, usdcInput, usdcAddress);
-        await approveERC20(depositor, contract.address, osqthInput, osqthAddress);
 
         tx = await contract
             .connect(depositor)
@@ -60,6 +59,7 @@ describe("Strategy deposit", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("156615292");
 
+        // Balances
         assert(assertWP(await getERC20Balance(contract.address, wethAddress), wethInput, 8, 18), "test");
         assert(assertWP(await getERC20Balance(contract.address, usdcAddress), usdcInput, 6, 6), "test");
         assert(assertWP(await getERC20Balance(contract.address, osqthAddress), osqthInput, 8, 18), "test");
@@ -69,8 +69,6 @@ describe("Strategy deposit", function () {
     });
 
     it("withdraw", async function () {
-        const depositor = (await ethers.getSigners())[3];
-
         // Shares
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124867437697927036272825");
 
@@ -79,6 +77,7 @@ describe("Strategy deposit", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("156615292");
 
+        // Balances
         expect(await getERC20Balance(contract.address, wethAddress)).to.equal("18703086612656391443");
         expect(await getERC20Balance(contract.address, usdcAddress)).to.equal("30406438208");
         expect(await getERC20Balance(contract.address, osqthAddress)).to.equal("34339600759708327238");
