@@ -57,6 +57,9 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public minPriceMultiplier;
     uint256 public maxPriceMultiplier;
 
+    int24 public maxTDEthUsdc;
+    int24 public maxTDOsqthEth;
+
     /**
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
@@ -73,7 +76,9 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 _protocolFee
+        uint256 _protocolFee,
+        uint256 _maxTDEthUsdc,
+        uint256 _maxTDOsqthEth
     ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
@@ -91,6 +96,8 @@ abstract contract VaultParams is IERC20, ERC20 {
         governance = msg.sender;
 
         timeAtLastRebalance = 0;
+        maxTDEthUsdc = _maxTDEthUsdc;
+        maxTDOsqthEth = _maxTDOsqthEth;
     }
 
     function setTwapPeriod(uint32 _twapPeriod) external onlyGovernance {
