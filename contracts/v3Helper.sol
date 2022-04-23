@@ -59,7 +59,7 @@ contract V3Helper {
             sqrtPriceLimitX96: 0
         });
         uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
-        // console.log("usdcFromSwap:", usdcFromSwap);
+        console.log("usdcFromSwap:", usdcFromSwap);
     }
 
     function swapR(uint256 amount) public {
@@ -76,7 +76,7 @@ contract V3Helper {
             sqrtPriceLimitX96: 0
         });
         uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
-        // console.log("usdcFromSwap:", usdcFromSwap);
+        console.log("usdcFromSwap:", usdcFromSwap);
     }
 
     /// @dev Fetches current price in ticks from Uniswap pool.

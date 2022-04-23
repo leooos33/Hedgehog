@@ -4,8 +4,8 @@ const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getOSQTH, getERC20Balance, approveERC20, assertWP } = require("./helpers");
 
-describe("Strategy rebalance, sell with comissions", function () {
-    let contract, library, contractHelper, tx, amount, rebalancer;
+describe.only("Story about several swaps number 1", function () {
+    let contract, library, contractHelper, tx, amount;
     it("Should deploy contract", async function () {
         await resetFork();
 
@@ -21,30 +21,30 @@ describe("Strategy rebalance, sell with comissions", function () {
             "10",
             "900000000000000000",
             "1100000000000000000",
-            "100000"
+            "0"
         );
         await contract.deployed();
+
+        const ContractHelper = await ethers.getContractFactory("V3Helper");
+        contractHelper = await ContractHelper.deploy();
+        await contractHelper.deployed();
     });
 
-    it("Should deploy V3Helper", async function () {
-        const Contract = await ethers.getContractFactory("V3Helper");
-        contractHelper = await Contract.deploy();
-        await contractHelper.deployed();
+    it("Should set actors", async function () {
+        swaper = (await ethers.getSigners())[3];
+        depositor = (await ethers.getSigners())[4];
+        keeper = (await ethers.getSigners())[5];
     });
 
     const wethInputR = "800348675119972960";
     const usdcInputR = "14065410226";
     const osqthInputR = "13136856056157859843";
-    it("preset", async function () {
-        rebalancer = (await ethers.getSigners())[5];
-
+    it("Should preset all values here", async function () {
         tx = await contract.connect(rebalancer).setTimeAtLastRebalance(1648646662);
         await tx.wait();
 
         tx = await contract.connect(rebalancer).setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
-
-        // await contract.setProtocolFee(100000);
 
         const _wethInput = wethInputR;
         const _usdcInput = usdcInputR;
@@ -60,23 +60,11 @@ describe("Strategy rebalance, sell with comissions", function () {
     });
 
     it("deposit", async function () {
-        const depositor = (await ethers.getSigners())[4];
-
         const wethInput = "18702958066838460455";
         const usdcInput = "30406229225";
         const osqthInput = "34339364744543638154";
 
-        await getWETH(wethInput, depositor.address);
-        await getUSDC(usdcInput, depositor.address);
-        await getOSQTH(osqthInput, depositor.address);
-
-        await approveERC20(depositor, contract.address, wethInput, wethAddress);
-        await approveERC20(depositor, contract.address, usdcInput, usdcAddress);
-        await approveERC20(depositor, contract.address, osqthInput, osqthAddress);
-
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
+        await getAndApprove(depositor.address, contract.address, wethInput, usdcInput, osqthInput);
 
         tx = await contract
             .connect(depositor)
@@ -86,54 +74,25 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
-
-        // Shares
         expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
     });
 
     it("swap", async function () {
-        const seller = (await ethers.getSigners())[6];
-
         const testAmount = utils.parseUnits("1000", 18).toString();
-        console.log(testAmount);
-
         await getWETH(testAmount, contractHelper.address);
 
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal(testAmount);
 
-        amount = await contractHelper.connect(seller).getTwap();
-        // console.log(amount);
 
         tx = await contractHelper.connect(seller).swap(testAmount);
         await tx.wait();
 
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        await hre.network.provider.request({
-            method: "evm_mine",
-        });
-
-        amount = await contractHelper.connect(seller).getTwap();
-        // console.log(amount);
+        for (const i of Array(6)) {
+            await hre.network.provider.request({
+                method: "evm_mine",
+            });
+        }
 
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
@@ -163,8 +122,11 @@ describe("Strategy rebalance, sell with comissions", function () {
     });
 
     it("swap", async function () {
-        const seller = (await ethers.getSigners())[6];
+        testAmount = utils.parseUnits("10", 12).toString();
+        await getUSDC(testAmount, contractHelper.address);
 
+        tx = await contractHelper.swapR(testAmount);
+        await tx.wait();
         const testAmount = utils.parseUnits("10", 12).toString();
         console.log(testAmount);
 
@@ -234,3 +196,14 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(amount[2].toString()).to.equal("1");
     });
 });
+
+
+const getAndApprove = async (actorAddress, contractAddress, wethInput, usdcInput, osqthInput) => {
+    await getWETH(wethInput, actor);
+    await getUSDC(usdcInput, actor);
+    await getOSQTH(osqthInput, actor);
+
+    await approveERC20(depositor, contractAddress, wethInput, wethAddress);
+    await approveERC20(depositor, contractAddress, usdcInput, usdcAddress);
+    await approveERC20(depositor, contractAddress, osqthInput, osqthAddress);
+}
