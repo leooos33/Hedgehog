@@ -566,6 +566,20 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
     }
 
+    function _getTwap() public view returns (int24, int24) {
+        uint32 _twapPeriod = twapPeriod;
+        uint32[] memory secondsAgo = new uint32[](2);
+        secondsAgo[0] = _twapPeriod;
+        secondsAgo[1] = 0;
+
+        (int56[] memory tickCumulativesEthUsdc, ) = Constants.poolEthUsdc.observe(secondsAgo);
+        (int56[] memory tickCumulativesEthOsqth, ) = Constants.poolEthOsqth.observe(secondsAgo);
+        return (
+            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / _twapPeriod),
+            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / _twapPeriod)
+                );
+    }
+
     //@dev <tested>
     function _liquidityForAmounts(
         address pool,
