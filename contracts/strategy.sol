@@ -35,7 +35,9 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 protocolFee
+        uint256 _protocolFee,
+        int24 _maxTDEthUsdc,
+        int24 _maxTDOsqthEth
     )
         VaultAuction(
             _cap,
@@ -44,7 +46,9 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            protocolFee
+            _protocolFee,
+            _maxTDEthUsdc,
+            _maxTDOsqthEth
         )
     {}
 

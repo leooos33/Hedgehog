@@ -30,7 +30,9 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 protocolFee
+        uint256 _protocolFee,
+        int24 _maxTDEthUsdc,
+        int24 _maxTDOsqthEth
     )
         VaultMath(
             _cap,
@@ -39,7 +41,9 @@ contract VaultAuction is IAuction, VaultMath {
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            protocolFee
+            _protocolFee,
+            _maxTDEthUsdc,
+            _maxTDOsqthEth
         )
     {}
 

@@ -21,7 +21,9 @@ describe("Strategy rebalance, sell with comissions", function () {
             "10",
             "900000000000000000",
             "1100000000000000000",
-            "100000"
+            "100000",
+            "1000",
+            "1000"
         );
         await contract.deployed();
 

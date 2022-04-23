@@ -38,7 +38,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 protocolFee
+        uint256 _protocolFee,
+        int24 _maxTDEthUsdc,
+        int24 _maxTDOsqthEth
     )
         VaultParams(
             _cap,
@@ -47,7 +49,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             _auctionTime,
             _minPriceMultiplier,
             _maxPriceMultiplier,
-            protocolFee
+            _protocolFee,
+            _maxTDEthUsdc,
+            _maxTDOsqthEth
         )
     {}
 
@@ -554,6 +558,11 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
+        console.log("deviation0");
+        console.logInt(deviation0);
+        console.log("deviation1");
+        console.logInt(deviation1);
+
         require(deviation0 <= maxTDEthUsdc || deviation1 <= maxTDOsqthEth, "Max TWAP Deviation");
 
         ethUsdcPrice = uint256(1e30).div(_getPriceFromTick(ethUsdcTick));
@@ -564,20 +573,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     /// @dev Fetches current price in ticks from Uniswap pool.
     function getTick(address pool) public view returns (int24 tick) {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
-    }
-
-    function _getTwap() public view returns (int24, int24) {
-        uint32 _twapPeriod = twapPeriod;
-        uint32[] memory secondsAgo = new uint32[](2);
-        secondsAgo[0] = _twapPeriod;
-        secondsAgo[1] = 0;
-
-        (int56[] memory tickCumulativesEthUsdc, ) = Constants.poolEthUsdc.observe(secondsAgo);
-        (int56[] memory tickCumulativesEthOsqth, ) = Constants.poolEthOsqth.observe(secondsAgo);
-        return (
-            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / _twapPeriod),
-            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / _twapPeriod)
-                );
     }
 
     //@dev <tested>
@@ -763,8 +758,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (int56[] memory tickCumulativesEthUsdc, ) = IUniswapV3Pool(Constants.poolEthUsdc).observe(secondsAgo);
         (int56[] memory tickCumulativesEthOsqth, ) = IUniswapV3Pool(Constants.poolEthOsqth).observe(secondsAgo);
         return (
-            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / _twapPeriod),
-            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / _twapPeriod)
+            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / int56(uint56(_twapPeriod))),
+            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / int56(uint56(_twapPeriod)))
         );
     }
 

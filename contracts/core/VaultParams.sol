@@ -77,8 +77,8 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
         uint256 _protocolFee,
-        uint256 _maxTDEthUsdc,
-        uint256 _maxTDOsqthEth
+        int24 _maxTDEthUsdc,
+        int24 _maxTDOsqthEth
     ) ERC20("Hedging DL", "HDL") {
         cap = _cap;
 
