@@ -372,8 +372,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             console.log("accruedFeesUsdc %s", accruedFeesUsdc);
             console.log("accruedFeesEth %s", accruedFeesEth);
             console.log("accruedFeesOsqth %s", accruedFeesOsqth);
+
+            emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
         }
-        //emit CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
     }
 
     /**
@@ -394,22 +395,21 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @param _auctionTriggerTime timestamp where auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance(uint256 _auctionTriggerTime) public returns (bool) {
-        //if (_auctionTriggerTime < timeAtLastRebalance) return false;
-        //uint32 secondsToTrigger = uint32(block.timestamp.sub(_auctionTriggerTime));
-        //uint256 ethUsdcPriceAtTrigger = IOracle(oracle).getHistoricalTwap(
-        //    Constants.poolEthUsdc,
-        //    address(Constants.weth),
-        //    address(Constants.usdc),
-        //    secondsToTrigger + twapPeriod,
-        //    secondsToTrigger
-        //);
+    function _isPriceRebalance(uint256 _auctionTriggerTime) public view returns (bool) {
+        if (_auctionTriggerTime < timeAtLastRebalance) return false;
+        uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
+        uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
+            Constants.poolEthUsdc,
+            address(Constants.weth),
+            address(Constants.usdc),
+            secondsToTrigger + twapPeriod,
+            secondsToTrigger
+        );
 
-        //uint256 cachedRatio = ethUsdcPriceAtTrigger.wdiv(ethPriceAtLastRebalance);
-        //uint256 priceTreshold = cachedRatio > 1e18 : (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
-        //return priceTreshold >= rebalancePriceThreshold
-
-        return true;
+        console.log("ethUsdcPriceAtTrigger %s", ethUsdcPriceAtTrigger);
+        uint256 cachedRatio = ethUsdcPriceAtTrigger.div(ethPriceAtLastRebalance);
+        uint256 priceTreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
+        return priceTreshold >= rebalancePriceThreshold;
     }
 
     /**
@@ -448,6 +448,12 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
                 auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
             );
         }
+
+        console.log("_getPriceMultiplier");
+        console.log("auctionCompletionRatio %s", auctionCompletionRatio);
+        console.log("_auctionTriggerTime %s", _auctionTriggerTime);
+        console.log("auctionTime %s", auctionTime);
+        console.log("priceMultiplier %s", priceMultiplier);
 
         return priceMultiplier;
     }

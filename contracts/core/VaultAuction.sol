@@ -68,7 +68,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         _rebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
 
-        //emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
     /** TODO
