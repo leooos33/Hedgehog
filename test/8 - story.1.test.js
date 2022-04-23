@@ -5,7 +5,7 @@ const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { getAndApprove, resetFork, getUSDC, getERC20Balance, assertWP } = require("./helpers");
 
-describe.only("Story about several swaps id 1", function () {
+describe("Story about several swaps id 1", function () {
     let contract, library, contractHelper, tx;
     it("Should deploy contract", async function () {
         await resetFork();
@@ -50,7 +50,7 @@ describe.only("Story about several swaps id 1", function () {
         tx = await contract.connect(governance).setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
 
-        await getAndApprove(keeper, contract.address, wethInputR, usdcInputR, osqthInputR)
+        await getAndApprove(keeper, contract.address, wethInputR, usdcInputR, osqthInputR);
     });
 
     it("deposit", async function () {
@@ -89,22 +89,19 @@ describe.only("Story about several swaps id 1", function () {
         expect(await getERC20Balance(keeper.address, wethAddress)).to.equal(wethInputR);
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal(usdcInputR);
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInputR);
-    
+
         tx = await contract.connect(keeper).timeRebalance(keeper.address, wethInputR, usdcInputR, osqthInputR);
         await tx.wait();
-    
+
         expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("2156295203852947809");
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("24807224671");
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("1871839072565612147");
-    
+
         const amount = await contract._getTotalAmounts();
         console.log("Total amounts:", amount);
     });
 
-
     it("swap halth ETH to USDC", async function () {
-        const testAmount = utils.parseUnits("10", 12).toString();
-
         const _amountWETH = await getERC20Balance(contractHelper.address, wethAddress);
         const amountWETH = BigNumber.from(_amountWETH).div(2);
 
@@ -127,13 +124,12 @@ describe.only("Story about several swaps id 1", function () {
         tx = await contract.connect(depositor).withdraw("124866579487341572537626", "0", "0", "0");
         await tx.wait();
 
-        // Shares
         assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "18140334459804562490", 16), "test");
         assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "16947270611", 4, 6), "test");
-        assert(
-            assertWP(await getERC20Balance(depositor.address, osqthAddress), "45604381728135885848", 16),
-            "test"
-        );
+        assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "45604381728135885848", 16), "test");
+
+        // Shares
+        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("0");
 
         const amount = await contract._getTotalAmounts();
         console.log("Total amounts:", amount);

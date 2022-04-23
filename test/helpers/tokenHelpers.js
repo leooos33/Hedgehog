@@ -68,7 +68,7 @@ const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqth
     await approveERC20(actor, contractAddress, wethInput, wethAddress);
     await approveERC20(actor, contractAddress, usdcInput, usdcAddress);
     await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
-}
+};
 
 module.exports = {
     getAndApprove,
