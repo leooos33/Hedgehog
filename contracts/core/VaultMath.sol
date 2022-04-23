@@ -741,16 +741,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
     /// @dev Fetches time-weighted average price in ticks from Uniswap pool.
     function _getTwap() public view returns (int24, int24) {
-        uint32 _twapDuration = twapPeriod;
+        uint32 _twapPeriod = twapPeriod;
         uint32[] memory secondsAgo = new uint32[](2);
-        secondsAgo[0] = _twapDuration;
+        secondsAgo[0] = _twapPeriod;
         secondsAgo[1] = 0;
 
         (int56[] memory tickCumulativesEthUsdc, ) = IUniswapV3Pool(Constants.poolEthUsdc).observe(secondsAgo);
         (int56[] memory tickCumulativesEthOsqth, ) = IUniswapV3Pool(Constants.poolEthOsqth).observe(secondsAgo);
         return (
-            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / _twapDuration),
-            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / _twapDuration)
+            int24((tickCumulativesEthUsdc[1] - tickCumulativesEthUsdc[0]) / _twapPeriod),
+            int24((tickCumulativesEthOsqth[1] - tickCumulativesEthOsqth[0]) / _twapPeriod)
         );
     }
 
