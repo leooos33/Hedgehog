@@ -549,6 +549,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 ethUsdcTick = getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = getTick(Constants.poolEthOsqth);
 
+        (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
+
+        int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
+        int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
+
+        require(deviation0 <= maxTDEthUsdc || deviation1 <= maxTDOsqthEth, "Max TWAP Deviation");
+
         ethUsdcPrice = uint256(1e30).div(_getPriceFromTick(ethUsdcTick));
         osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
     }
