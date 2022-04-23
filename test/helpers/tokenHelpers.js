@@ -60,7 +60,18 @@ const getERC20Allowance = async (owner, spender, tokenAddress) => {
     return (await ERC20.allowance(owner, spender)).toString();
 };
 
+const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
+    await getWETH(wethInput, actor.address);
+    await getUSDC(usdcInput, actor.address);
+    await getOSQTH(osqthInput, actor.address);
+
+    await approveERC20(actor, contractAddress, wethInput, wethAddress);
+    await approveERC20(actor, contractAddress, usdcInput, usdcAddress);
+    await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
+}
+
 module.exports = {
+    getAndApprove,
     getOSQTH,
     approveERC20,
     getUSDC,

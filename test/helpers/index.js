@@ -6,11 +6,13 @@ const {
     toHexdigital,
     getERC20Allowance,
     getERC20Balance,
+    getAndApprove,
 } = require("./tokenHelpers");
 
 const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork } = require("./testHelpers");
 
 module.exports = {
+    getAndApprove,
     resetFork,
     assertWP,
     toWEIS,
