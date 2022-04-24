@@ -62,7 +62,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 amountOsqth
     ) external override nonReentrant {
         //check if rebalancing based on time threshold is allowed
-        (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = _isTimeRebalance();
+        (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = isTimeRebalance();
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
@@ -162,9 +162,9 @@ contract VaultAuction is IAuction, VaultMath {
         }
 
         console.log("before first mint");
-        console.log("ballance weth %s", getBalance(Constants.weth));
-        console.log("ballance usdc %s", getBalance(Constants.usdc));
-        console.log("ballance osqth %s", getBalance(Constants.osqth));
+        console.log("ballance weth %s", _getBalance(Constants.weth));
+        console.log("ballance usdc %s", _getBalance(Constants.usdc));
+        console.log("ballance osqth %s", _getBalance(Constants.osqth));
 
         _mintLiquidity(
             Constants.poolEthUsdc,
@@ -174,9 +174,9 @@ contract VaultAuction is IAuction, VaultMath {
         );
 
         console.log("before second mint");
-        console.log("ballance weth %s", getBalance(Constants.weth));
-        console.log("ballance usdc %s", getBalance(Constants.usdc));
-        console.log("ballance osqth %s", getBalance(Constants.osqth));
+        console.log("ballance weth %s", _getBalance(Constants.weth));
+        console.log("ballance usdc %s", _getBalance(Constants.usdc));
+        console.log("ballance osqth %s", _getBalance(Constants.osqth));
 
         _mintLiquidity(
             Constants.poolEthOsqth,

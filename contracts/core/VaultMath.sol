@@ -67,7 +67,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) public {
+    ) internal {
         (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
@@ -75,14 +75,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         }
     }
 
-    //@dev <tested>
     /// @dev Wrapper around `IUniswapV3Pool.positions()`.
     function _position(
         address pool,
         int24 tickLower,
         int24 tickUpper
     )
-        public
+        internal
         view
         returns (
             uint128,
@@ -96,7 +95,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return IUniswapV3Pool(pool).positions(positionKey);
     }
 
-    function calcSharesAndAmounts(
+    //TODO: make me internal in mainnet
+    function _calcSharesAndAmounts(
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth
@@ -114,14 +114,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
-        console.log("calcSharesAndAmounts");
+        console.log("_calcSharesAndAmounts");
         console.log("osqthEthPrice %s", osqthEthPrice);
         console.log("ethUsdcPrice %s", ethUsdcPrice);
         // console.log("ethAmount %s", ethAmount);
         // console.log("usdcAmount %s", usdcAmount);
         // console.log("osqthAmount %s", osqthAmount);
 
-        uint256 depositorValue = getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
+        uint256 depositorValue = _getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
         // console.log("depositorValue %s", depositorValue);
 
@@ -134,7 +134,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
                 depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
             );
         } else {
-            uint256 totalValue = getValue(osqthAmount, ethUsdcPrice, ethAmount, osqthEthPrice, usdcAmount);
+            uint256 totalValue = _getValue(osqthAmount, ethUsdcPrice, ethAmount, osqthEthPrice, usdcAmount);
 
             return (
                 totalSupply().mul(depositorValue).div(totalValue),
@@ -146,7 +146,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        public
+        internal
         returns (
             uint256,
             uint256,
@@ -157,9 +157,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("totalSupply %s", totalSupply);
         console.log("shares %s", shares);
 
-        uint256 unusedAmountEth = (getBalance(Constants.weth).sub(accruedFeesEth)).mul(shares).div(totalSupply);
-        uint256 unusedAmountUsdc = (getBalance(Constants.usdc).sub(accruedFeesUsdc)).mul(shares).div(totalSupply);
-        uint256 unusedAmountOsqth = (getBalance(Constants.osqth).sub(accruedFeesOsqth)).mul(shares).div(totalSupply);
+        uint256 unusedAmountEth = (_getBalance(Constants.weth).sub(accruedFeesEth)).mul(shares).div(totalSupply);
+        uint256 unusedAmountUsdc = (_getBalance(Constants.usdc).sub(accruedFeesUsdc)).mul(shares).div(totalSupply);
+        uint256 unusedAmountOsqth = (_getBalance(Constants.osqth).sub(accruedFeesOsqth)).mul(shares).div(totalSupply);
 
         console.log("unusedAmountEth %s", unusedAmountEth);
         console.log("unusedAmountUsdc %s", unusedAmountUsdc);
@@ -191,11 +191,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         );
     }
 
-    uint256 public test1;
-    uint256 public test2;
-    uint256 public test3;
-
-    //@dev <tested>
+    //TODO: make me internal in mainnet
     /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in
      * other words, how much of each token the vault would hold if it withdrew
@@ -210,13 +206,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             uint256
         )
     {
-        (uint256 usdcAmount, uint256 amountWeth0) = getPositionAmounts(
+        (uint256 usdcAmount, uint256 amountWeth0) = _getPositionAmounts(
             Constants.poolEthUsdc,
             orderEthUsdcLower,
             orderEthUsdcUpper
         );
 
-        (uint256 amountWeth1, uint256 osqthAmount) = getPositionAmounts(
+        (uint256 amountWeth1, uint256 osqthAmount) = _getPositionAmounts(
             Constants.poolEthOsqth,
             orderOsqthEthLower,
             orderOsqthEthUpper
@@ -229,9 +225,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("osqthAmount %s", osqthAmount);
 
         return (
-            getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(accruedFeesEth),
-            getBalance(Constants.usdc).add(usdcAmount).sub(accruedFeesUsdc),
-            getBalance(Constants.osqth).add(osqthAmount).sub(accruedFeesOsqth)
+            _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(accruedFeesEth),
+            _getBalance(Constants.usdc).add(usdcAmount).sub(accruedFeesUsdc),
+            _getBalance(Constants.osqth).add(osqthAmount).sub(accruedFeesOsqth)
         );
     }
 
@@ -240,16 +236,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees.
      * @dev Doesn't include fees accrued since last poke.
      */
-    function getPositionAmounts(
+    function _getPositionAmounts(
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) public view returns (uint256, uint256) {
+    ) internal view returns (uint256, uint256) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
         (uint256 amount0, uint256 amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
 
         uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
-        console.log("getPositionAmounts");
+        console.log("_getPositionAmounts");
         console.log("oneMinusFee %s", oneMinusFee);
         console.log("amount0 %s", amount0);
         console.log("tokensOwed0 %s", tokensOwed0);
@@ -268,17 +264,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         // return (amount0.add(tokensOwed0), amount1.add(tokensOwed1));
     }
 
-    function getBalance(IERC20 token) public view returns (uint256) {
+    function _getBalance(IERC20 token) internal view returns (uint256) {
         return token.balanceOf(address(this)); //? accrued protocol fees
     }
 
-    //@dev <tested>
     function _amountsForLiquidity(
         address pool,
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public view returns (uint256, uint256) {
+    ) internal view returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
             Constants.uniswapAdaptor.getAmountsForLiquidity(
@@ -296,7 +291,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 tickUpper,
         uint256 shares,
         uint256 totalSupply
-    ) public returns (uint256 amount0, uint256 amount1) {
+    ) internal returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = _position(pool, tickLower, tickUpper);
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
 
@@ -321,7 +316,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 tickUpper,
         uint128 liquidity
     )
-        public
+        internal
         returns (
             uint256 burned0,
             uint256 burned1,
@@ -382,14 +377,15 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @return true if time hedging is allowed
      * @return auction trigger timestamp
      */
-    function _isTimeRebalance() public view returns (bool, uint256) {
-        // console.log("_isTimeRebalance => timeAtLastRebalance: %s", timeAtLastRebalance);
+    function isTimeRebalance() public view returns (bool, uint256) {
+        // console.log("isTimeRebalance => timeAtLastRebalance: %s", timeAtLastRebalance);
         uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
 
-        // console.log("_isTimeRebalance => block.timestamp: %s", block.timestamp);
+        // console.log("isTimeRebalance => block.timestamp: %s", block.timestamp);
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 
+    // TODO: make me internal on mainnet
     /**
      * @notice check if hedging based on price threshold is allowed
      * @param _auctionTriggerTime timestamp where auction started
@@ -417,7 +413,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @param _ethUsdcPrice current wETH/USDC price
      * @return isPriceInc true if price increased
      */
-    function _checkAuctionType(uint256 _ethUsdcPrice) public view returns (bool isPriceInc) {
+    function _checkAuctionType(uint256 _ethUsdcPrice) internal view returns (bool isPriceInc) {
         // console.log("_checkAuctionType");
         // console.log(_ethUsdcPrice);
         // console.log(ethPriceAtLastRebalance);
@@ -497,7 +493,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("osqthBalance %s", osqthBalance);
 
         //Value for LPing
-        uint256 totalValue = getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
+        uint256 totalValue = _getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
             uint256(2e18) - priceMultiplier
         );
 
@@ -513,7 +509,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("_getPriceFromTick(boundaries.ethUsdcLower)");
         console.log(_getPriceFromTick(boundaries.ethUsdcLower));
 
-        uint128 liquidityEthUsdc = getLiquidityForValue(
+        uint128 liquidityEthUsdc = _getLiquidityForValue(
             totalValue.mul(vm),
             ethUsdcPrice,
             uint256(1e30).div(_getPriceFromTick(boundaries.ethUsdcUpper)),
@@ -521,7 +517,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             1e12
         );
 
-        uint128 liquidityOsqthEth = getLiquidityForValue(
+        uint128 liquidityOsqthEth = _getLiquidityForValue(
             totalValue.mul(uint256(1e18) - vm).div(ethUsdcPrice),
             osqthEthPrice,
             uint256(1e18).div(_getPriceFromTick(boundaries.osqthEthUpper)),
@@ -558,8 +554,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     function _getPrices() internal view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
-        int24 ethUsdcTick = getTick(Constants.poolEthUsdc);
-        int24 osqthEthTick = getTick(Constants.poolEthOsqth);
+        int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
+        int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
 
         (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
 
@@ -577,20 +573,18 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
     }
 
-    //@dev <tested>
     /// @dev Fetches current price in ticks from Uniswap pool.
-    function getTick(address pool) public view returns (int24 tick) {
+    function _getTick(address pool) internal view returns (int24 tick) {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
     }
 
-    //@dev <tested>
     function _liquidityForAmounts(
         address pool,
         int24 tickLower,
         int24 tickUpper,
         uint256 amount0,
         uint256 amount1
-    ) public view returns (uint128) {
+    ) internal view returns (uint128) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         // console.log("_liquidityForAmounts");
         // console.log(sqrtRatioX96);
@@ -608,15 +602,13 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             );
     }
 
-    //TODO
-    //@dev <tested>
     /// @dev Deposits liquidity in a range on the Uniswap pool.
     function _mintLiquidity(
         address pool,
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public {
+    ) internal {
         console.log("pool %s", pool);
         // console.log("tickLower %s", uint256(tickLower));
         // console.log("tickUpper %s", uint256(tickUpper));
@@ -631,7 +623,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         }
     }
 
-    //@dev <tested>
     function uniswapV3MintCallback(
         uint256 amount0Owed,
         uint256 amount1Owed,
@@ -661,7 +652,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
     }
 
-    //@dev <tested>
     function _getDeltas(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
@@ -670,7 +660,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 usdcBalance,
         uint256 osqthBalance
     )
-        public
+        internal
         view
         returns (
             uint256, //deltaEth
@@ -706,12 +696,12 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
-        public
+        internal
         view
         returns (Constants.Boundaries memory)
     {
         console.log("_getBoundaries");
-        (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = getTicks(aEthUsdcPrice, aOsqthEthPrice);
+        (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
 
         console.log("aEthUsdcPrice %s", aEthUsdcPrice);
         console.log("aOsqthEthPrice %s", aOsqthEthPrice);
@@ -746,7 +736,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             );
     }
 
-    function getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) public pure returns (uint160, uint160) {
+    function _getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) internal pure returns (uint160, uint160) {
         return (
             _toUint160(
                 //sqrt(price)*2**96
@@ -757,7 +747,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     }
 
     /// @dev Fetches time-weighted average price in ticks from Uniswap pool.
-    function _getTwap() public view returns (int24, int24) {
+    function _getTwap() internal view returns (int24, int24) {
         uint32 _twapPeriod = twapPeriod;
         uint32[] memory secondsAgo = new uint32[](2);
         secondsAgo[0] = _twapPeriod;
@@ -771,14 +761,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         );
     }
 
-    function getLiquidityForValue(
+    function _getLiquidityForValue(
         uint256 v,
         uint256 p,
         uint256 pL,
         uint256 pH,
         uint256 digits
-    ) public view returns (uint128) {
-        console.log("getLiquidityForValue");
+    ) internal view returns (uint128) {
+        console.log("_getLiquidityForValue");
         console.log(v);
         console.log(p);
         console.log(pL);
@@ -787,14 +777,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
-    function getValue(
+    function _getValue(
         uint256 amountEth,
         uint256 amountUsdc,
         uint256 amountOsqth,
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
-    ) public pure returns (uint256) {
-        // console.log("_getValue");
+    ) internal pure returns (uint256) {
+        // console.log("__getValue");
         // console.log("amountEth %s", amountEth);
         // console.log("amountUsdc %s", amountUsdc);
         // console.log("amountOsqth %s", amountOsqth);
@@ -804,7 +794,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
     }
 
-    //@dev <tested>
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
     function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
