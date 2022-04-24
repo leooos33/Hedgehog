@@ -75,7 +75,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         }
     }
 
-    //@dev <tested>
     /// @dev Wrapper around `IUniswapV3Pool.positions()`.
     function _position(
         address pool,
@@ -269,7 +268,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return token.balanceOf(address(this)); //? accrued protocol fees
     }
 
-    //@dev <tested>
     function _amountsForLiquidity(
         address pool,
         int24 tickLower,
@@ -573,13 +571,11 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
     }
 
-    //@dev <tested>
     /// @dev Fetches current price in ticks from Uniswap pool.
     function _getTick(address pool) internal view returns (int24 tick) {
         (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
     }
 
-    //@dev <tested>
     function _liquidityForAmounts(
         address pool,
         int24 tickLower,
@@ -604,8 +600,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             );
     }
 
-    //TODO
-    //@dev <tested>
     /// @dev Deposits liquidity in a range on the Uniswap pool.
     function _mintLiquidity(
         address pool,
@@ -627,7 +621,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         }
     }
 
-    //@dev <tested>
     function uniswapV3MintCallback(
         uint256 amount0Owed,
         uint256 amount1Owed,
@@ -657,7 +650,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
     }
 
-    //@dev <tested>
     function _getDeltas(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
@@ -800,7 +792,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
     }
 
-    //@dev <tested>
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
     function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
