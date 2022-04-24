@@ -114,7 +114,7 @@ contract VaultAuction is IAuction, VaultMath {
     ) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-        _executeAuction(keeper, params);
+        _executeAuction(keeper, params, _amountEth, _amountUsdc, _amountOsqth);
 
         emit SharedEvents.Rebalance(keeper, params.deltaEth, params.deltaUsdc, params.deltaOsqth);
     }
@@ -126,7 +126,13 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
+    function _executeAuction(
+        address _keeper, 
+        Constants.AuctionParams memory params, 
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth
+    ) internal {
         (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
         (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
 
@@ -146,13 +152,12 @@ contract VaultAuction is IAuction, VaultMath {
 
         console.log(params.isPriceInc);
         if (params.isPriceInc) {
-            //pull in tokens from sender
-            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
+            if (_amountOsqth >= params.deltaOsqth) Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));            
             Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
             Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
         } else {
-            Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
-            Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
+            if( _amountEth >= params.deltaEth) Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
+            if (_amountUsdc >= params.deltaUsdc) Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));            
             Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
         }
 

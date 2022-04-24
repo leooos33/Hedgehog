@@ -438,16 +438,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
-        uint256 priceMultiplier;
-        if (_isPriceInc) {
-            priceMultiplier = minPriceMultiplier.add(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        } else {
-            priceMultiplier = maxPriceMultiplier.sub(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        }
+        //uint256 priceMultiplier;
+        //if (_isPriceInc) {
+        //    priceMultiplier = minPriceMultiplier.add(
+        //        auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
+        //    );
+        //} else {
+        //    priceMultiplier = maxPriceMultiplier.sub(
+        //        auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
+        //    );
+        //}
 
         console.log("_getPriceMultiplier");
         console.log("auctionCompletionRatio %s", auctionCompletionRatio);
@@ -455,7 +455,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         console.log("auctionTime %s", auctionTime);
         console.log("priceMultiplier %s", priceMultiplier);
 
-        return priceMultiplier;
+        return minPriceMultiplier.add(
+                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
+        );
     }
 
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
@@ -499,7 +501,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             uint256(2e18) - priceMultiplier
         );
 
-        uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18))); //Value multiplier
+        uint256 vm = priceMultiplier.div(2e18); //Value multiplier
 
         // console.log("boundaries.ethUsdcUpper");
         // console.log(int256(boundaries.ethUsdcUpper));
