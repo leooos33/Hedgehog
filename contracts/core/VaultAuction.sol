@@ -144,7 +144,6 @@ contract VaultAuction is IAuction, VaultMath {
             liquidityOsqthEth
         );
 
-        console.log(params.isPriceInc);
         if (params.isPriceInc) {
             //pull in tokens from sender
             Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
@@ -156,22 +155,12 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
         }
 
-        console.log("before first mint");
-        console.log("ballance weth %s", _getBalance(Constants.weth));
-        console.log("ballance usdc %s", _getBalance(Constants.usdc));
-        console.log("ballance osqth %s", _getBalance(Constants.osqth));
-
         _mintLiquidity(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             params.liquidityEthUsdc
         );
-
-        console.log("before second mint");
-        console.log("ballance weth %s", _getBalance(Constants.weth));
-        console.log("ballance usdc %s", _getBalance(Constants.usdc));
-        console.log("ballance osqth %s", _getBalance(Constants.osqth));
 
         _mintLiquidity(
             Constants.poolEthOsqth,

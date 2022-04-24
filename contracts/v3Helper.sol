@@ -59,7 +59,6 @@ contract V3Helper {
             sqrtPriceLimitX96: 0
         });
         uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
-        console.log("usdcFromSwap:", usdcFromSwap);
     }
 
     function swapR(uint256 amount) public {
@@ -76,7 +75,6 @@ contract V3Helper {
             sqrtPriceLimitX96: 0
         });
         uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
-        console.log("usdcFromSwap:", usdcFromSwap);
     }
 
     /// @dev Fetches current price in ticks from Uniswap pool.
@@ -86,13 +84,13 @@ contract V3Helper {
 
     function getTwap() public view returns (uint256, int24) {
         // How much usdc I get for 1 WETH
-        console.log("block.timestamp", block.timestamp);
+
         return (oracle.getTwap(poolEthUsdc, address(weth), address(usdc), twapPeriod, false), getTick(poolEthUsdc));
     }
 
     function getTwapR() public view returns (uint256, int24) {
         // How much usdc I get for 1 WETH
-        console.log("block.timestamp", block.timestamp);
+
         return (oracle.getTwap(poolEthUsdc, address(usdc), address(weth), twapPeriod, false), getTick(poolEthUsdc));
     }
 }
