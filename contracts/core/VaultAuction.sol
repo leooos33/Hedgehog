@@ -3,7 +3,7 @@
 pragma solidity =0.8.4;
 pragma abicoder v2;
 
-import {IVault, IAuction} from "../interfaces/IVault.sol";
+import {IAuction} from "../interfaces/IVault.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {VaultMath} from "./VaultMath.sol";
@@ -76,7 +76,6 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev need to attach msg.value if buying oSQTH
      * @param keeper keeper address
      * @param _auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param _isPriceIncreased sell or buy auction, true for sell auction (strategy sell eth and usdc for osqth)
      * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
      * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
@@ -84,7 +83,6 @@ contract VaultAuction is IAuction, VaultMath {
     function priceRebalance(
         address keeper,
         uint256 _auctionTriggerTime,
-        bool _isPriceIncreased,
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth

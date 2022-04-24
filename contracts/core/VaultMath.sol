@@ -367,8 +367,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         isPriceInc = _ethUsdcPrice >= ethPriceAtLastRebalance ? true : false;
     }
 
-    function _getPriceFromTick(int24 tick) internal view returns (uint256) {
-        //uint x = 162714639867323407420353073371;
+    function _getPriceFromTick(int24 tick) internal pure returns (uint256) {
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
 
@@ -626,7 +625,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 pL,
         uint256 pH,
         uint256 digits
-    ) internal view returns (uint128) {
+    ) internal pure returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
