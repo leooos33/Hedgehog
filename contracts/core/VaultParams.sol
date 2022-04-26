@@ -140,38 +140,6 @@ abstract contract VaultParams is IERC20, ERC20 {
         protocolFee = _protocolFee;
     }
 
-    /**
-     * Used to for _getTotalAmounts unit testing
-     */
-    // TODO: remove on main
-    function setTotalAmountsBoundaries(
-        int24 _orderEthUsdcLower,
-        int24 _orderEthUsdcUpper,
-        int24 _orderOsqthEthLower,
-        int24 _orderOsqthEthUpper
-    ) public {
-        orderEthUsdcLower = _orderEthUsdcLower;
-        orderEthUsdcUpper = _orderEthUsdcUpper;
-        orderOsqthEthLower = _orderOsqthEthLower;
-        orderOsqthEthUpper = _orderOsqthEthUpper;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
-        timeAtLastRebalance = _timeAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
-        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
-    }
-
     function setGovernance(address _governance) external onlyGovernance {
         governance = _governance;
     }
