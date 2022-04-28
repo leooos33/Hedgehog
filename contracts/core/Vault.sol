@@ -7,11 +7,11 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IVault, IAuction} from "./interfaces/IVault.sol";
-import {SharedEvents} from "./libraries/SharedEvents.sol";
-import {Constants} from "./libraries/Constants.sol";
-import {PRBMathUD60x18} from "./libraries/math/PRBMathUD60x18.sol";
-import {VaultAuction} from "./core/VaultAuction.sol";
+import {IVault, IAuction} from "../interfaces/IVault.sol";
+import {SharedEvents} from "../libraries/SharedEvents.sol";
+import {Constants} from "../libraries/Constants.sol";
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
+import {VaultAuction} from "./VaultAuction.sol";
 
 import "hardhat/console.sol";
 
