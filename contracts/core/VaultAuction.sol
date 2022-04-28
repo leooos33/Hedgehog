@@ -135,15 +135,14 @@ contract VaultAuction is IAuction, VaultMath {
             liquidityOsqthEth
         );
 
-        if (params.isPriceInc) {
-            //pull in tokens from sender
-            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
-            Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
-            Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
-        } else {
+        if(params.priceMultiplier < 1e18) {
             Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
             Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
             Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
+        } else {
+            Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
+            Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
+            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
         }
 
         _mintLiquidity(

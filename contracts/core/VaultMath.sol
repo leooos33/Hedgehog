@@ -359,15 +359,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return priceTreshold >= rebalancePriceThreshold;
     }
 
-    /**
-     * @notice check the direction of auction
-     * @param _ethUsdcPrice current wETH/USDC price
-     * @return isPriceInc true if price increased
-     */
-    function _checkAuctionType(uint256 _ethUsdcPrice) internal view returns (bool isPriceInc) {
-        isPriceInc = _ethUsdcPrice >= ethPriceAtLastRebalance ? true : false;
-    }
-
     function _getPriceFromTick(int24 tick) internal pure returns (uint256) {
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
@@ -387,7 +378,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
-        bool _isPriceInc = _checkAuctionType(ethUsdcPrice);
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
 
         //boundaries for auction prices (current price * multiplier)
@@ -432,7 +422,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         return
             Constants.AuctionParams(
-                _isPriceInc,
+                priceMultiplier,
                 deltaEth,
                 deltaUsdc,
                 deltaOsqth,

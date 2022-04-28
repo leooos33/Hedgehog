@@ -45,7 +45,7 @@ library Constants {
     }
 
     struct AuctionParams {
-        bool isPriceInc;
+        uint256 priceMultiplier;
         uint256 deltaEth;
         uint256 deltaUsdc;
         uint256 deltaOsqth;
