@@ -94,7 +94,6 @@ abstract contract VaultParams is IERC20, ERC20 {
         maxPriceMultiplier = _maxPriceMultiplier;
 
         governance = msg.sender;
-        console.log(governance);
 
         timeAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;

@@ -376,30 +376,19 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
-    function _getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPriceInc) internal view returns (uint256) {
+    function _getPriceMultiplier(uint256 _auctionTriggerTime) internal view returns (uint256) {
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
-        uint256 priceMultiplier;
-        if (_isPriceInc) {
-            priceMultiplier = minPriceMultiplier.add(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        } else {
-            priceMultiplier = maxPriceMultiplier.sub(
-                auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier))
-            );
-        }
-
-        return priceMultiplier;
+        return minPriceMultiplier.add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
 
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
         bool _isPriceInc = _checkAuctionType(ethUsdcPrice);
-        uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime, _isPriceInc);
+        uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
 
         //boundaries for auction prices (current price * multiplier)
         Constants.Boundaries memory boundaries = _getBoundaries(
