@@ -3,6 +3,7 @@
 pragma solidity =0.8.4;
 pragma abicoder v2;
 
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IUniswapV3MintCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
@@ -10,11 +11,11 @@ import {IUniswapV3SwapCallback} from "@uniswap/v3-core/contracts/interfaces/call
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
 
-import "../libraries/SharedEvents.sol";
-import "../libraries/Constants.sol";
+import {SharedEvents} from "../libraries/SharedEvents.sol";
+import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 
-import "./VaultParams.sol";
+import {VaultParams} from "./VaultParams.sol";
 
 import "hardhat/console.sol";
 

@@ -6,7 +6,7 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import "../libraries/Constants.sol";
+import {Constants} from "../libraries/Constants.sol";
 
 import "hardhat/console.sol";
 

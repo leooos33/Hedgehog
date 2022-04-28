@@ -3,11 +3,13 @@
 pragma solidity =0.8.4;
 pragma abicoder v2;
 
-import {IAuction} from "../interfaces/IVault.sol";
+import {IAuction} from "../interfaces/IAuction.sol";
+
 import {SharedEvents} from "../libraries/SharedEvents.sol";
-import {Constants} from "../libraries/Constants.sol";
-import {VaultMath} from "./VaultMath.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
+import {Constants} from "../libraries/Constants.sol";
+
+import {VaultMath} from "./VaultMath.sol";
 
 import "hardhat/console.sol";
 
@@ -86,7 +88,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _amountEth,
         uint256 _amountUsdc,
         uint256 _amountOsqth
-    ) external nonReentrant {
+    ) external override nonReentrant {
         //check if rebalancing based on price threshold is allowed
         require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
 

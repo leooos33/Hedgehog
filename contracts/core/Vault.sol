@@ -5,12 +5,14 @@ pragma abicoder v2;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {IVault, IAuction} from "../interfaces/IVault.sol";
+
+import {IVault} from "../interfaces/IVault.sol";
+
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
+
 import {VaultAuction} from "./VaultAuction.sol";
 
 import "hardhat/console.sol";
@@ -134,7 +136,7 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
         uint256 amountEth,
         uint256 amountOsqth,
         address to
-    ) external onlyGovernance {
+    ) external override nonReentrant onlyGovernance {
         accruedFeesUsdc = accruedFeesUsdc.sub(amountUsdc);
         accruedFeesEth = accruedFeesEth.sub(amountEth);
         accruedFeesOsqth = accruedFeesOsqth.sub(amountOsqth);

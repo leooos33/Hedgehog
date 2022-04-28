@@ -19,15 +19,11 @@ interface IVault {
         uint256,
         uint256
     ) external;
-}
 
-interface IAuction {
-    function timeRebalance(
-        address,
-        uint256,
-        uint256,
-        uint256
+    function collectProtocol(
+        uint256 amountUsdc,
+        uint256 amountEth,
+        uint256 amountOsqth,
+        address to
     ) external;
-
-    // function getTotalAmounts() external view returns (uint256, uint256);
 }
