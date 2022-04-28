@@ -135,7 +135,7 @@ contract VaultAuction is IAuction, VaultMath {
             liquidityOsqthEth
         );
 
-        if(params.priceMultiplier < 1e18) {
+        if (params.priceMultiplier < 1e18) {
             Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
             Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
             Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
