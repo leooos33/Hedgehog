@@ -5,8 +5,8 @@
     "formatjs": "prettier --write 'test/**/*.js'",
     "compile": "DEBUG=true npx hardhat compile --verbose",
     "lint": "solhint 'contracts/**/*.sol'",
-    "test": "npm run format && DEBUG=true npx hardhat compile && npx hardhat test",
-    "test-prod": "npm run format && DEBUG=false npx hardhat compile && npx hardhat test",
+    "test": "npm run format && DEBUG=true npx hardhat compile && DEBUG=true npx hardhat test",
+    "test-prod": "npm run format && DEBUG=false npx hardhat compile && DEBUG=false npx hardhat test",
     "audit": "node test/audit/index.js",
     "size": "npx hardhat size-contracts"
   },

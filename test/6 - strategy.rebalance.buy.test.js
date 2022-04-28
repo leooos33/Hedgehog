@@ -5,6 +5,15 @@ const { utils } = ethers;
 const { resetFork, getUSDC, getERC20Balance, getAndApprove } = require("./helpers");
 
 describe("Strategy rebalance buy", function () {
+    let swaper, depositor, keeper, governance;
+    it("Should set actors", async function () {
+        const signers = await ethers.getSigners();
+        governance = signers[0];
+        depositor = signers[4];
+        keeper = signers[5];
+        swaper = signers[6];
+    });
+
     let contract, library, contractHelper, tx;
     it("Should deploy contract", async function () {
         await resetFork();
@@ -30,15 +39,6 @@ describe("Strategy rebalance buy", function () {
         const ContractHelper = await ethers.getContractFactory("V3Helper");
         contractHelper = await ContractHelper.deploy();
         await contractHelper.deployed();
-    });
-
-    let swaper, depositor, keeper, governance;
-    it("Should set actors", async function () {
-        const signers = await ethers.getSigners();
-        governance = signers[2];
-        depositor = signers[4];
-        keeper = signers[5];
-        swaper = signers[6];
     });
 
     const wethInputR = "1355494073418907206";

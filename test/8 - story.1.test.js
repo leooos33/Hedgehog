@@ -6,6 +6,15 @@ const { utils } = ethers;
 const { getAndApprove, resetFork, getUSDC, getERC20Balance, assertWP } = require("./helpers");
 
 describe("Story about several swaps id 1", function () {
+    let swaper, depositor, keeper, governance;
+    it("Should set actors", async function () {
+        const signers = await ethers.getSigners();
+        governance = signers[0];
+        depositor = signers[4];
+        keeper = signers[5];
+        swaper = signers[6];
+    });
+
     let contract, library, contractHelper, tx;
     it("Should deploy contract", async function () {
         await resetFork();
@@ -31,15 +40,6 @@ describe("Story about several swaps id 1", function () {
         const ContractHelper = await ethers.getContractFactory("V3Helper");
         contractHelper = await ContractHelper.deploy();
         await contractHelper.deployed();
-    });
-
-    let swaper, depositor, keeper, governance;
-    it("Should set actors", async function () {
-        const signers = await ethers.getSigners();
-        governance = signers[2];
-        depositor = signers[4];
-        keeper = signers[5];
-        swaper = signers[6];
     });
 
     const wethInputR = "800348675119972960";

@@ -4,7 +4,7 @@ const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { assertWP, getAndApprove, getERC20Balance, resetFork } = require("./helpers");
 
-describe.only("Strategy deposit", function () {
+describe("Strategy deposit", function () {
     let depositor, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();

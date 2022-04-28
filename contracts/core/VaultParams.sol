@@ -151,14 +151,15 @@ abstract contract VaultParams is IERC20, ERC20 {
     }
 
     /**
-     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     * Used to for unit testing
      */
+    // TODO: remove on main
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
         int24 _orderOsqthEthUpper
-    ) public onlyGovernance {
+    ) public {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
@@ -166,16 +167,17 @@ abstract contract VaultParams is IERC20, ERC20 {
     }
 
     /**
-     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     * Used to for unit testing
      */
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
+    // TODO: remove on main
+    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
         timeAtLastRebalance = _timeAtLastRebalance;
     }
 
     /**
-     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     * Used to for unit testing
      */
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
+    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }
