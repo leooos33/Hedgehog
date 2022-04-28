@@ -4,12 +4,19 @@ const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
 const { assertWP, getAndApprove, getERC20Balance, resetFork } = require("./helpers");
 
-describe("Strategy deposit", function () {
+describe.only("Strategy deposit", function () {
+    let depositor, governance;
+    it("Should set actors", async function () {
+        const signers = await ethers.getSigners();
+        governance = signers[0];
+        depositor = signers[4];
+    });
+
     let contract, library, tx;
     it("Should deploy contract", async function () {
         await resetFork();
 
-        const Library = await ethers.getContractFactory("UniswapAdaptor");
+        const Library = await ethers.getContractFactory("UniswapMath");
         library = await Library.deploy();
         await library.deployed();
 
@@ -26,12 +33,6 @@ describe("Strategy deposit", function () {
             "1000"
         );
         await contract.deployed();
-    });
-
-    let depositor;
-    it("Should set actors", async function () {
-        const signers = await ethers.getSigners();
-        depositor = signers[4];
     });
 
     it("deposit", async function () {

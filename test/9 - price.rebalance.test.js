@@ -7,7 +7,7 @@ describe("VaultMath", function () {
     it("Should deploy contract", async function () {
         await resetFork();
 
-        const Library = await ethers.getContractFactory("UniswapAdaptor");
+        const Library = await ethers.getContractFactory("UniswapMath");
         library = await Library.deploy();
         await library.deployed();
 

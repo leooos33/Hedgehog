@@ -94,6 +94,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         maxPriceMultiplier = _maxPriceMultiplier;
 
         governance = msg.sender;
+        console.log(governance);
 
         timeAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;
@@ -147,5 +148,34 @@ abstract contract VaultParams is IERC20, ERC20 {
     modifier onlyGovernance() {
         require(msg.sender == governance, "governance");
         _;
+    }
+
+    /**
+     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     */
+    function setTotalAmountsBoundaries(
+        int24 _orderEthUsdcLower,
+        int24 _orderEthUsdcUpper,
+        int24 _orderOsqthEthLower,
+        int24 _orderOsqthEthUpper
+    ) public onlyGovernance {
+        orderEthUsdcLower = _orderEthUsdcLower;
+        orderEthUsdcUpper = _orderEthUsdcUpper;
+        orderOsqthEthLower = _orderOsqthEthLower;
+        orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
+
+    /**
+     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     */
+    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
+        timeAtLastRebalance = _timeAtLastRebalance;
+    }
+
+    /**
+     * Used to for _getTotalAmounts unit testing and stratege suning in production
+     */
+    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
+        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }

@@ -66,7 +66,7 @@ contract VaultAuction is IAuction, VaultMath {
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        _rebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        _rebalance(keeper, auctionTriggerTime);
 
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
@@ -90,7 +90,7 @@ contract VaultAuction is IAuction, VaultMath {
         //check if rebalancing based on price threshold is allowed
         require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
 
-        _rebalance(keeper, _auctionTriggerTime, _amountEth, _amountUsdc, _amountOsqth);
+        _rebalance(keeper, _auctionTriggerTime);
 
         emit SharedEvents.PriceRebalance(keeper, _amountEth, _amountUsdc, _amountOsqth);
     }
@@ -99,17 +99,8 @@ contract VaultAuction is IAuction, VaultMath {
      * @notice rebalancing function to adjust proportion of tokens
      * @param keeper keeper address
      * @param _auctionTriggerTime timestamp when auction started
-     * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
-    function _rebalance(
-        address keeper,
-        uint256 _auctionTriggerTime,
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
-    ) internal {
+    function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         _executeAuction(keeper, params);

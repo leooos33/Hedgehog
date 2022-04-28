@@ -8,7 +8,7 @@ import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/Liquid
 
 import "hardhat/console.sol";
 
-contract UniswapAdaptor {
+contract UniswapMath {
     function getTickAtSqrtRatio(uint160 sqrtPriceX96) external pure returns (int24 tick) {
         return TickMath.getTickAtSqrtRatio(sqrtPriceX96);
     }

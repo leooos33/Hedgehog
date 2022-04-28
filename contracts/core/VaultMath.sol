@@ -244,10 +244,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     ) internal view returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
-            Constants.uniswapAdaptor.getAmountsForLiquidity(
+            Constants.uniswapMath.getAmountsForLiquidity(
                 sqrtRatioX96,
-                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickLower),
-                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
+                Constants.uniswapMath.getSqrtRatioAtTick(tickLower),
+                Constants.uniswapMath.getSqrtRatioAtTick(tickUpper),
                 liquidity
             );
     }
@@ -371,7 +371,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
 
-        uint160 sqrtRatioAtTick = Constants.uniswapAdaptor.getSqrtRatioAtTick(tick);
+        uint160 sqrtRatioAtTick = Constants.uniswapMath.getSqrtRatioAtTick(tick);
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
@@ -482,10 +482,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
 
         return
-            Constants.uniswapAdaptor.getLiquidityForAmounts(
+            Constants.uniswapMath.getLiquidityForAmounts(
                 sqrtRatioX96,
-                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickLower),
-                Constants.uniswapAdaptor.getSqrtRatioAtTick(tickUpper),
+                Constants.uniswapMath.getSqrtRatioAtTick(tickLower),
+                Constants.uniswapMath.getSqrtRatioAtTick(tickUpper),
                 amount0,
                 amount1
             );
@@ -576,8 +576,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     {
         (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
 
-        int24 aEthUsdcTick = Constants.uniswapAdaptor.getTickAtSqrtRatio(_aEthUsdcTick);
-        int24 aOsqthEthTick = Constants.uniswapAdaptor.getTickAtSqrtRatio(_aOsqthEthTick);
+        int24 aEthUsdcTick = Constants.uniswapMath.getTickAtSqrtRatio(_aEthUsdcTick);
+        int24 aOsqthEthTick = Constants.uniswapMath.getTickAtSqrtRatio(_aOsqthEthTick);
 
         int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(aOsqthEthTick, tickSpacingOsqthEth);
