@@ -12,24 +12,9 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
+import {IOracle} from "./libraries/uniswap/IOracle.sol";
+
 import "hardhat/console.sol";
-
-interface IOracle {
-    function getTwap(
-        address _pool,
-        address _base,
-        address _quote,
-        uint32 _period,
-        bool _checkPeriod
-    ) external view returns (uint256);
-
-    function getMaxPeriod(address _pool) external view returns (uint32);
-
-    function getTimeWeightedAverageTickSafe(address _pool, uint32 _period)
-        external
-        view
-        returns (int24 timeWeightedAverageTick);
-}
 
 contract V3Helper {
     IERC20 public constant weth = IERC20(0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2);
@@ -58,7 +43,7 @@ contract V3Helper {
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
-        uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
+        swapRouter.exactInputSingle(paramsWethUSDC);
     }
 
     function swapR(uint256 amount) public {
@@ -74,7 +59,7 @@ contract V3Helper {
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
-        uint256 usdcFromSwap = swapRouter.exactInputSingle(paramsWethUSDC);
+        swapRouter.exactInputSingle(paramsWethUSDC);
     }
 
     /// @dev Fetches current price in ticks from Uniswap pool.
