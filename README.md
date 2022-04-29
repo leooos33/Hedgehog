@@ -1,46 +1,62 @@
-# Advanced Sample Hardhat Project
+# Description
 
-This project demonstrates an advanced Hardhat use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+Hedging divergence losses automated strategy that provides liquidity in the Uni V3 ETH-USDC pool and hedges it with LP for the oSQTH-ETH pool.
 
-The project comes with a sample contract, a test for that contract, a sample script that deploys that contract, and an example of a task implementation, which simply lists the available accounts. It also comes with a variety of other tools, preconfigured to work with the project code.
+# Project structure
 
-Try running some of the following tasks:
-
-```shell
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
+```
+.
+├──  contracts/ # contracts
+|──────── core/ # the main contratcs
+|──────── interfaces/ # project interfaces
+|──────── libraries/ # external libraries
+|──────── IWETH.sol # contract for hardhat testing
+|──────── v3Helper.sol # uniswap emulator for hardhat testing
+├──  test/ # test cases
+├──  .env.example
+├──  .gitattributes
+├──  .gitignore
+├──  .npmignore
+├──  README.md # current file
+├──  hardhat.config.js
+├──  hardhat.helpers.js
+├──  package.json
+├──  .prettierignore
+├──  .prettierrc
+├──  .solhint.json
+├──  .solhintignore
+├──  .eslintignore
+├──  .eslintrc.js
 ```
 
-# Etherscan verification
+# Prerequisites
 
-To try out Etherscan verification, you first need to deploy a contract to an Ethereum network that's supported by Etherscan, such as Ropsten.
+- Installed NodeJS (tested with NodeJS v16+)
 
-In this project, copy the .env.example file to a file named .env, and then edit it to fill in the details. Enter your Etherscan API key, your Ropsten node URL (eg from Alchemy), and the private key of the account which will send the deployment transaction. With a valid .env file in place, first deploy your contract:
+- Installed node modules:
 
-```shell
-hardhat run --network ropsten scripts/sample-script.ts
+```
+npm i
 ```
 
-Then, copy the deployment address and paste it in to replace `DEPLOYED_CONTRACT_ADDRESS` in this command:
+- Configure `hardhat.config.js` if [needed](https://hardhat.org/config/).
 
-```shell
-npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
+- Add your <YOUR ALCHEMY KEY> to the .env file. Use .env.example as reference.
+
+# Testing
+
+If you'd like to run tests on the local environment, you might want to run the following command:
+
+```
+npm test
 ```
 
-# Performance optimizations
+If you'd like to run pre production tests run the following command:
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+```
+npm run test-prod
+```
+
+Hardhat framework is used for testing.
+
+NOTE: if you want to use a different network, configure `hardhat.config.js`.
