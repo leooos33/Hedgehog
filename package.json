@@ -1,5 +1,5 @@
 {
-  "name": "hardhat-project",
+  "name": "hdl-strategy",
   "scripts": {
     "format": "prettier --write 'contracts/**/*.sol'",
     "formatjs": "prettier --write 'test/**/*.js'",
