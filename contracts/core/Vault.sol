@@ -29,6 +29,9 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
        @param _auctionTime auction duration (seconds)
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
+       @param _protocolFee Protocol fee expressed as multiple of 1e-6
+       @param _maxTDEthUsdc max TWAP deviation for EthUsdc price in ticks
+       @param _maxTDOsqthEth max TWAP deviation for OsqthEth price in ticks
      */
     constructor(
         uint256 _cap,
@@ -88,7 +91,8 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
 
         //Mint shares to user
         _mint(to, _shares);
-        require(totalSupply() <= cap, "Cap is reached");
+        //Check deposit cap
+        require(totalSupply() <= cap, "Cap");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
@@ -110,11 +114,13 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
     ) external override nonReentrant {
         require(shares > 0, "0");
 
-        uint256 oldTotalSupply = totalSupply();
+        uint256 totalSupply = totalSupply();
 
+        //Burn shares
         _burn(msg.sender, shares);
 
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, oldTotalSupply);
+        //Get token amounts to withdraw
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, totalSupply);
 
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
@@ -130,16 +136,21 @@ contract Vault is IVault, ReentrancyGuard, VaultAuction {
 
     /**
      * @notice Used to collect accumulated protocol fees.
+     * @param amountEth amount of wETH to withdraw
+     * @param amountUsdc amount of USDC to withdraw
+     * @param amountOsqth amount of oSQTH to withdraw
+     * @param to recipient address
      */
     function collectProtocol(
-        uint256 amountUsdc,
         uint256 amountEth,
+        uint256 amountUsdc,
         uint256 amountOsqth,
         address to
     ) external override nonReentrant onlyGovernance {
         accruedFeesUsdc = accruedFeesUsdc.sub(amountUsdc);
         accruedFeesEth = accruedFeesEth.sub(amountEth);
         accruedFeesOsqth = accruedFeesOsqth.sub(amountOsqth);
+
         if (amountUsdc > 0) Constants.usdc.safeTransfer(to, amountUsdc);
         if (amountEth > 0) Constants.weth.safeTransfer(to, amountEth);
         if (amountOsqth > 0) Constants.osqth.safeTransfer(to, amountOsqth);

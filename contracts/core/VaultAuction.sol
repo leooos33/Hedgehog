@@ -24,6 +24,9 @@ contract VaultAuction is IAuction, VaultMath {
        @param _auctionTime auction duration (seconds)
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
+       @param _protocolFee Protocol fee expressed as multiple of 1e-6
+       @param _maxTDEthUsdc max TWAP deviation for EthUsdc price in ticks
+       @param _maxTDOsqthEth max TWAP deviation for OsqthEth price in ticks
      */
     constructor(
         uint256 _cap,
@@ -51,7 +54,6 @@ contract VaultAuction is IAuction, VaultMath {
 
     /**
      * @notice strategy rebalancing based on time threshold
-     * @dev need to attach msg.value if buying oSQTH
      * @param keeper keeper address
      * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
      * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
@@ -73,28 +75,27 @@ contract VaultAuction is IAuction, VaultMath {
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
-    /** TODO
+    /** 
      * @notice strategy rebalancing based on price threshold
-     * @dev need to attach msg.value if buying oSQTH
      * @param keeper keeper address
-     * @param _auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param _amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param _amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param _amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
+     * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
+     * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
+     * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function priceRebalance(
         address keeper,
-        uint256 _auctionTriggerTime,
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
+        uint256 auctionTriggerTime,
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
     ) external override nonReentrant {
         //check if rebalancing based on price threshold is allowed
-        require(_isPriceRebalance(_auctionTriggerTime), "Price rebalance not allowed");
+        require(_isPriceRebalance(auctionTriggerTime), "Price rebalance not allowed");
 
-        _rebalance(keeper, _auctionTriggerTime);
+        _rebalance(keeper, auctionTriggerTime);
 
-        emit SharedEvents.PriceRebalance(keeper, _amountEth, _amountUsdc, _amountOsqth);
+        emit SharedEvents.PriceRebalance(keeper, amountEth, amountUsdc, amountOsqth);
     }
 
     /**
@@ -118,9 +119,11 @@ contract VaultAuction is IAuction, VaultMath {
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
     function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
+        //Get current liquidity in positions
         (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
         (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
 
+        //Withdraw liquidity and collect fees
         _burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
@@ -135,6 +138,7 @@ contract VaultAuction is IAuction, VaultMath {
             liquidityOsqthEth
         );
 
+        //Exchange tokens with keeper
         if (params.priceMultiplier < 1e18) {
             Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
             Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
@@ -145,6 +149,7 @@ contract VaultAuction is IAuction, VaultMath {
             Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
         }
 
+        //Place new liquidity positions
         _mintLiquidity(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
@@ -158,7 +163,8 @@ contract VaultAuction is IAuction, VaultMath {
             params.boundaries.osqthEthUpper,
             params.liquidityOsqthEth
         );
-
+        
+        //Track new positions boundaries
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
