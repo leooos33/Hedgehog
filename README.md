@@ -54,7 +54,7 @@ npm test
 If you'd like to run pre production tests run the following command:
 
 ```
-npm test-prod
+npm run test-prod
 ```
 
 Hardhat framework is used for testing.
