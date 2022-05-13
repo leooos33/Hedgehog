@@ -133,7 +133,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         //Get current prices
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
-        
+
         //Calculate total depositor value
         uint256 depositorValue = _getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
@@ -264,7 +264,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @notice current balance of a certain token
      */
     function _getBalance(IERC20 token) internal view returns (uint256) {
-        return token.balanceOf(address(this)); 
+        return token.balanceOf(address(this));
     }
 
     /// @dev Wrapper around `LiquidityAmounts.getAmountsForLiquidity()`.
@@ -403,6 +403,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint160 sqrtRatioAtTick = Constants.uniswapMath.getSqrtRatioAtTick(tick);
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
+
     /**
      * @notice calculate auction price multiplier
      * @param _auctionTriggerTime timestamp when auction started
@@ -415,13 +416,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
         return minPriceMultiplier.add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
+
     /**
      * @notice calculate all auction parameters
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
-        
+
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
 
         //boundaries for auction prices (current price * multiplier)
@@ -436,9 +438,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 totalValue = _getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
             uint256(2e18) - priceMultiplier
         );
-        
+
         //Value multiplier
-        uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18))); 
+        uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18)));
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = _getLiquidityForValue(
@@ -478,18 +480,18 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
                 liquidityOsqthEth
             );
     }
-    
+
     /**
      * @notice function to get current tokens prices
      * @dev check for max twap deviation
-     * @return ethUsdc price
-     * @return oSqthEth price
+     * @return ethUsdcPrice price
+     * @return osqthEthPrice price
      */
     function _getPrices() internal view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
-        
+
         //Get twap in ticks
         (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
 
@@ -543,7 +545,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
     }
-    
+
     /// @dev Callback for Uniswap V3 pool.
     function uniswapV3MintCallback(
         uint256 amount0Owed,
@@ -572,7 +574,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
 
     /**
      * @notice calculate deltas that will be exchanged during auction
-     * @param Boundaries positions boundaries
+     * @param boundaries positions boundaries
      * @param liquidityEthUsdc target liquidity for ETH:USDC pool
      * @param liquidityOsqthEth target liquidity for oSQTH:ETH pool
      * @param ethBalance current wETH balance
@@ -593,9 +595,9 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         internal
         view
         returns (
-            uint256, 
-            uint256, 
-            uint256 
+            uint256,
+            uint256,
+            uint256
         )
     {
         //Get amounts that need to be provided for this liquidity
@@ -623,10 +625,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @notice calculate deltas that will be exchanged during auction
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction OsqthEth price
-     * @return aEthUsdcLower
-     * @return aEthUsdcUpper
-     * @return aOsqthEthLower
-     * @return aOsqthEthUpper
      */
     function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
         internal

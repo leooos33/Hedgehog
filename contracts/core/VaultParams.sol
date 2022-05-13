@@ -40,15 +40,15 @@ abstract contract VaultParams is IERC20, ERC20 {
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
-    
+
     //@dev ticks thresholds for boundaries calculation
-    //values for tests 
+    //values for tests
     int24 public ethUsdcThreshold = 960;
     int24 public osqthEthThreshold = 960;
-    
+
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public protocolFee = 0;
-    
+
     //@dev accrued fees
     uint256 public accruedFeesEth = 0;
     uint256 public accruedFeesUsdc = 0;

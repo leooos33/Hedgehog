@@ -75,7 +75,7 @@ contract VaultAuction is IAuction, VaultMath {
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
-    /** 
+    /**
      * @notice strategy rebalancing based on price threshold
      * @param keeper keeper address
      * @param auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
@@ -163,7 +163,7 @@ contract VaultAuction is IAuction, VaultMath {
             params.boundaries.osqthEthUpper,
             params.liquidityOsqthEth
         );
-        
+
         //Track new positions boundaries
         (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
             params.boundaries.ethUsdcLower,
