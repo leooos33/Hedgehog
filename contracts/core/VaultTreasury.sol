@@ -50,7 +50,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper
     )
-        external
+        public
         view
         override
         onlyKeepers
@@ -102,7 +102,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) external override onlyKeepers returns (uint256, uint256) {
+    ) public override onlyKeepers returns (uint256, uint256) {
         return IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
     }
 
@@ -158,8 +158,23 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
     }
 
-    modifier onlyKeepers() {
-        require(msg.sender == vault || msg.sender == vaultMath, "keeper");
-        _;
+    /**
+     * @dev Do zero-burns to poke a position on Uniswap so earned fees are
+     * updated. Should be called if total amounts needs to include up-to-date
+     * fees.
+     * @param pool address of pool to poke
+     * @param tickLower lower tick of the position
+     * @param tickUpper upper tick of the position
+     */
+    function poke(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper
+    ) external override onlyKeepers {
+        (uint128 liquidity, , , , ) = position(pool, tickLower, tickUpper);
+
+        if (liquidity > 0) {
+            burn(pool, tickLower, tickUpper, 0);
+        }
     }
 }

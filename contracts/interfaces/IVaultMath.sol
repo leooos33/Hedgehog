@@ -65,15 +65,6 @@ interface IVaultMath is IFaucet {
 
     function getCap() external returns (uint256);
 
-    function getTotalAmountsBoundaries()
-        external
-        returns (
-            int24,
-            int24,
-            int24,
-            int24
-        );
-
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,

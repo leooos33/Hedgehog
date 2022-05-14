@@ -17,7 +17,7 @@ const hardhatDeploy = async (governance, params) => {
     await network.provider.send("evm_setAutomine", [false]);
 
     const UniswapMath = await deployContract("UniswapMath", [], false);
-    const Vault = await deployContract("Vault", [...params, governance.address], false);
+    const Vault = await deployContract("Vault", params, false);
     const VaultMath = await deployContract("VaultMath", params, false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
@@ -32,15 +32,15 @@ const hardhatDeploy = async (governance, params) => {
     {
         let tx;
         tx = await Vault
-            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address);
+            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address, governance.address);
         // await tx.wait();
 
         tx = await VaultMath
-            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address);
+            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address, governance.address);
         // await tx.wait();
 
         tx = await VaultTreasury
-            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address);
+            .setComponents(UniswapMath.address, Vault.address, VaultMath.address, VaultTreasury.address, governance.address);
         // await tx.wait();
     }
     await network.provider.request({

@@ -3,8 +3,6 @@
 pragma solidity =0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
@@ -21,9 +19,6 @@ abstract contract VaultParams is Faucet {
 
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public cap;
-
-    //@dev governance
-    address public governance;
 
     //@dev lower and upper ticks in Uniswap pools
     // Removed
@@ -98,8 +93,6 @@ abstract contract VaultParams is Faucet {
         auctionTime = _auctionTime;
         minPriceMultiplier = _minPriceMultiplier;
         maxPriceMultiplier = _maxPriceMultiplier;
-
-        governance = msg.sender;
 
         timeAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;
@@ -183,46 +176,16 @@ abstract contract VaultParams is Faucet {
         protocolFee = _protocolFee;
     }
 
-    /**
-     * @notice owner can transfer his admin power to another address
-     * @param _governance new governance address
-     */
-    function setGovernance(address _governance) external onlyGovernance {
-        governance = _governance;
-    }
-
-    modifier onlyGovernance() {
-        require(msg.sender == governance, "governance");
-        _;
-    }
-
-    function getTotalAmountsBoundaries()
-        public
-        view
-        returns (
-            int24,
-            int24,
-            int24,
-            int24
-        )
-    {
-        return (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper);
-    }
-
     function getCap() public view returns (uint256) {
         return cap;
     }
 
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
         int24 _orderOsqthEthUpper
-    ) public {
+    ) public onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;

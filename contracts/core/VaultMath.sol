@@ -59,31 +59,11 @@ contract VaultMath is VaultParams, ReentrancyGuard {
     {}
 
     function _pokeEthUsdc() external onlyVault {
-        _poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
+        IVaultTreasury(vaultTreasury).poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
     }
 
     function _pokeEthOsqth() external onlyVault {
-        _poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
-    }
-
-    /**
-     * @dev Do zero-burns to poke a position on Uniswap so earned fees are
-     * updated. Should be called if total amounts needs to include up-to-date
-     * fees.
-     * @param pool address of pool to poke
-     * @param tickLower lower tick of the position
-     * @param tickUpper upper tick of the position
-     */
-    function _poke(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper
-    ) internal {
-        (uint128 liquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
-
-        if (liquidity > 0) {
-            IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, 0);
-        }
+        IVaultTreasury(vaultTreasury).poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
     }
 
     function _positionLiquidityEthUsdc() external view returns (uint128) {
@@ -238,10 +218,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         );
     }
 
-    /**
-     * @notice Amounts of token0 and token1 held in vault's position. Includes owed fees.
-     * @dev Doesn't include fees accrued since last poke.
-     */
     function _getPositionAmounts(
         address pool,
         int24 tickLower,
@@ -470,12 +446,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
             );
     }
 
-    /**
-     * @notice function to get current tokens prices
-     * @dev check for max twap deviation
-     * @return ethUsdcPrice price
-     * @return osqthEthPrice price
-     */
     function _getPrices() internal view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
@@ -615,15 +585,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         );
     }
 
-    /**
-     * @notice calculate liquidity from usd value
-     * @param v value in usd terms
-     * @param p current price
-     * @param pL lower boundary price
-     * @param pH upper boundary price
-     * @param digits different pools requires different digits (stack too deep)
-     * @return liquidity
-     */
     function _getLiquidityForValue(
         uint256 v,
         uint256 p,
@@ -655,11 +616,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         uint256 osqthEthPrice
     ) internal pure returns (uint256) {
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
-    }
-
-    modifier onlyVault() {
-        require(msg.sender == vault, "vault");
-        _;
     }
 
     /// @dev Rounds tick down towards negative infinity so that it's a multiple

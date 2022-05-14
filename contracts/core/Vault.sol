@@ -24,8 +24,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
-    address public governance;
-
     /**
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
@@ -47,8 +45,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
         uint256 _maxPriceMultiplier,
         uint256 _protocolFee,
         int24 _maxTDEthUsdc,
-        int24 _maxTDOsqthEth,
-        address _governance
+        int24 _maxTDOsqthEth
     )
         ERC20("Hedging DL", "HDL")
         VaultAuction(
@@ -62,18 +59,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
             _maxTDEthUsdc,
             _maxTDOsqthEth
         )
-    {
-        governance = _governance;
-    }
-
-    function setGovernance(address _governance) external onlyGovernance {
-        governance = _governance;
-    }
-
-    modifier onlyGovernance() {
-        require(msg.sender == governance, "governance");
-        _;
-    }
+    {}
 
     function deposit(
         uint256 _amountEth,
