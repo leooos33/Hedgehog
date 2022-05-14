@@ -7,10 +7,11 @@ import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {Constants} from "../libraries/Constants.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-abstract contract VaultParams is IERC20, ERC20 {
+abstract contract VaultParams is Faucet {
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
     int24 public immutable tickSpacingOsqthEth;
@@ -84,7 +85,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _protocolFee,
         int24 _maxTDEthUsdc,
         int24 _maxTDOsqthEth
-    ) ERC20("Hedging DL", "HDL") {
+    ) Faucet() {
         cap = _cap;
 
         protocolFee = _protocolFee;
@@ -193,6 +194,23 @@ abstract contract VaultParams is IERC20, ERC20 {
     modifier onlyGovernance() {
         require(msg.sender == governance, "governance");
         _;
+    }
+
+    function getTotalAmountsBoundaries()
+        public
+        view
+        returns (
+            int24,
+            int24,
+            int24,
+            int24
+        )
+    {
+        return (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper);
+    }
+
+    function getCap() public view returns (uint256) {
+        return cap;
     }
 
     /**

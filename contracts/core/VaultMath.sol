@@ -6,10 +6,9 @@ pragma abicoder v2;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
-import {IUniswapV3MintCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3MintCallback.sol";
-import {IUniswapV3SwapCallback} from "@uniswap/v3-core/contracts/interfaces/callback/IUniswapV3SwapCallback.sol";
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey.sol";
+
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
@@ -19,7 +18,7 @@ import {VaultParams} from "./VaultParams.sol";
 
 import "hardhat/console.sol";
 
-contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUniswapV3SwapCallback {
+contract VaultMath is VaultParams, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
@@ -59,6 +58,14 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         )
     {}
 
+    function _pokeEthUsdc() external onlyVault {
+        _poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
+    }
+
+    function _pokeEthOsqth() external onlyVault {
+        _poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
+    }
+
     /**
      * @dev Do zero-burns to poke a position on Uniswap so earned fees are
      * updated. Should be called if total amounts needs to include up-to-date
@@ -72,36 +79,29 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 tickLower,
         int24 tickUpper
     ) internal {
-        (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
+        (uint128 liquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
-            IUniswapV3Pool(pool).burn(tickLower, tickUpper, 0);
+            IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, 0);
         }
     }
 
-    /**
-     * @dev Wrapper around `IUniswapV3Pool.positions()`.
-     * @param pool address of pool to poke
-     * @param tickLower lower tick of the position
-     * @param tickUpper upper tick of the position
-     */
-    function _position(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper
-    )
-        internal
-        view
-        returns (
-            uint128,
-            uint256,
-            uint256,
-            uint128,
-            uint128
-        )
-    {
-        bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
-        return IUniswapV3Pool(pool).positions(positionKey);
+    function _positionLiquidityEthUsdc() external view returns (uint128) {
+        (uint128 liquidityEthUsdc, , , , ) = IVaultTreasury(vaultTreasury).position(
+            Constants.poolEthUsdc,
+            orderEthUsdcLower,
+            orderEthUsdcUpper
+        );
+        return liquidityEthUsdc;
+    }
+
+    function _positionLiquidityEthOsqth() external view returns (uint128) {
+        (uint128 liquidityEthOsqth, , , , ) = IVaultTreasury(vaultTreasury).position(
+            Constants.poolEthOsqth,
+            orderOsqthEthLower,
+            orderOsqthEthUpper
+        );
+        return liquidityEthOsqth;
     }
 
     /**
@@ -117,7 +117,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
     function _calcSharesAndAmounts(
         uint256 _amountEth,
         uint256 _amountUsdc,
-        uint256 _amountOsqth
+        uint256 _amountOsqth,
+        uint256 _totalSupply
     )
         public
         view
@@ -137,7 +138,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         //Calculate total depositor value
         uint256 depositorValue = _getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
-        if (totalSupply() == 0) {
+        if (_totalSupply == 0) {
             //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
             return (
                 depositorValue,
@@ -150,7 +151,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             uint256 totalValue = _getValue(ethAmount, usdcAmount, osqthAmount, ethUsdcPrice, osqthEthPrice);
 
             return (
-                totalSupply().mul(depositorValue).div(totalValue),
+                _totalSupply.mul(depositorValue).div(totalValue),
                 ethAmount.mul(depositorValue).div(totalValue),
                 usdcAmount.mul(depositorValue).div(totalValue),
                 osqthAmount.mul(depositorValue).div(totalValue)
@@ -167,7 +168,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @return amount of oSQTH to withdraw
      */
     function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        internal
+        external
+        onlyVault
         returns (
             uint256,
             uint256,
@@ -245,8 +247,17 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 tickLower,
         int24 tickUpper
     ) internal view returns (uint256, uint256) {
-        (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = _position(pool, tickLower, tickUpper);
-        (uint256 amount0, uint256 amount1) = _amountsForLiquidity(pool, tickLower, tickUpper, liquidity);
+        (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = IVaultTreasury(vaultTreasury).position(
+            pool,
+            tickLower,
+            tickUpper
+        );
+        (uint256 amount0, uint256 amount1) = IVaultTreasury(vaultTreasury).amountsForLiquidity(
+            pool,
+            tickLower,
+            tickUpper,
+            liquidity
+        );
 
         uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
 
@@ -267,23 +278,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return token.balanceOf(address(this));
     }
 
-    /// @dev Wrapper around `LiquidityAmounts.getAmountsForLiquidity()`.
-    function _amountsForLiquidity(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper,
-        uint128 liquidity
-    ) internal view returns (uint256, uint256) {
-        (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
-        return
-            Constants.uniswapMath.getAmountsForLiquidity(
-                sqrtRatioX96,
-                Constants.uniswapMath.getSqrtRatioAtTick(tickLower),
-                Constants.uniswapMath.getSqrtRatioAtTick(tickUpper),
-                liquidity
-            );
-    }
-
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
     function _burnLiquidityShare(
         address pool,
@@ -292,7 +286,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 shares,
         uint256 totalSupply
     ) internal returns (uint256 amount0, uint256 amount1) {
-        (uint128 totalLiquidity, , , , ) = _position(pool, tickLower, tickUpper);
+        (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
 
         if (liquidity > 0) {
@@ -316,7 +310,8 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         int24 tickUpper,
         uint128 liquidity
     )
-        internal
+        public
+        onlyVault
         returns (
             uint256 burned0,
             uint256 burned1,
@@ -325,16 +320,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         )
     {
         if (liquidity > 0) {
-            (burned0, burned1) = IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
+            (burned0, burned1) = IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, liquidity);
         }
 
-        (uint256 collect0, uint256 collect1) = IUniswapV3Pool(pool).collect(
-            address(this),
-            tickLower,
-            tickUpper,
-            type(uint128).max,
-            type(uint128).max
-        );
+        (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
 
         feesToVault0 = collect0.sub(burned0);
         feesToVault1 = collect1.sub(burned1);
@@ -421,7 +410,7 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
      * @notice calculate all auction parameters
      * @param _auctionTriggerTime timestamp when auction started
      */
-    function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
+    function _getAuctionParams(uint256 _auctionTriggerTime) external view returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
@@ -530,48 +519,6 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             );
     }
 
-    /// @dev Deposits liquidity in a range on the Uniswap pool.
-    function _mintLiquidity(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper,
-        uint128 liquidity
-    ) internal {
-        if (liquidity > 0) {
-            address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
-            address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
-            bytes memory params = abi.encode(pool, token0, token1);
-
-            IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
-        }
-    }
-
-    /// @dev Callback for Uniswap V3 pool.
-    function uniswapV3MintCallback(
-        uint256 amount0Owed,
-        uint256 amount1Owed,
-        bytes calldata data
-    ) external override {
-        (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
-
-        require(msg.sender == pool);
-        if (amount0Owed > 0) IERC20(token0).safeTransfer(msg.sender, amount0Owed);
-        if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
-    }
-
-    // @dev Callback for Uniswap V3 pool.
-    function uniswapV3SwapCallback(
-        int256 amount0Delta,
-        int256 amount1Delta,
-        bytes calldata data
-    ) external override {
-        (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
-
-        require(msg.sender == pool);
-        if (amount0Delta > 0) IERC20(token0).safeTransfer(msg.sender, uint256(amount0Delta));
-        if (amount1Delta > 0) IERC20(token1).safeTransfer(msg.sender, uint256(amount1Delta));
-    }
-
     /**
      * @notice calculate deltas that will be exchanged during auction
      * @param boundaries positions boundaries
@@ -600,25 +547,10 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
             uint256
         )
     {
-        //Get amounts that need to be provided for this liquidity
-        (uint256 usdcAmount, uint256 ethAmount0) = _amountsForLiquidity(
-            Constants.poolEthUsdc,
-            boundaries.ethUsdcLower,
-            boundaries.ethUsdcUpper,
-            liquidityEthUsdc
-        );
-        (uint256 ethAmount1, uint256 osqthAmount) = _amountsForLiquidity(
-            Constants.poolEthOsqth,
-            boundaries.osqthEthLower,
-            boundaries.osqthEthUpper,
-            liquidityOsqthEth
-        );
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultTreasury(vaultTreasury)
+            .allAmountsForLiquidity(boundaries, liquidityEthUsdc, liquidityOsqthEth);
 
-        return (
-            ethBalance.suba(ethAmount0).suba(ethAmount1),
-            usdcBalance.suba(usdcAmount),
-            osqthBalance.suba(osqthAmount)
-        );
+        return (ethBalance.suba(ethAmount), usdcBalance.suba(usdcAmount), osqthBalance.suba(osqthAmount));
     }
 
     /**
@@ -702,6 +634,16 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
+    function updateAccruedFees(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    ) external onlyVault {
+        accruedFeesUsdc = accruedFeesUsdc.sub(amountUsdc);
+        accruedFeesEth = accruedFeesEth.sub(amountEth);
+        accruedFeesOsqth = accruedFeesOsqth.sub(amountOsqth);
+    }
+
     /**
      * @notice calculate value in usd terms
      */
@@ -713,6 +655,11 @@ contract VaultMath is VaultParams, ReentrancyGuard, IUniswapV3MintCallback, IUni
         uint256 osqthEthPrice
     ) internal pure returns (uint256) {
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
+    }
+
+    modifier onlyVault() {
+        require(msg.sender == vault, "vault");
+        _;
     }
 
     /// @dev Rounds tick down towards negative infinity so that it's a multiple

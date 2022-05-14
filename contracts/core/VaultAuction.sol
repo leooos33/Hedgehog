@@ -3,17 +3,20 @@
 pragma solidity =0.8.4;
 pragma abicoder v2;
 
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
+import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IAuction} from "../interfaces/IAuction.sol";
 
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Constants} from "../libraries/Constants.sol";
-
-import {VaultMath} from "./VaultMath.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-contract VaultAuction is IAuction, VaultMath {
+contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
     /**
@@ -38,19 +41,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 _protocolFee,
         int24 _maxTDEthUsdc,
         int24 _maxTDOsqthEth
-    )
-        VaultMath(
-            _cap,
-            _rebalanceTimeThreshold,
-            _rebalancePriceThreshold,
-            _auctionTime,
-            _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _protocolFee,
-            _maxTDEthUsdc,
-            _maxTDOsqthEth
-        )
-    {}
+    ) Faucet() {}
 
     /**
      * @notice strategy rebalancing based on time threshold
@@ -66,7 +57,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 amountOsqth
     ) external override nonReentrant {
         //check if rebalancing based on time threshold is allowed
-        (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = isTimeRebalance();
+        (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
@@ -91,7 +82,7 @@ contract VaultAuction is IAuction, VaultMath {
         uint256 amountOsqth
     ) external override nonReentrant {
         //check if rebalancing based on price threshold is allowed
-        require(_isPriceRebalance(auctionTriggerTime), "Price rebalance not allowed");
+        require(IVaultMath(vaultMath)._isPriceRebalance(auctionTriggerTime), "Price rebalance not allowed");
 
         _rebalance(keeper, auctionTriggerTime);
 
@@ -104,7 +95,7 @@ contract VaultAuction is IAuction, VaultMath {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
-        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
+        Constants.AuctionParams memory params = IVaultMath(vaultMath)._getAuctionParams(_auctionTriggerTime);
 
         _executeAuction(keeper, params);
 
@@ -120,18 +111,17 @@ contract VaultAuction is IAuction, VaultMath {
      */
     function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
         //Get current liquidity in positions
-        (uint128 liquidityEthUsdc, , , , ) = _position(Constants.poolEthUsdc, orderEthUsdcLower, orderEthUsdcUpper);
-        (uint128 liquidityOsqthEth, , , , ) = _position(Constants.poolEthOsqth, orderOsqthEthLower, orderOsqthEthUpper);
+        uint128 liquidityEthUsdc = IVaultMath(vaultMath)._positionLiquidityEthUsdc();
+        uint128 liquidityOsqthEth = IVaultMath(vaultMath)._positionLiquidityEthOsqth();
 
-        //Withdraw liquidity and collect fees
-        _burnAndCollect(
+        IVaultMath(vaultMath)._burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             liquidityEthUsdc
         );
 
-        _burnAndCollect(
+        IVaultMath(vaultMath)._burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
@@ -142,30 +132,28 @@ contract VaultAuction is IAuction, VaultMath {
         if (params.priceMultiplier < 1e18) {
             Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
             Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
-            Constants.osqth.transfer(_keeper, params.deltaOsqth.sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, params.deltaOsqth.sub(10));
         } else {
-            Constants.weth.transfer(_keeper, params.deltaEth.sub(10));
-            Constants.usdc.transfer(_keeper, params.deltaUsdc.sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, params.deltaEth.sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, params.deltaUsdc.sub(10));
             Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
         }
 
-        //Place new liquidity positions
-        _mintLiquidity(
+        IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             params.liquidityEthUsdc
         );
 
-        _mintLiquidity(
+        IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
             params.liquidityOsqthEth
         );
 
-        //Track new positions boundaries
-        (orderEthUsdcLower, orderEthUsdcUpper, orderOsqthEthLower, orderOsqthEthUpper) = (
+        IVaultMath(vaultMath).setTotalAmountsBoundaries(
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             params.boundaries.osqthEthLower,
