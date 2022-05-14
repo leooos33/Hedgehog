@@ -11,6 +11,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {IVault} from "../interfaces/IVault.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
@@ -26,40 +27,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
 
     /**
      * @notice strategy constructor
-       @param _cap max amount of wETH that strategy accepts for deposits
-       @param _rebalanceTimeThreshold rebalance time threshold (seconds)
-       @param _rebalancePriceThreshold rebalance price threshold (0.05*1e18 = 5%)
-       @param _auctionTime auction duration (seconds)
-       @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
-       @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
-       @param _protocolFee Protocol fee expressed as multiple of 1e-6
-       @param _maxTDEthUsdc max TWAP deviation for EthUsdc price in ticks
-       @param _maxTDOsqthEth max TWAP deviation for OsqthEth price in ticks
      */
-    constructor(
-        uint256 _cap,
-        uint256 _rebalanceTimeThreshold,
-        uint256 _rebalancePriceThreshold,
-        uint256 _auctionTime,
-        uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier,
-        uint256 _protocolFee,
-        int24 _maxTDEthUsdc,
-        int24 _maxTDOsqthEth
-    )
-        ERC20("Hedging DL", "HDL")
-        VaultAuction(
-            _cap,
-            _rebalanceTimeThreshold,
-            _rebalancePriceThreshold,
-            _auctionTime,
-            _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _protocolFee,
-            _maxTDEthUsdc,
-            _maxTDOsqthEth
-        )
-    {}
+    constructor() ERC20("Hedging DL", "HDL") VaultAuction() {}
 
     function deposit(
         uint256 _amountEth,
@@ -93,7 +62,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
         //Mint shares to user
         _mint(to, _shares);
         //Check deposit cap
-        require(totalSupply() <= IVaultMath(vaultMath).getCap(), "Cap is reached");
+        require(totalSupply() <= IVaultStorage(vaultStotage).cap(), "Cap is reached");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
@@ -151,7 +120,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
         uint256 amountOsqth,
         address to
     ) external override nonReentrant onlyGovernance {
-        IVaultMath(vaultMath).updateAccruedFees(amountUsdc, amountEth, amountOsqth);
+        IVaultStorage(vaultStotage).updateAccruedFees(amountUsdc, amountEth, amountOsqth);
 
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, to, amountUsdc);
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, to, amountEth);

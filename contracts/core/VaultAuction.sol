@@ -8,6 +8,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
@@ -21,27 +22,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
     /**
      * @notice strategy constructor
-       @param _cap max amount of wETH that strategy accepts for deposits
-       @param _rebalanceTimeThreshold rebalance time threshold (seconds)
-       @param _rebalancePriceThreshold rebalance price threshold (0.05*1e18 = 5%)
-       @param _auctionTime auction duration (seconds)
-       @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
-       @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
-       @param _protocolFee Protocol fee expressed as multiple of 1e-6
-       @param _maxTDEthUsdc max TWAP deviation for EthUsdc price in ticks
-       @param _maxTDOsqthEth max TWAP deviation for OsqthEth price in ticks
      */
-    constructor(
-        uint256 _cap,
-        uint256 _rebalanceTimeThreshold,
-        uint256 _rebalancePriceThreshold,
-        uint256 _auctionTime,
-        uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier,
-        uint256 _protocolFee,
-        int24 _maxTDEthUsdc,
-        int24 _maxTDOsqthEth
-    ) Faucet() {}
+    constructor() Faucet() {}
 
     /**
      * @notice strategy rebalancing based on time threshold
@@ -153,7 +135,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityOsqthEth
         );
 
-        IVaultMath(vaultMath).setTotalAmountsBoundaries(
+        IVaultStorage(vaultStotage).setTotalAmountsBoundaries(
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             params.boundaries.osqthEthLower,

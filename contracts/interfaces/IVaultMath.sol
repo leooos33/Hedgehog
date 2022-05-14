@@ -4,9 +4,8 @@ pragma solidity =0.8.4;
 pragma abicoder v2;
 
 import "../libraries/Constants.sol";
-import {IFaucet} from "../libraries/Faucet.sol";
 
-interface IVaultMath is IFaucet {
+interface IVaultMath {
     function _calcSharesAndAmounts(
         uint256 _amountEth,
         uint256 _amountUsdc,
@@ -33,12 +32,6 @@ interface IVaultMath is IFaucet {
 
     function _pokeEthOsqth() external;
 
-    function updateAccruedFees(
-        uint256,
-        uint256,
-        uint256
-    ) external;
-
     function isTimeRebalance() external returns (bool, uint256);
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
@@ -62,13 +55,4 @@ interface IVaultMath is IFaucet {
             uint256 feesToVault0,
             uint256 feesToVault1
         );
-
-    function getCap() external returns (uint256);
-
-    function setTotalAmountsBoundaries(
-        int24 _orderEthUsdcLower,
-        int24 _orderEthUsdcUpper,
-        int24 _orderOsqthEthLower,
-        int24 _orderOsqthEthUpper
-    ) external;
 }

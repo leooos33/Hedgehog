@@ -9,7 +9,7 @@ import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-abstract contract VaultParams is Faucet {
+contract VaultStorage is Faucet {
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
     int24 public immutable tickSpacingOsqthEth;
@@ -176,10 +176,6 @@ abstract contract VaultParams is Faucet {
         protocolFee = _protocolFee;
     }
 
-    function getCap() public view returns (uint256) {
-        return cap;
-    }
-
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
@@ -190,6 +186,28 @@ abstract contract VaultParams is Faucet {
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
+
+    function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {
+        accruedFeesEth = _accruedFeesEth;
+    }
+
+    function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external onlyMath {
+        accruedFeesUsdc = _accruedFeesUsdc;
+    }
+
+    function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external onlyMath {
+        accruedFeesOsqth = _accruedFeesOsqth;
+    }
+
+    function updateAccruedFees(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    ) external onlyVault {
+        accruedFeesUsdc = accruedFeesUsdc - amountUsdc;
+        accruedFeesEth = accruedFeesEth - amountEth;
+        accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
     /**

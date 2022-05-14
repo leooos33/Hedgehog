@@ -9,77 +9,55 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
 import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
+import {IVaultMath} from "../interfaces/IVaultMath.sol";
 
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
-
-import {VaultParams} from "./VaultParams.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-contract VaultMath is VaultParams, ReentrancyGuard {
+contract VaultMath is ReentrancyGuard, Faucet {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
     /**
      * @notice strategy constructor
-       @param _cap max amount of wETH that strategy accepts for deposits
-       @param _rebalanceTimeThreshold rebalance time threshold (seconds)
-       @param _rebalancePriceThreshold rebalance price threshold (0.05*1e18 = 5%)
-       @param _auctionTime auction duration (seconds)
-       @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
-       @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
-       @param _protocolFee Protocol fee expressed as multiple of 1e-6
-       @param _maxTDEthUsdc max TWAP deviation for EthUsdc price in ticks
-       @param _maxTDOsqthEth max TWAP deviation for OsqthEth price in ticks
      */
-    constructor(
-        uint256 _cap,
-        uint256 _rebalanceTimeThreshold,
-        uint256 _rebalancePriceThreshold,
-        uint256 _auctionTime,
-        uint256 _minPriceMultiplier,
-        uint256 _maxPriceMultiplier,
-        uint256 _protocolFee,
-        int24 _maxTDEthUsdc,
-        int24 _maxTDOsqthEth
-    )
-        VaultParams(
-            _cap,
-            _rebalanceTimeThreshold,
-            _rebalancePriceThreshold,
-            _auctionTime,
-            _minPriceMultiplier,
-            _maxPriceMultiplier,
-            _protocolFee,
-            _maxTDEthUsdc,
-            _maxTDOsqthEth
-        )
-    {}
+    constructor() Faucet() {}
 
     function _pokeEthUsdc() external onlyVault {
-        IVaultTreasury(vaultTreasury).poke(address(Constants.poolEthUsdc), orderEthUsdcLower, orderEthUsdcUpper);
+        IVaultTreasury(vaultTreasury).poke(
+            address(Constants.poolEthUsdc),
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+        );
     }
 
     function _pokeEthOsqth() external onlyVault {
-        IVaultTreasury(vaultTreasury).poke(address(Constants.poolEthOsqth), orderOsqthEthLower, orderOsqthEthUpper);
+        IVaultTreasury(vaultTreasury).poke(
+            address(Constants.poolEthOsqth),
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+        );
     }
 
-    function _positionLiquidityEthUsdc() external view returns (uint128) {
+    function _positionLiquidityEthUsdc() external returns (uint128) {
         (uint128 liquidityEthUsdc, , , , ) = IVaultTreasury(vaultTreasury).position(
             Constants.poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper()
         );
         return liquidityEthUsdc;
     }
 
-    function _positionLiquidityEthOsqth() external view returns (uint128) {
+    function _positionLiquidityEthOsqth() external returns (uint128) {
         (uint128 liquidityEthOsqth, , , , ) = IVaultTreasury(vaultTreasury).position(
             Constants.poolEthOsqth,
-            orderOsqthEthLower,
-            orderOsqthEthUpper
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper()
         );
         return liquidityEthOsqth;
     }
@@ -101,7 +79,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         uint256 _totalSupply
     )
         public
-        view
         returns (
             uint256,
             uint256,
@@ -157,22 +134,28 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         )
     {
         //Get unused token amounts (deposited, but yet not placed to pools)
-        uint256 unusedAmountEth = (_getBalance(Constants.weth).sub(accruedFeesEth)).mul(shares).div(totalSupply);
-        uint256 unusedAmountUsdc = (_getBalance(Constants.usdc).sub(accruedFeesUsdc)).mul(shares).div(totalSupply);
-        uint256 unusedAmountOsqth = (_getBalance(Constants.osqth).sub(accruedFeesOsqth)).mul(shares).div(totalSupply);
+        uint256 unusedAmountEth = (_getBalance(Constants.weth).sub(IVaultStorage(vaultStotage).accruedFeesEth()))
+            .mul(shares)
+            .div(totalSupply);
+        uint256 unusedAmountUsdc = (_getBalance(Constants.usdc).sub(IVaultStorage(vaultStotage).accruedFeesUsdc()))
+            .mul(shares)
+            .div(totalSupply);
+        uint256 unusedAmountOsqth = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStotage).accruedFeesOsqth()))
+            .mul(shares)
+            .div(totalSupply);
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountUsdc, uint256 amountEth0) = _burnLiquidityShare(
             Constants.poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper,
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper(),
             shares,
             totalSupply
         );
         (uint256 amountEth1, uint256 amountOsqth) = _burnLiquidityShare(
             Constants.poolEthOsqth,
-            orderOsqthEthLower,
-            orderOsqthEthUpper,
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper(),
             shares,
             totalSupply
         );
@@ -192,7 +175,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      */
     function _getTotalAmounts()
         public
-        view
         returns (
             uint256,
             uint256,
@@ -201,20 +183,22 @@ contract VaultMath is VaultParams, ReentrancyGuard {
     {
         (uint256 usdcAmount, uint256 amountWeth0) = _getPositionAmounts(
             Constants.poolEthUsdc,
-            orderEthUsdcLower,
-            orderEthUsdcUpper
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper()
         );
 
         (uint256 amountWeth1, uint256 osqthAmount) = _getPositionAmounts(
             Constants.poolEthOsqth,
-            orderOsqthEthLower,
-            orderOsqthEthUpper
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper()
         );
 
         return (
-            _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(accruedFeesEth),
-            _getBalance(Constants.usdc).add(usdcAmount).sub(accruedFeesUsdc),
-            _getBalance(Constants.osqth).add(osqthAmount).sub(accruedFeesOsqth)
+            _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(
+                IVaultStorage(vaultStotage).accruedFeesEth()
+            ),
+            _getBalance(Constants.usdc).add(usdcAmount).sub(IVaultStorage(vaultStotage).accruedFeesUsdc()),
+            _getBalance(Constants.osqth).add(osqthAmount).sub(IVaultStorage(vaultStotage).accruedFeesOsqth())
         );
     }
 
@@ -222,7 +206,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) internal view returns (uint256, uint256) {
+    ) internal returns (uint256, uint256) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = IVaultTreasury(vaultTreasury).position(
             pool,
             tickLower,
@@ -235,7 +219,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
             liquidity
         );
 
-        uint256 oneMinusFee = uint256(1e6).sub(protocolFee);
+        uint256 oneMinusFee = uint256(1e6).sub(IVaultStorage(vaultStotage).protocolFee());
 
         uint256 total0;
         if (pool == Constants.poolEthUsdc) {
@@ -304,6 +288,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         feesToVault0 = collect0.sub(burned0);
         feesToVault1 = collect1.sub(burned1);
 
+        uint256 protocolFee = IVaultStorage(vaultStotage).protocolFee();
         //Account for protocol fee
         if (protocolFee > 0) {
             uint256 feesToProtocol0 = feesToVault0.mul(protocolFee).div(1e6);
@@ -312,11 +297,19 @@ contract VaultMath is VaultParams, ReentrancyGuard {
             feesToVault0 = feesToVault0.sub(feesToProtocol0);
             feesToVault1 = feesToVault1.sub(feesToProtocol1);
             if (pool == Constants.poolEthUsdc) {
-                accruedFeesUsdc = accruedFeesUsdc.add(feesToProtocol0);
-                accruedFeesEth = accruedFeesEth.add(feesToProtocol1);
+                IVaultStorage(vaultStotage).setAccruedFeesUsdc(
+                    IVaultStorage(vaultStotage).accruedFeesUsdc().add(feesToProtocol0)
+                );
+                IVaultStorage(vaultStotage).setAccruedFeesEth(
+                    IVaultStorage(vaultStotage).accruedFeesEth().add(feesToProtocol1)
+                );
             } else if (pool == Constants.poolEthOsqth) {
-                accruedFeesEth = accruedFeesEth.add(feesToProtocol0);
-                accruedFeesOsqth = accruedFeesOsqth.add(feesToProtocol1);
+                IVaultStorage(vaultStotage).setAccruedFeesEth(
+                    IVaultStorage(vaultStotage).accruedFeesEth().add(feesToProtocol0)
+                );
+                IVaultStorage(vaultStotage).setAccruedFeesOsqth(
+                    IVaultStorage(vaultStotage).accruedFeesOsqth().add(feesToProtocol1)
+                );
             }
 
             emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
@@ -328,8 +321,10 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      * @return true if time hedging is allowed
      * @return auction trigger timestamp
      */
-    function isTimeRebalance() public view returns (bool, uint256) {
-        uint256 auctionTriggerTime = timeAtLastRebalance.add(rebalanceTimeThreshold);
+    function isTimeRebalance() public returns (bool, uint256) {
+        uint256 auctionTriggerTime = IVaultStorage(vaultStotage).timeAtLastRebalance().add(
+            IVaultStorage(vaultStotage).rebalanceTimeThreshold()
+        );
 
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
@@ -340,20 +335,20 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance(uint256 _auctionTriggerTime) public view returns (bool) {
-        if (_auctionTriggerTime < timeAtLastRebalance) return false;
+    function _isPriceRebalance(uint256 _auctionTriggerTime) public returns (bool) {
+        if (_auctionTriggerTime < IVaultStorage(vaultStotage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
         uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
             Constants.poolEthUsdc,
             address(Constants.weth),
             address(Constants.usdc),
-            secondsToTrigger + twapPeriod,
+            secondsToTrigger + IVaultStorage(vaultStotage).twapPeriod(),
             secondsToTrigger
         );
 
-        uint256 cachedRatio = ethUsdcPriceAtTrigger.div(ethPriceAtLastRebalance);
+        uint256 cachedRatio = ethUsdcPriceAtTrigger.div(IVaultStorage(vaultStotage).ethPriceAtLastRebalance());
         uint256 priceTreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
-        return priceTreshold >= rebalancePriceThreshold;
+        return priceTreshold >= IVaultStorage(vaultStotage).rebalancePriceThreshold();
     }
 
     /**
@@ -374,7 +369,11 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function _getPriceMultiplier(uint256 _auctionTriggerTime) internal view returns (uint256) {
+    function _getPriceMultiplier(uint256 _auctionTriggerTime) internal returns (uint256) {
+        uint256 maxPriceMultiplier = IVaultStorage(vaultStotage).maxPriceMultiplier();
+        uint256 minPriceMultiplier = IVaultStorage(vaultStotage).minPriceMultiplier();
+        uint256 auctionTime = IVaultStorage(vaultStotage).auctionTime();
+
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
@@ -386,7 +385,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      * @notice calculate all auction parameters
      * @param _auctionTriggerTime timestamp when auction started
      */
-    function _getAuctionParams(uint256 _auctionTriggerTime) external view returns (Constants.AuctionParams memory) {
+    function _getAuctionParams(uint256 _auctionTriggerTime) external returns (Constants.AuctionParams memory) {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
 
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
@@ -446,7 +445,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
             );
     }
 
-    function _getPrices() internal view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
+    function _getPrices() internal returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
@@ -458,7 +457,11 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
-        require(deviation0 <= maxTDEthUsdc || deviation1 <= maxTDOsqthEth, "Max TWAP Deviation");
+        require(
+            deviation0 <= IVaultStorage(vaultStotage).maxTDEthUsdc() ||
+                deviation1 <= IVaultStorage(vaultStotage).maxTDOsqthEth(),
+            "Max TWAP Deviation"
+        );
 
         ethUsdcPrice = uint256(1e30).div(_getPriceFromTick(ethUsdcTick));
         osqthEthPrice = uint256(1e18).div(_getPriceFromTick(osqthEthTick));
@@ -530,7 +533,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      */
     function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
         internal
-        view
         returns (Constants.Boundaries memory)
     {
         (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
@@ -538,12 +540,17 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         int24 aEthUsdcTick = Constants.uniswapMath.getTickAtSqrtRatio(_aEthUsdcTick);
         int24 aOsqthEthTick = Constants.uniswapMath.getTickAtSqrtRatio(_aOsqthEthTick);
 
+        int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
+        int24 tickSpacingOsqthEth = IVaultStorage(vaultStotage).tickSpacingOsqthEth();
+
         int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
         int24 tickFloorOsqthEth = _floor(aOsqthEthTick, tickSpacingOsqthEth);
 
         int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
         int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
 
+        int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
+        int24 osqthEthThreshold = IVaultStorage(vaultStotage).osqthEthThreshold();
         return
             Constants.Boundaries(
                 tickFloorEthUsdc - ethUsdcThreshold,
@@ -571,8 +578,8 @@ contract VaultMath is VaultParams, ReentrancyGuard {
     }
 
     /// @dev Fetches time-weighted average price in ticks from Uniswap pool.
-    function _getTwap() internal view returns (int24, int24) {
-        uint32 _twapPeriod = twapPeriod;
+    function _getTwap() internal returns (int24, int24) {
+        uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
         uint32[] memory secondsAgo = new uint32[](2);
         secondsAgo[0] = _twapPeriod;
         secondsAgo[1] = 0;
@@ -593,16 +600,6 @@ contract VaultMath is VaultParams, ReentrancyGuard {
         uint256 digits
     ) internal pure returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
-    }
-
-    function updateAccruedFees(
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
-    ) external onlyVault {
-        accruedFeesUsdc = accruedFeesUsdc.sub(amountUsdc);
-        accruedFeesEth = accruedFeesEth.sub(amountEth);
-        accruedFeesOsqth = accruedFeesOsqth.sub(amountOsqth);
     }
 
     /**
