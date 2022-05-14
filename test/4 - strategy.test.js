@@ -23,7 +23,7 @@ describe.only("Strategy deposit", function () {
     });
 
     it("deposit", async function () {
-        await VaultMath.connect(depositor)._calcSharesAndAmounts(
+        await Vault.connect(depositor).calcSharesAndAmounts(
             "19855700000000000000",
             "41326682043",
             "17933300000000000000",

@@ -4,6 +4,7 @@ pragma solidity =0.8.4;
 pragma abicoder v2;
 
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 interface IFaucet {
     function setComponents(
@@ -71,5 +72,12 @@ contract Faucet is IFaucet, Ownable {
      */
     function setGovernance(address _governance) external onlyGovernance {
         governance = _governance;
+    }
+
+    /**
+     * @notice current balance of a certain token
+     */
+    function _getBalance(IERC20 token) internal view returns (uint256) {
+        return token.balanceOf(vaultTreasury);
     }
 }

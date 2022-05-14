@@ -47,4 +47,30 @@ interface IVaultMath {
             uint256 feesToVault0,
             uint256 feesToVault1
         );
+
+    function burnLiquidityShare(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint256 shares,
+        uint256 totalSupply
+    ) external returns (uint256 amount0, uint256 amount1);
+
+    function getTotalAmounts()
+        external
+        returns (
+            uint256,
+            uint256,
+            uint256
+        );
+
+    function getPrices() external returns (uint256 ethUsdcPrice, uint256 osqthEthPrice);
+
+    function getValue(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        uint256 ethUsdcPrice,
+        uint256 osqthEthPrice
+    ) external returns (uint256);
 }

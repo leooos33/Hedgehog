@@ -29,118 +29,13 @@ contract VaultMath is ReentrancyGuard, Faucet {
     constructor() Faucet() {}
 
     /**
-     * @notice Calculate shares and token amounts for deposit
-     * @param _amountEth desired amount of wETH to deposit
-     * @param _amountUsdc desired amount of USDC to deposit
-     * @param _amountOsqth desired amount of oSQTH to deposit
-     * @return shares to mint
-     * @return required amount of wETH to deposit
-     * @return required amount of USDC to deposit
-     * @return required amount of oSQTH to deposit
-     */
-    function _calcSharesAndAmounts(
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth,
-        uint256 _totalSupply
-    )
-        public
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        //Get total amounts of token balances
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = _getTotalAmounts();
-
-        //Get current prices
-        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
-
-        //Calculate total depositor value
-        uint256 depositorValue = _getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
-
-        if (_totalSupply == 0) {
-            //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
-            return (
-                depositorValue,
-                depositorValue.mul(507924136843192000).div(ethUsdcPrice),
-                depositorValue.mul(243509747368953000).div(uint256(1e30)),
-                depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
-            );
-        } else {
-            //Calculate total strategy value
-            uint256 totalValue = _getValue(ethAmount, usdcAmount, osqthAmount, ethUsdcPrice, osqthEthPrice);
-
-            return (
-                _totalSupply.mul(depositorValue).div(totalValue),
-                ethAmount.mul(depositorValue).div(totalValue),
-                usdcAmount.mul(depositorValue).div(totalValue),
-                osqthAmount.mul(depositorValue).div(totalValue)
-            );
-        }
-    }
-
-    /**
-     * @notice Calculate tokens amounts to withdraw
-     * @param shares amount of shares to burn
-     * @param totalSupply current supply of shares
-     * @return amount of wETH to withdraw
-     * @return amount of USDC to withdraw
-     * @return amount of oSQTH to withdraw
-     */
-    function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        external
-        onlyVault
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        //Get unused token amounts (deposited, but yet not placed to pools)
-        uint256 unusedAmountEth = (_getBalance(Constants.weth).sub(IVaultStorage(vaultStotage).accruedFeesEth()))
-            .mul(shares)
-            .div(totalSupply);
-        uint256 unusedAmountUsdc = (_getBalance(Constants.usdc).sub(IVaultStorage(vaultStotage).accruedFeesUsdc()))
-            .mul(shares)
-            .div(totalSupply);
-        uint256 unusedAmountOsqth = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStotage).accruedFeesOsqth()))
-            .mul(shares)
-            .div(totalSupply);
-
-        //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountUsdc, uint256 amountEth0) = _burnLiquidityShare(
-            Constants.poolEthUsdc,
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper(),
-            shares,
-            totalSupply
-        );
-        (uint256 amountEth1, uint256 amountOsqth) = _burnLiquidityShare(
-            Constants.poolEthOsqth,
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper(),
-            shares,
-            totalSupply
-        );
-
-        // Sum up total amounts owed to recipient
-        return (
-            unusedAmountEth.add(amountEth0).add(amountEth1),
-            unusedAmountUsdc.add(amountUsdc),
-            unusedAmountOsqth.add(amountOsqth)
-        );
-    }
-
-    /**
      * @notice Calculates the vault's total holdings of token0 and token1 - in
      * other words, how much of each token the vault would hold if it withdrew
      * all its liquidity from Uniswap.
      */
-    function _getTotalAmounts()
+    function getTotalAmounts()
         public
+        onlyVault
         returns (
             uint256,
             uint256,
@@ -197,21 +92,14 @@ contract VaultMath is ReentrancyGuard, Faucet {
         return (total0, (amount1.add(tokensOwed1)).mul(oneMinusFee).div(1e6));
     }
 
-    /**
-     * @notice current balance of a certain token
-     */
-    function _getBalance(IERC20 token) internal view returns (uint256) {
-        return token.balanceOf(vaultTreasury);
-    }
-
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
-    function _burnLiquidityShare(
+    function burnLiquidityShare(
         address pool,
         int24 tickLower,
         int24 tickUpper,
         uint256 shares,
         uint256 totalSupply
-    ) internal returns (uint256 amount0, uint256 amount1) {
+    ) external onlyVault returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
 
@@ -352,7 +240,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) external returns (Constants.AuctionParams memory) {
-        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = _getPrices();
+        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = getPrices();
 
         uint256 priceMultiplier = _getPriceMultiplier(_auctionTriggerTime);
 
@@ -362,10 +250,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
             osqthEthPrice.mul(priceMultiplier)
         );
         //Current strategy holdings
-        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = _getTotalAmounts();
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = getTotalAmounts();
 
         //Value for LPing
-        uint256 totalValue = _getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
+        uint256 totalValue = getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice).mul(
             uint256(2e18) - priceMultiplier
         );
 
@@ -411,7 +299,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
             );
     }
 
-    function _getPrices() internal returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
+    function getPrices() public onlyVault returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
@@ -571,13 +459,13 @@ contract VaultMath is ReentrancyGuard, Faucet {
     /**
      * @notice calculate value in usd terms
      */
-    function _getValue(
+    function getValue(
         uint256 amountEth,
         uint256 amountUsdc,
         uint256 amountOsqth,
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
-    ) internal pure returns (uint256) {
+    ) public view onlyVault returns (uint256) {
         return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
     }
 
