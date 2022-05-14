@@ -275,7 +275,7 @@ contract VaultMath is VaultParams, ReentrancyGuard {
      * @notice current balance of a certain token
      */
     function _getBalance(IERC20 token) internal view returns (uint256) {
-        return token.balanceOf(address(this));
+        return token.balanceOf(vaultTreasury);
     }
 
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
