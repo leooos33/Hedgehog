@@ -13,6 +13,7 @@ interface IFaucet {
         address,
         address,
         address,
+        address,
         address
     ) external;
 }
@@ -20,6 +21,7 @@ interface IFaucet {
 contract Faucet is IFaucet, Ownable {
     address public uniswapMath;
     address public vault;
+    address public auction;
     address public vaultMath;
     address public vaultTreasury;
     address public vaultStotage;
@@ -29,14 +31,16 @@ contract Faucet is IFaucet, Ownable {
     function setComponents(
         address _uniswapMath,
         address _vault,
+        address _auction,
         address _vaultMath,
         address _vaultTreasury,
         address _vaultStotage,
         address _governance
     ) public override onlyOwner {
-        (uniswapMath, vault, vaultMath, vaultTreasury, vaultStotage, governance) = (
+        (uniswapMath, vault, auction, vaultMath, vaultTreasury, vaultStotage, governance) = (
             _uniswapMath,
             _vault,
+            _auction,
             _vaultMath,
             _vaultTreasury,
             _vaultStotage,
@@ -45,7 +49,7 @@ contract Faucet is IFaucet, Ownable {
     }
 
     modifier onlyVault() {
-        require(msg.sender == vault, "vault");
+        require(msg.sender == vault || msg.sender == auction, "vault");
         _;
     }
 

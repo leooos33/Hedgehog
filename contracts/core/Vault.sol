@@ -16,19 +16,20 @@ import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import {VaultAuction} from "./VaultAuction.sol";
 
 import "hardhat/console.sol";
 
-contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
+contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
     /**
      * @notice strategy constructor
      */
-    constructor() ERC20("Hedging DL", "HDL") VaultAuction() {}
+    constructor() ERC20("Hedging DL", "HDL") {}
 
     function deposit(
         uint256 _amountEth,

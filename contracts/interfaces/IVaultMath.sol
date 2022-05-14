@@ -73,4 +73,16 @@ interface IVaultMath {
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
     ) external returns (uint256);
+
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external returns (uint256);
+
+    function getLiquidityForValue(
+        uint256 v,
+        uint256 p,
+        uint256 pL,
+        uint256 pH,
+        uint256 digits
+    ) external returns (uint128);
+
+    function getPriceFromTick(int24 tick) external returns (uint256);
 }

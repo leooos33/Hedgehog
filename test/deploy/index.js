@@ -19,55 +19,42 @@ const hardhatDeploy = async (governance, params) => {
     const UniswapMath = await deployContract("UniswapMath", [], false);
 
     const Vault = await deployContract("Vault", [], false);
+    const VaultAuction = await deployContract("VaultAuction", [], false);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
     const VaultStorage = await deployContract("VaultStorage", params, false);
 
-    console.log(UniswapMath.address);
-    console.log(Vault.address);
-    console.log(VaultMath.address);
-    console.log(VaultTreasury.address);
-    console.log(VaultStorage.address);
+    const arguments = [
+        UniswapMath.address,
+        Vault.address,
+        VaultAuction.address,
+        VaultMath.address,
+        VaultTreasury.address,
+        VaultStorage.address,
+        governance.address
+    ]
+    console.log(arguments);
 
     await network.provider.request({
         method: "evm_mine",
     });
     {
         let tx;
+        
         tx = await Vault.setComponents(
-            UniswapMath.address,
-            Vault.address,
-            VaultMath.address,
-            VaultTreasury.address,
-            VaultStorage.address,
-            governance.address
+            ...arguments
         );
 
         tx = await VaultMath.setComponents(
-            UniswapMath.address,
-            Vault.address,
-            VaultMath.address,
-            VaultTreasury.address,
-            VaultStorage.address,
-            governance.address
+            ...arguments
         );
 
         tx = await VaultTreasury.setComponents(
-            UniswapMath.address,
-            Vault.address,
-            VaultMath.address,
-            VaultTreasury.address,
-            VaultStorage.address,
-            governance.address
+            ...arguments
         );
 
         tx = await VaultStorage.setComponents(
-            UniswapMath.address,
-            Vault.address,
-            VaultMath.address,
-            VaultTreasury.address,
-            VaultStorage.address,
-            governance.address
+            ...arguments
         );
     }
     await network.provider.request({

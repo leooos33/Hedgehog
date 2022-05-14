@@ -142,4 +142,167 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.boundaries.osqthEthUpper
         );
     }
+
+    /**
+     * @notice calculate all auction parameters
+     * @param _auctionTriggerTime timestamp when auction started
+     */
+    function _getAuctionParams(uint256 _auctionTriggerTime) internal returns (Constants.AuctionParams memory) {
+        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+
+        uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
+
+        //boundaries for auction prices (current price * multiplier)
+        Constants.Boundaries memory boundaries = _getBoundaries(
+            ethUsdcPrice.mul(priceMultiplier),
+            osqthEthPrice.mul(priceMultiplier)
+        );
+        //Current strategy holdings
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+        //Value for LPing
+        uint256 totalValue = IVaultMath(vaultMath)
+            .getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice)
+            .mul(uint256(2e18) - priceMultiplier);
+
+        //Value multiplier
+        uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18)));
+
+        //Calculate liquidities
+        uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(vm),
+            ethUsdcPrice,
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+            1e12
+        );
+
+        uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(uint256(1e18) - vm).div(ethUsdcPrice),
+            osqthEthPrice,
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+            1e18
+        );
+
+        //Calculate deltas that need to be exchanged with keeper
+        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
+            boundaries,
+            liquidityEthUsdc,
+            liquidityOsqthEth,
+            ethBalance,
+            usdcBalance,
+            osqthBalance
+        );
+
+        return
+            Constants.AuctionParams(
+                priceMultiplier,
+                deltaEth,
+                deltaUsdc,
+                deltaOsqth,
+                boundaries,
+                liquidityEthUsdc,
+                liquidityOsqthEth
+            );
+    }
+
+    /**
+     * @notice calculate deltas that will be exchanged during auction
+     * @param boundaries positions boundaries
+     * @param liquidityEthUsdc target liquidity for ETH:USDC pool
+     * @param liquidityOsqthEth target liquidity for oSQTH:ETH pool
+     * @param ethBalance current wETH balance
+     * @param usdcBalance current USDC balance
+     * @param osqthBalance current oSQTH balance
+     * @return deltaEth target wETH amount minus current wETH balance
+     * @return deltaUsdc target USDC amount minus current USDC balance
+     * @return deltaOsqth target oSQTH amount minus current oSQTH balance
+     */
+    function _getDeltas(
+        Constants.Boundaries memory boundaries,
+        uint128 liquidityEthUsdc,
+        uint128 liquidityOsqthEth,
+        uint256 ethBalance,
+        uint256 usdcBalance,
+        uint256 osqthBalance
+    )
+        internal
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultTreasury(vaultTreasury)
+            .allAmountsForLiquidity(boundaries, liquidityEthUsdc, liquidityOsqthEth);
+
+        return (ethBalance.suba(ethAmount), usdcBalance.suba(usdcAmount), osqthBalance.suba(osqthAmount));
+    }
+
+    /**
+     * @notice calculate deltas that will be exchanged during auction
+     * @param aEthUsdcPrice auction EthUsdc price
+     * @param aOsqthEthPrice auction OsqthEth price
+     */
+    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
+        internal
+        returns (Constants.Boundaries memory)
+    {
+        (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
+
+        int24 aEthUsdcTick = Constants.uniswapMath.getTickAtSqrtRatio(_aEthUsdcTick);
+        int24 aOsqthEthTick = Constants.uniswapMath.getTickAtSqrtRatio(_aOsqthEthTick);
+
+        int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
+        int24 tickSpacingOsqthEth = IVaultStorage(vaultStotage).tickSpacingOsqthEth();
+
+        int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
+        int24 tickFloorOsqthEth = _floor(aOsqthEthTick, tickSpacingOsqthEth);
+
+        int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
+        int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
+
+        int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
+        int24 osqthEthThreshold = IVaultStorage(vaultStotage).osqthEthThreshold();
+        return
+            Constants.Boundaries(
+                tickFloorEthUsdc - ethUsdcThreshold,
+                tickCeilEthUsdc + ethUsdcThreshold,
+                tickFloorOsqthEth - osqthEthThreshold,
+                tickCeilOsqthEth + osqthEthThreshold
+            );
+    }
+
+    /// @dev Rounds tick down towards negative infinity so that it's a multiple
+    /// of `tickSpacing`.
+    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
+        int24 compressed = tick / tickSpacing;
+        if (tick < 0 && tick % tickSpacing != 0) compressed--;
+        return compressed * tickSpacing;
+    }
+
+    /**
+     * @notice calculate deltas that will be exchanged during auction
+     * @param aEthUsdcPrice auction EthUsdc price
+     * @param aOsqthEthPrice auction oSqthEth price
+     * @return tick for aEthUsdcPrice
+     * @return tick for aOsqthEthPrice
+     */
+    function _getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) internal pure returns (uint160, uint160) {
+        return (
+            _toUint160(
+                //sqrt(price)*2**96
+                ((uint256(1e30).div(aEthUsdcPrice)).sqrt()).mul(79228162514264337593543950336)
+            ),
+            _toUint160(((uint256(1e18).div(aOsqthEthPrice)).sqrt()).mul(79228162514264337593543950336))
+        );
+    }
+
+    /// @dev Casts uint256 to uint160 with overflow check.
+    function _toUint160(uint256 x) internal pure returns (uint160) {
+        assert(x <= type(uint160).max);
+        return uint160(x);
+    }
 }
