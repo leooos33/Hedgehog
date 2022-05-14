@@ -4,9 +4,8 @@ pragma solidity =0.8.4;
 pragma abicoder v2;
 
 import "../libraries/Constants.sol";
-import {IFaucet} from "../libraries/Faucet.sol";
 
-interface IVaultMath is IFaucet {
+interface IVaultMath {
     function _calcSharesAndAmounts(
         uint256 _amountEth,
         uint256 _amountUsdc,
@@ -29,25 +28,11 @@ interface IVaultMath is IFaucet {
             uint256
         );
 
-    function _pokeEthUsdc() external;
-
-    function _pokeEthOsqth() external;
-
-    function updateAccruedFees(
-        uint256,
-        uint256,
-        uint256
-    ) external;
-
     function isTimeRebalance() external returns (bool, uint256);
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
 
     function _getAuctionParams(uint256 _auctionTriggerTime) external returns (Constants.AuctionParams memory);
-
-    function _positionLiquidityEthUsdc() external returns (uint128);
-
-    function _positionLiquidityEthOsqth() external returns (uint128);
 
     function _burnAndCollect(
         address pool,
@@ -63,12 +48,41 @@ interface IVaultMath is IFaucet {
             uint256 feesToVault1
         );
 
-    function getCap() external returns (uint256);
+    function burnLiquidityShare(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint256 shares,
+        uint256 totalSupply
+    ) external returns (uint256 amount0, uint256 amount1);
 
-    function setTotalAmountsBoundaries(
-        int24 _orderEthUsdcLower,
-        int24 _orderEthUsdcUpper,
-        int24 _orderOsqthEthLower,
-        int24 _orderOsqthEthUpper
-    ) external;
+    function getTotalAmounts()
+        external
+        returns (
+            uint256,
+            uint256,
+            uint256
+        );
+
+    function getPrices() external returns (uint256 ethUsdcPrice, uint256 osqthEthPrice);
+
+    function getValue(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        uint256 ethUsdcPrice,
+        uint256 osqthEthPrice
+    ) external returns (uint256);
+
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external returns (uint256);
+
+    function getLiquidityForValue(
+        uint256 v,
+        uint256 p,
+        uint256 pL,
+        uint256 pH,
+        uint256 digits
+    ) external returns (uint128);
+
+    function getPriceFromTick(int24 tick) external returns (uint256);
 }

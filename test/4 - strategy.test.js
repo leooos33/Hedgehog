@@ -2,14 +2,14 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { assertWP, getAndApprove, getERC20Balance, resetFork, logBlock } = require("./helpers");
-const { hardhatDeploy, deploymentParams } = require('./deploy');
+const { hardhatDeploy, deploymentParams } = require("./deploy");
 
 describe.only("Strategy deposit", function () {
     let depositor, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
         governance = signers[0];
-        depositor = signers[4];
+        depositor = signers[6];
     });
 
     let Vault, VaultMath, VaultTreasury, tx;
@@ -23,14 +23,23 @@ describe.only("Strategy deposit", function () {
     });
 
     it("deposit", async function () {
-        const amount = await VaultMath
-            .connect(depositor)
-            ._calcSharesAndAmounts("19855700000000000000", "41326682043", "17933300000000000000", "0");
+        await Vault.connect(depositor).calcSharesAndAmounts(
+            "19855700000000000000",
+            "41326682043",
+            "17933300000000000000",
+            "0"
+        );
+        const amount = [
+            "124867437698496528921447",
+            "18703086612741692067",
+            "30406438208",
+            "34339600759864942530",
+        ];
         console.log(amount);
 
-        const wethInput = amount[1].toString();
-        const usdcInput = amount[2].toString();
-        const osqthInput = amount[3].toString();
+        const wethInput = amount[1];
+        const usdcInput = amount[2];
+        const osqthInput = amount[3];
 
         await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 
@@ -39,9 +48,7 @@ describe.only("Strategy deposit", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await Vault
-            .connect(depositor)
-            .deposit(wethInput, usdcInput, osqthInput, depositor.address, "0", "0", "0");
+        tx = await Vault.connect(depositor).deposit(wethInput, usdcInput, osqthInput, depositor.address, "0", "0", "0");
         await tx.wait();
 
         // Balances

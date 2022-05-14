@@ -69,9 +69,11 @@ interface IVaultTreasury {
             uint128
         );
 
-    function poke(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper
-    ) external;
+    function positionLiquidityEthUsdc() external returns (uint128);
+
+    function positionLiquidityEthOsqth() external returns (uint128);
+
+    function pokeEthUsdc() external;
+
+    function pokeEthOsqth() external;
 }
