@@ -23,17 +23,23 @@ describe.only("Strategy deposit", function () {
     });
 
     it("deposit", async function () {
-        const amount = await VaultMath.connect(depositor)._calcSharesAndAmounts(
+        await VaultMath.connect(depositor)._calcSharesAndAmounts(
             "19855700000000000000",
             "41326682043",
             "17933300000000000000",
             "0"
         );
+        const amount = [
+            "124867437698496528921447",
+            "18703086612741692067",
+            "30406438208",
+            "34339600759864942530",
+        ];
         console.log(amount);
 
-        const wethInput = amount[1].toString();
-        const usdcInput = amount[2].toString();
-        const osqthInput = amount[3].toString();
+        const wethInput = amount[1];
+        const usdcInput = amount[2];
+        const osqthInput = amount[3];
 
         await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 

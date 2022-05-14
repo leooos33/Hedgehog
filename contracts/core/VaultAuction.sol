@@ -93,8 +93,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
         //Get current liquidity in positions
-        uint128 liquidityEthUsdc = IVaultMath(vaultMath)._positionLiquidityEthUsdc();
-        uint128 liquidityOsqthEth = IVaultMath(vaultMath)._positionLiquidityEthOsqth();
+        uint128 liquidityEthUsdc = IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc();
+        uint128 liquidityOsqthEth = IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth();
 
         IVaultMath(vaultMath)._burnAndCollect(
             Constants.poolEthUsdc,

@@ -19,7 +19,7 @@ const hardhatDeploy = async (governance, params) => {
     const UniswapMath = await deployContract("UniswapMath", [], false);
 
     const Vault = await deployContract("Vault", [], false);
-    const VaultMath = await deployContract("VaultMath", params, false);
+    const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
     const VaultStorage = await deployContract("VaultStorage", params, false);
 

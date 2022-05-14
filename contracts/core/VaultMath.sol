@@ -28,40 +28,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
      */
     constructor() Faucet() {}
 
-    function _pokeEthUsdc() external onlyVault {
-        IVaultTreasury(vaultTreasury).poke(
-            address(Constants.poolEthUsdc),
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper()
-        );
-    }
-
-    function _pokeEthOsqth() external onlyVault {
-        IVaultTreasury(vaultTreasury).poke(
-            address(Constants.poolEthOsqth),
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper()
-        );
-    }
-
-    function _positionLiquidityEthUsdc() external returns (uint128) {
-        (uint128 liquidityEthUsdc, , , , ) = IVaultTreasury(vaultTreasury).position(
-            Constants.poolEthUsdc,
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper()
-        );
-        return liquidityEthUsdc;
-    }
-
-    function _positionLiquidityEthOsqth() external returns (uint128) {
-        (uint128 liquidityEthOsqth, , , , ) = IVaultTreasury(vaultTreasury).position(
-            Constants.poolEthOsqth,
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper()
-        );
-        return liquidityEthOsqth;
-    }
-
     /**
      * @notice Calculate shares and token amounts for deposit
      * @param _amountEth desired amount of wETH to deposit

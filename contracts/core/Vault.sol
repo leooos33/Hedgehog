@@ -43,8 +43,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, VaultAuction {
         require(to != address(0) && to != address(this), "WA"); //Wrong address
 
         //Poke positions so vault's current holdings are up to date
-        IVaultMath(vaultMath)._pokeEthUsdc();
-        IVaultMath(vaultMath)._pokeEthOsqth();
+        IVaultTreasury(vaultTreasury).pokeEthUsdc();
+        IVaultTreasury(vaultTreasury).pokeEthOsqth();
 
         //Calculate shares to mint
         (uint256 _shares, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = IVaultMath(vaultMath)

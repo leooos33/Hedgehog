@@ -12,6 +12,7 @@ import {PositionKey} from "@uniswap/v3-periphery/contracts/libraries/PositionKey
 
 import {Faucet} from "../libraries/Faucet.sol";
 import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
@@ -170,11 +171,45 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) external override onlyKeepers {
+    ) internal onlyKeepers {
         (uint128 liquidity, , , , ) = position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
             burn(pool, tickLower, tickUpper, 0);
         }
+    }
+
+    function pokeEthUsdc() external override onlyVault {
+        poke(
+            address(Constants.poolEthUsdc),
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+        );
+    }
+
+    function pokeEthOsqth() external override onlyVault {
+        poke(
+            address(Constants.poolEthOsqth),
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+        );
+    }
+
+    function positionLiquidityEthUsdc() external override returns (uint128) {
+        (uint128 liquidityEthUsdc, , , , ) = position(
+            Constants.poolEthUsdc,
+            IVaultStorage(vaultStotage).orderEthUsdcLower(),
+            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+        );
+        return liquidityEthUsdc;
+    }
+
+    function positionLiquidityEthOsqth() external override returns (uint128) {
+        (uint128 liquidityEthOsqth, , , , ) = position(
+            Constants.poolEthOsqth,
+            IVaultStorage(vaultStotage).orderOsqthEthLower(),
+            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+        );
+        return liquidityEthOsqth;
     }
 }

@@ -28,19 +28,11 @@ interface IVaultMath {
             uint256
         );
 
-    function _pokeEthUsdc() external;
-
-    function _pokeEthOsqth() external;
-
     function isTimeRebalance() external returns (bool, uint256);
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
 
     function _getAuctionParams(uint256 _auctionTriggerTime) external returns (Constants.AuctionParams memory);
-
-    function _positionLiquidityEthUsdc() external returns (uint128);
-
-    function _positionLiquidityEthOsqth() external returns (uint128);
 
     function _burnAndCollect(
         address pool,
