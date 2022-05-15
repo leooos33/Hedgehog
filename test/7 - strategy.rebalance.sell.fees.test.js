@@ -2,39 +2,28 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getWETH, getUSDC, getERC20Balance, getAndApprove, assertWP } = require("./helpers");
+const { resetFork, getWETH, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock } = require("./helpers");
+const { hardhatDeploy, deploymentParams } = require("./deploy");
 
 describe("Strategy rebalance, sell with comissions", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
         governance = signers[0];
-        depositor = signers[4];
-        keeper = signers[5];
-        swaper = signers[6];
+        depositor = signers[7];
+        keeper = signers[8];
+        swaper = signers[9];
     });
 
-    let contract, library, contractHelper, tx;
+    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
     it("Should deploy contract", async function () {
         await resetFork();
 
-        const Library = await ethers.getContractFactory("UniswapMath");
-        library = await Library.deploy();
-        await library.deployed();
-
-        const Contract = await ethers.getContractFactory("Vault");
-        contract = await Contract.deploy(
-            utils.parseUnits("4000000000000", 18),
-            10,
-            utils.parseUnits("0.05", 18),
-            "10",
-            "900000000000000000",
-            "1100000000000000000",
-            "100000",
-            "1000",
-            "1000"
-        );
-        await contract.deployed();
+        const params = [...deploymentParams];
+        params[6] = "100000";
+        [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
+        await logBlock();
+        //14487789 1648646654
 
         const ContractHelper = await ethers.getContractFactory("V3Helper");
         contractHelper = await ContractHelper.deploy();
@@ -45,13 +34,13 @@ describe("Strategy rebalance, sell with comissions", function () {
     const usdcInputR = "11129685278";
     const osqthInputR = "11533481249064860890";
     it("preset", async function () {
-        tx = await contract.connect(keeper).setTimeAtLastRebalance(1648646662);
+        tx = await VaultStorage.connect(keeper).setTimeAtLastRebalance(1648646662);
         await tx.wait();
 
-        tx = await contract.connect(keeper).setEthPriceAtLastRebalance("3391393578000000000000");
+        tx = await VaultStorage.connect(keeper).setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
 
-        await getAndApprove(keeper, contract.address, wethInputR, usdcInputR, osqthInputR);
+        await getAndApprove(keeper, VaultAuction.address, wethInputR, usdcInputR, osqthInputR);
     });
 
     it("deposit", async function () {
@@ -59,16 +48,22 @@ describe("Strategy rebalance, sell with comissions", function () {
         const usdcInput = "30406229225";
         const osqthInput = "34339364744543638154";
 
-        await getAndApprove(depositor, contract.address, wethInput, usdcInput, osqthInput);
+        await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 
         // Balances
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal(wethInput);
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await contract
-            .connect(depositor)
-            .deposit("18410690015258689749", "32743712092", "32849750909396941650", depositor.address, "0", "0", "0");
+        tx = await Vault.connect(depositor).deposit(
+            "18410690015258689749",
+            "32743712092",
+            "32849750909396941650",
+            depositor.address,
+            "0",
+            "0",
+            "0"
+        );
         await tx.wait();
 
         // Balances
@@ -77,7 +72,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
 
         // Shares
-        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("124866579487341572537626");
     });
 
     it("swap", async function () {
@@ -120,7 +115,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await contract.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
         await tx.wait();
 
         // Balances
@@ -128,8 +123,8 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("22259370556");
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
-        const amount = await contract._getTotalAmounts();
-        console.log(amount);
+        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        console.log("Total amounts:", amount);
         expect(amount[0].toString()).to.equal("15712426000000000008");
         expect(amount[1].toString()).to.equal("17348889552");
         expect(amount[2].toString()).to.equal("41285561000000000009");
@@ -167,9 +162,9 @@ describe("Strategy rebalance, sell with comissions", function () {
 
     it("withdraw", async function () {
         // Shares
-        expect(await getERC20Balance(depositor.address, contract.address)).to.equal("124866579487341572537626");
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("124866579487341572537626");
 
-        tx = await contract.connect(depositor).withdraw("124866579487341572537626", "0", "0", "0");
+        tx = await Vault.connect(depositor).withdraw("124866579487341572537626", "0", "0", "0");
         await tx.wait();
 
         // Balances
@@ -177,8 +172,11 @@ describe("Strategy rebalance, sell with comissions", function () {
         assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "25080520670", 4, 6), "!");
         assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "45872845993608499042", 16, 18), "!");
 
-        const amount = await contract._getTotalAmounts();
-        console.log(amount);
+        // Shares
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
+
+        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        console.log("Total amounts:", amount);
         expect(amount[0].toString()).to.equal("0");
         expect(amount[1].toString()).to.equal("2");
         expect(amount[2].toString()).to.equal("1");

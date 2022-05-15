@@ -3,14 +3,13 @@
 pragma solidity =0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {Constants} from "../libraries/Constants.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-abstract contract VaultParams is IERC20, ERC20 {
+contract VaultStorage is Faucet {
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
     int24 public immutable tickSpacingOsqthEth;
@@ -20,9 +19,6 @@ abstract contract VaultParams is IERC20, ERC20 {
 
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public cap;
-
-    //@dev governance
-    address public governance;
 
     //@dev lower and upper ticks in Uniswap pools
     // Removed
@@ -41,11 +37,15 @@ abstract contract VaultParams is IERC20, ERC20 {
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
 
+    //@dev ticks thresholds for boundaries calculation
+    //values for tests
     int24 public ethUsdcThreshold = 960;
     int24 public osqthEthThreshold = 960;
 
+    //@dev protocol fee expressed as multiple of 1e-6
     uint256 public protocolFee = 0;
 
+    //@dev accrued fees
     uint256 public accruedFeesEth = 0;
     uint256 public accruedFeesUsdc = 0;
     uint256 public accruedFeesOsqth = 0;
@@ -56,8 +56,9 @@ abstract contract VaultParams is IERC20, ERC20 {
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
     uint256 public minPriceMultiplier;
     uint256 public maxPriceMultiplier;
-
+    //@dev max TWAP deviation for EthUsdc price in ticks
     int24 public maxTDEthUsdc;
+    //@dev max TWAP deviation for oSqthEth price in ticks
     int24 public maxTDOsqthEth;
 
     /**
@@ -79,7 +80,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _protocolFee,
         int24 _maxTDEthUsdc,
         int24 _maxTDOsqthEth
-    ) ERC20("Hedging DL", "HDL") {
+    ) Faucet() {
         cap = _cap;
 
         protocolFee = _protocolFee;
@@ -93,8 +94,6 @@ abstract contract VaultParams is IERC20, ERC20 {
         minPriceMultiplier = _minPriceMultiplier;
         maxPriceMultiplier = _maxPriceMultiplier;
 
-        governance = msg.sender;
-
         timeAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;
         maxTDOsqthEth = _maxTDOsqthEth;
@@ -104,65 +103,111 @@ abstract contract VaultParams is IERC20, ERC20 {
         twapPeriod = _twapPeriod;
     }
 
+    /**
+     * @notice owner can set the strategy cap in USD terms
+     * @dev deposits are rejected if it would put the strategy above the cap amount
+     * @param _cap the maximum strategy collateral in USD, checked on deposits
+     */
     function setCap(uint256 _cap) external onlyGovernance {
         cap = _cap;
     }
 
+    /**
+     * @notice owner can set the hedge time threshold in seconds that determines how often the strategy can be hedged
+     * @param _rebalanceTimeThreshold the rebalance time threshold, in seconds
+     */
     function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external onlyGovernance {
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
     }
 
+    /**
+     * @notice owner can set the hedge time threshold in percent, scaled by 1e18 that determines the deviation in EthUsdc price that can trigger a rebalance
+     * @param _rebalancePriceThreshold the hedge price threshold, in percent, scaled by 1e18
+     */
     function setRebalancePriceThreshold(uint256 _rebalancePriceThreshold) external onlyGovernance {
         rebalancePriceThreshold = _rebalancePriceThreshold;
     }
 
+    /**
+     * @notice owner can set the threshold for ETH:USDC liquidity positions
+     * @param _ethUsdcThreshold the rebalance time threshold, in ticks
+     */
     function setEthUsdcThreshold(int24 _ethUsdcThreshold) external onlyGovernance {
         ethUsdcThreshold = _ethUsdcThreshold;
     }
 
+    /**
+     * @notice owner can set the threshold for oSQTH:ETH liquidity positions
+     * @param _osqthEthThreshold the rebalance time threshold, in ticks
+     */
     function setOsqthEthThreshold(int24 _osqthEthThreshold) external onlyGovernance {
         osqthEthThreshold = _osqthEthThreshold;
     }
 
+    /**
+     * @notice owner can set the auction time, in seconds, that a hedge auction runs for
+     * @param _auctionTime the length of the hedge auction in seconds
+     */
     function setAuctionTime(uint256 _auctionTime) external onlyGovernance {
         auctionTime = _auctionTime;
     }
 
+    /**
+     * @notice owner can set the min price multiplier in a percentage scaled by 1e18 (95e16 is 95%)
+     * @param _minPriceMultiplier the min price multiplier, a percentage, scaled by 1e18
+     */
     function setMinPriceMultiplier(uint256 _minPriceMultiplier) external onlyGovernance {
         minPriceMultiplier = _minPriceMultiplier;
     }
 
+    /**
+     * @notice owner can set the max price multiplier in a percentage scaled by 1e18 (105e15 is 105%)
+     * @param _maxPriceMultiplier the max price multiplier, a percentage, scaled by 1e18
+     */
     function setMaxPriceMultiplier(uint256 _maxPriceMultiplier) external onlyGovernance {
         maxPriceMultiplier = _maxPriceMultiplier;
     }
 
+    /**
+     * @notice owner can set the protocol fee expressed as multiple of 1e-6
+     * @param _protocolFee the protocol fee, scaled by 1e18
+     */
     function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
         protocolFee = _protocolFee;
     }
 
-    function setGovernance(address _governance) external onlyGovernance {
-        governance = _governance;
-    }
-
-    modifier onlyGovernance() {
-        require(msg.sender == governance, "governance");
-        _;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
         int24 _orderOsqthEthUpper
-    ) public {
+    ) public onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
+
+    function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {
+        accruedFeesEth = _accruedFeesEth;
+    }
+
+    function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external onlyMath {
+        accruedFeesUsdc = _accruedFeesUsdc;
+    }
+
+    function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external onlyMath {
+        accruedFeesOsqth = _accruedFeesOsqth;
+    }
+
+    function updateAccruedFees(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    ) external onlyVault {
+        accruedFeesUsdc = accruedFeesUsdc - amountUsdc;
+        accruedFeesEth = accruedFeesEth - amountEth;
+        accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
     /**

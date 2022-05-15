@@ -2,7 +2,9 @@
 
 pragma solidity =0.8.4;
 
-interface IVault {
+import {IFaucet} from "../libraries/Faucet.sol";
+
+interface IVault is IFaucet {
     function deposit(
         uint256,
         uint256,

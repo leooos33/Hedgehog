@@ -21,6 +21,7 @@ Hedging divergence losses automated strategy that provides liquidity in the Uni 
 ├──  hardhat.config.js
 ├──  hardhat.helpers.js
 ├──  package.json
+├──  package-lock.json
 ├──  .prettierignore
 ├──  .prettierrc
 ├──  .solhint.json
