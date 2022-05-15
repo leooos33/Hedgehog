@@ -5,7 +5,7 @@ const { utils } = ethers;
 const { resetFork, getUSDC, getERC20Balance, getAndApprove, logBlock } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("Strategy rebalance buy", function () {
+describe("Strategy rebalance buy", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
