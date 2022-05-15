@@ -16,6 +16,7 @@ import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Faucet} from "../libraries/Faucet.sol";
+import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
 import "hardhat/console.sol";
 
@@ -211,11 +212,11 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @param tick tick that need to be converted to price
      * @return token price
      */
-    function getPriceFromTick(int24 tick) public pure returns (uint256) {
+    function getPriceFromTick(int24 tick) public view returns (uint256) {
         //const = 2^192
         uint256 const = 6277101735386680763835789423207666416102355444464034512896;
 
-        uint160 sqrtRatioAtTick = Constants.uniswapMath.getSqrtRatioAtTick(tick);
+        uint160 sqrtRatioAtTick = IUniswapMath(uniswapMath).getSqrtRatioAtTick(tick);
         return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
     }
 
@@ -274,10 +275,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
 
         return
-            Constants.uniswapMath.getLiquidityForAmounts(
+            IUniswapMath(uniswapMath).getLiquidityForAmounts(
                 sqrtRatioX96,
-                Constants.uniswapMath.getSqrtRatioAtTick(tickLower),
-                Constants.uniswapMath.getSqrtRatioAtTick(tickUpper),
+                IUniswapMath(uniswapMath).getSqrtRatioAtTick(tickLower),
+                IUniswapMath(uniswapMath).getSqrtRatioAtTick(tickUpper),
                 amount0,
                 amount1
             );

@@ -14,6 +14,7 @@ import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
+import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
 import "hardhat/console.sol";
 
@@ -253,8 +254,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     {
         (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
 
-        int24 aEthUsdcTick = Constants.uniswapMath.getTickAtSqrtRatio(_aEthUsdcTick);
-        int24 aOsqthEthTick = Constants.uniswapMath.getTickAtSqrtRatio(_aOsqthEthTick);
+        int24 aEthUsdcTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcTick);
+        int24 aOsqthEthTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthTick);
 
         int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
         int24 tickSpacingOsqthEth = IVaultStorage(vaultStotage).tickSpacingOsqthEth();
