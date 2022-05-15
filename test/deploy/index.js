@@ -45,6 +45,10 @@ const hardhatDeploy = async (governance, params) => {
             ...arguments
         );
 
+        tx = await VaultAuction.setComponents(
+            ...arguments
+        );
+
         tx = await VaultMath.setComponents(
             ...arguments
         );
@@ -62,7 +66,7 @@ const hardhatDeploy = async (governance, params) => {
     });
     await network.provider.send("evm_setAutomine", [true]);
 
-    return [Vault, VaultMath, VaultTreasury];
+    return [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage];
 };
 
 const deployContract = async (name, params, deploy = true) => {

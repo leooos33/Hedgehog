@@ -32,8 +32,6 @@ interface IVaultMath {
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
 
-    function _getAuctionParams(uint256 _auctionTriggerTime) external returns (Constants.AuctionParams memory);
-
     function _burnAndCollect(
         address pool,
         int24 tickLower,
@@ -58,13 +56,14 @@ interface IVaultMath {
 
     function getTotalAmounts()
         external
+        view
         returns (
             uint256,
             uint256,
             uint256
         );
 
-    function getPrices() external returns (uint256 ethUsdcPrice, uint256 osqthEthPrice);
+    function getPrices() external view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice);
 
     function getValue(
         uint256 amountEth,
@@ -72,9 +71,9 @@ interface IVaultMath {
         uint256 amountOsqth,
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
-    ) external returns (uint256);
+    ) external view returns (uint256);
 
-    function getPriceMultiplier(uint256 _auctionTriggerTime) external returns (uint256);
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external view returns (uint256);
 
     function getLiquidityForValue(
         uint256 v,

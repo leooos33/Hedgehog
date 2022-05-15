@@ -23,11 +23,7 @@ import "hardhat/console.sol";
 contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallback, Faucet {
     using SafeERC20 for IERC20;
 
-    mapping(address => bool) keepers;
-
-    constructor() Faucet() {
-        keepers[msg.sender] = true;
-    }
+    constructor() Faucet() {}
 
     function amountsForLiquidity(
         address pool,
@@ -195,7 +191,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         );
     }
 
-    function positionLiquidityEthUsdc() external override returns (uint128) {
+    function positionLiquidityEthUsdc() external view override returns (uint128) {
         (uint128 liquidityEthUsdc, , , , ) = position(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStotage).orderEthUsdcLower(),
@@ -204,7 +200,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         return liquidityEthUsdc;
     }
 
-    function positionLiquidityEthOsqth() external override returns (uint128) {
+    function positionLiquidityEthOsqth() external view override returns (uint128) {
         (uint128 liquidityEthOsqth, , , , ) = position(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStotage).orderOsqthEthLower(),

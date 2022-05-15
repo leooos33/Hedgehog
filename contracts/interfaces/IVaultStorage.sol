@@ -7,49 +7,49 @@ import {Constants} from "../libraries/Constants.sol";
 import "hardhat/console.sol";
 
 interface IVaultStorage {
-    function orderEthUsdcLower() external returns (int24);
+    function orderEthUsdcLower() external view returns (int24);
 
-    function orderEthUsdcUpper() external returns (int24);
+    function orderEthUsdcUpper() external view returns (int24);
 
-    function orderOsqthEthLower() external returns (int24);
+    function orderOsqthEthLower() external view returns (int24);
 
-    function orderOsqthEthUpper() external returns (int24);
+    function orderOsqthEthUpper() external view returns (int24);
 
-    function accruedFeesEth() external returns (uint256);
+    function accruedFeesEth() external view returns (uint256);
 
-    function accruedFeesUsdc() external returns (uint256);
+    function accruedFeesUsdc() external view returns (uint256);
 
-    function accruedFeesOsqth() external returns (uint256);
+    function accruedFeesOsqth() external view returns (uint256);
 
-    function protocolFee() external returns (uint256);
+    function protocolFee() external view returns (uint256);
 
-    function timeAtLastRebalance() external returns (uint256);
+    function timeAtLastRebalance() external view returns (uint256);
 
-    function rebalanceTimeThreshold() external returns (uint256);
+    function rebalanceTimeThreshold() external view returns (uint256);
 
-    function ethPriceAtLastRebalance() external returns (uint256);
+    function ethPriceAtLastRebalance() external view returns (uint256);
 
-    function rebalancePriceThreshold() external returns (uint256);
+    function rebalancePriceThreshold() external view returns (uint256);
 
-    function maxPriceMultiplier() external returns (uint256);
+    function maxPriceMultiplier() external view returns (uint256);
 
-    function minPriceMultiplier() external returns (uint256);
+    function minPriceMultiplier() external view returns (uint256);
 
-    function auctionTime() external returns (uint256);
+    function auctionTime() external view returns (uint256);
 
-    function twapPeriod() external returns (uint32);
+    function twapPeriod() external view returns (uint32);
 
-    function maxTDOsqthEth() external returns (int24);
+    function maxTDOsqthEth() external view returns (int24);
 
-    function maxTDEthUsdc() external returns (int24);
+    function maxTDEthUsdc() external view returns (int24);
 
-    function ethUsdcThreshold() external returns (int24);
+    function ethUsdcThreshold() external view returns (int24);
 
-    function osqthEthThreshold() external returns (int24);
+    function osqthEthThreshold() external view returns (int24);
 
-    function tickSpacingEthUsdc() external returns (int24);
+    function tickSpacingEthUsdc() external view returns (int24);
 
-    function tickSpacingOsqthEth() external returns (int24);
+    function tickSpacingOsqthEth() external view returns (int24);
 
     function updateAccruedFees(
         uint256,
@@ -63,7 +63,7 @@ interface IVaultStorage {
 
     function setAccruedFeesOsqth(uint256) external;
 
-    function cap() external returns (uint256);
+    function cap() external view returns (uint256);
 
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,

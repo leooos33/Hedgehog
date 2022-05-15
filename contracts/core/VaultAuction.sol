@@ -77,7 +77,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
-        Constants.AuctionParams memory params = IVaultMath(vaultMath)._getAuctionParams(_auctionTriggerTime);
+        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         _executeAuction(keeper, params);
 
@@ -112,13 +112,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Exchange tokens with keeper
         if (params.priceMultiplier < 1e18) {
-            Constants.weth.transferFrom(_keeper, address(this), params.deltaEth.add(10));
-            Constants.usdc.transferFrom(_keeper, address(this), params.deltaUsdc.add(10));
+            Constants.weth.transferFrom(_keeper, vaultTreasury, params.deltaEth.add(10));
+            Constants.usdc.transferFrom(_keeper, vaultTreasury, params.deltaUsdc.add(10));
             IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, params.deltaOsqth.sub(10));
         } else {
             IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, params.deltaEth.sub(10));
             IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, params.deltaUsdc.sub(10));
-            Constants.osqth.transferFrom(_keeper, address(this), params.deltaOsqth.add(10));
+            Constants.osqth.transferFrom(_keeper, vaultTreasury, params.deltaOsqth.add(10));
         }
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -248,6 +248,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
         internal
+        view
         returns (Constants.Boundaries memory)
     {
         (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);

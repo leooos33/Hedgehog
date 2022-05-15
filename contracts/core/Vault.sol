@@ -146,6 +146,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 _totalSupply
     )
         public
+        view
         returns (
             uint256,
             uint256,

@@ -35,6 +35,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      */
     function getTotalAmounts()
         public
+        view
         onlyVault
         returns (
             uint256,
@@ -67,7 +68,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) internal returns (uint256, uint256) {
+    ) internal view returns (uint256, uint256) {
         (uint128 liquidity, , , uint128 tokensOwed0, uint128 tokensOwed1) = IVaultTreasury(vaultTreasury).position(
             pool,
             tickLower,
@@ -175,7 +176,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return true if time hedging is allowed
      * @return auction trigger timestamp
      */
-    function isTimeRebalance() public returns (bool, uint256) {
+    function isTimeRebalance() public view returns (bool, uint256) {
         uint256 auctionTriggerTime = IVaultStorage(vaultStotage).timeAtLastRebalance().add(
             IVaultStorage(vaultStotage).rebalanceTimeThreshold()
         );
@@ -189,7 +190,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return true if hedging is allowed
      */
-    function _isPriceRebalance(uint256 _auctionTriggerTime) public returns (bool) {
+    function _isPriceRebalance(uint256 _auctionTriggerTime) public view returns (bool) {
         if (_auctionTriggerTime < IVaultStorage(vaultStotage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
         uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
@@ -223,7 +224,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime) external onlyVault returns (uint256) {
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external view onlyVault returns (uint256) {
         uint256 maxPriceMultiplier = IVaultStorage(vaultStotage).maxPriceMultiplier();
         uint256 minPriceMultiplier = IVaultStorage(vaultStotage).minPriceMultiplier();
         uint256 auctionTime = IVaultStorage(vaultStotage).auctionTime();
@@ -235,7 +236,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         return minPriceMultiplier.add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
 
-    function getPrices() public onlyVault returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
+    function getPrices() public view onlyVault returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
@@ -283,7 +284,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
     }
 
     /// @dev Fetches time-weighted average price in ticks from Uniswap pool.
-    function _getTwap() internal returns (int24, int24) {
+    function _getTwap() internal view returns (int24, int24) {
         uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
         uint32[] memory secondsAgo = new uint32[](2);
         secondsAgo[0] = _twapPeriod;
