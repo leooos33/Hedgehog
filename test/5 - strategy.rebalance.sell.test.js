@@ -123,7 +123,7 @@ describe("Strategy rebalance sell", function () {
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-        console.log(amount);
+        console.log("Total amounts:", amount);
         expect(amount[0].toString()).to.equal("17458251000000000008");
         expect(amount[1].toString()).to.equal("19276543946");
         expect(amount[2].toString()).to.equal("45872846000000000009");
@@ -171,7 +171,11 @@ describe("Strategy rebalance sell", function () {
         assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "25080520670", 4, 6), "!");
         assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "45872845993608499042", 16, 18), "!");
 
+        // Shares
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
+
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        console.log("Total amounts:", amount);
         expect(amount[0].toString()).to.equal("0");
         expect(amount[1].toString()).to.equal("2");
         expect(amount[2].toString()).to.equal("1");
