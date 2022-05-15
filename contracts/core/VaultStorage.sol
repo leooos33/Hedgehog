@@ -221,6 +221,7 @@ contract VaultStorage is Faucet {
     /**
      * Used to for unit testing
      */
+    // TODO: remove on main
     function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }

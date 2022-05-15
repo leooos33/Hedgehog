@@ -9,9 +9,10 @@ const {
     getAndApprove,
 } = require("./tokenHelpers");
 
-const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock } = require("./testHelpers");
+const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock, logBalance } = require("./testHelpers");
 
 module.exports = {
+    logBalance,
     logBlock,
     getAndApprove,
     resetFork,

@@ -162,8 +162,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
         //Value for LPing
-        uint256 totalValue = IVaultMath(vaultMath)
-            .getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice);
+        uint256 totalValue = IVaultMath(vaultMath).getValue(
+            ethBalance,
+            usdcBalance,
+            osqthBalance,
+            ethUsdcPrice,
+            osqthEthPrice
+        );
 
         //Value multiplier
         uint256 vm = priceMultiplier.div(priceMultiplier + uint256(1e18));
