@@ -31,8 +31,8 @@ const hardhatDeploy = async (governance, params) => {
         VaultMath.address,
         VaultTreasury.address,
         VaultStorage.address,
-        governance.address
-    ]
+        governance.address,
+    ];
     console.log(arguments);
 
     await network.provider.request({
@@ -40,26 +40,16 @@ const hardhatDeploy = async (governance, params) => {
     });
     {
         let tx;
-        
-        tx = await Vault.setComponents(
-            ...arguments
-        );
 
-        tx = await VaultAuction.setComponents(
-            ...arguments
-        );
+        tx = await Vault.setComponents(...arguments);
 
-        tx = await VaultMath.setComponents(
-            ...arguments
-        );
+        tx = await VaultAuction.setComponents(...arguments);
 
-        tx = await VaultTreasury.setComponents(
-            ...arguments
-        );
+        tx = await VaultMath.setComponents(...arguments);
 
-        tx = await VaultStorage.setComponents(
-            ...arguments
-        );
+        tx = await VaultTreasury.setComponents(...arguments);
+
+        tx = await VaultStorage.setComponents(...arguments);
     }
     await network.provider.request({
         method: "evm_mine",

@@ -5,7 +5,7 @@ const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("Strategy rebalance sell", function () {
+describe("Strategy rebalance sell", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -54,9 +54,15 @@ describe.only("Strategy rebalance sell", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await Vault
-            .connect(depositor)
-            .deposit("18410690015258689749", "32743712092", "32849750909396941650", depositor.address, "0", "0", "0");
+        tx = await Vault.connect(depositor).deposit(
+            "18410690015258689749",
+            "32743712092",
+            "32849750909396941650",
+            depositor.address,
+            "0",
+            "0",
+            "0"
+        );
         await tx.wait();
 
         // Balances
