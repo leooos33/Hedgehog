@@ -310,7 +310,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
     }
 
     /**
-     * @notice calculate value in usd terms
+     * @notice calculate value in ETH terms
      */
     function getValue(
         uint256 amountEth,
@@ -319,7 +319,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
     ) public view onlyVault returns (uint256) {
-        return (amountOsqth.mul(osqthEthPrice) + amountEth).mul(ethUsdcPrice) + amountUsdc.mul(1e30);
+        return (amountEth + amountOsqth.mul(osqthEthPrice) + amountUsdc.mul(1e30).div(ethUsdcPrice));
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

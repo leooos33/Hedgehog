@@ -170,12 +170,12 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         );
 
         if (_totalSupply == 0) {
-            //deposit in a 50.79% eth, 24.35% usdc, 24.86% osqth proportion
+            //deposit in a 50% eth, 24.53% usdc, 25.47% osqth proportion
             return (
                 depositorValue,
-                depositorValue.mul(507924136843192000).div(ethUsdcPrice),
-                depositorValue.mul(243509747368953000).div(uint256(1e30)),
-                depositorValue.mul(248566115787854000).div(osqthEthPrice).div(ethUsdcPrice)
+                depositorValue.mul(500000000000000000),
+                depositorValue.mul(245300000000000000).mul(ethUsdcPrice).div(uint256(1e30)),
+                depositorValue.mul(254700000000000000).div(osqthEthPrice)
             );
         } else {
             //Calculate total strategy value

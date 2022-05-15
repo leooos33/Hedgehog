@@ -163,15 +163,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Value for LPing
         uint256 totalValue = IVaultMath(vaultMath)
-            .getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice)
-            .mul(uint256(2e18) - priceMultiplier);
+            .getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice);
 
         //Value multiplier
-        uint256 vm = priceMultiplier.mul(uint256(1e18)).div(priceMultiplier.add(uint256(1e18)));
+        uint256 vm = priceMultiplier.div(priceMultiplier + uint256(1e18));
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(vm),
+            totalValue.mul(ethUsdcPrice).mul(vm),
             ethUsdcPrice,
             uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
             uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
@@ -179,7 +178,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(uint256(1e18) - vm).div(ethUsdcPrice),
+            totalValue.mul(uint256(1e18) - vm),
             osqthEthPrice,
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
