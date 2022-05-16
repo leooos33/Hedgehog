@@ -5,7 +5,7 @@ const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock, logBalance } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("Strategy rebalance, sell with comissions", function () {
+describe("Strategy rebalance, sell with comissions", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
