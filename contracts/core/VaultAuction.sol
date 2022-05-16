@@ -82,7 +82,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         _executeAuction(keeper, params);
 
-        emit SharedEvents.Rebalance(keeper, params.deltaEth, params.deltaUsdc, params.deltaOsqth);
+        emit SharedEvents.Rebalance(keeper, params.targetEth, params.targetUsdc, params.targetOsqth);
     }
 
     /**
@@ -112,14 +112,24 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         //Exchange tokens with keeper
-        if (params.priceMultiplier < 1e18) {
-            Constants.weth.transferFrom(_keeper, vaultTreasury, params.deltaEth.add(10));
-            Constants.usdc.transferFrom(_keeper, vaultTreasury, params.deltaUsdc.add(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, params.deltaOsqth.sub(10));
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+        if (targetEth > ethBalance) {
+            Constants.weth.transferFrom(_keeper, VaultTreasury, params.targetEth.sub(ethBalance).add(10))
         } else {
-            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, params.deltaEth.sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, params.deltaUsdc.sub(10));
-            Constants.osqth.transferFrom(_keeper, vaultTreasury, params.deltaOsqth.add(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, ethBalance.sub(params.targetUsdc).sub(10))
+        }
+
+        if (targetUsdc > usdcBalance) {
+            Constants.usdc.transferFrom(_keeper, VaultTreasury, params.targetUsdc.sub(usdcBalance).add(10))
+        } else {
+            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(params.targetUsdc).sub(10))
+        }
+
+        if (targetOsqth > osqthBalance) {
+            Constants.osqth.transferFrom(_keeper, VaultTreasury, params.targetOsqth.sub(osqthBalance).add(10))
+        } else {
+            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, osqthBalance.sub(params.targetOsqth).sub(10))
         }
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -190,22 +200,18 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e18
         );
 
-        //Calculate deltas that need to be exchanged with keeper
-        (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) = _getDeltas(
+        //Calculate amounts that need to be exchanged with keeper
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
             boundaries,
             liquidityEthUsdc,
-            liquidityOsqthEth,
-            ethBalance,
-            usdcBalance,
-            osqthBalance
+            liquidityOsqthEth
         );
 
         return
             Constants.AuctionParams(
-                priceMultiplier,
-                deltaEth,
-                deltaUsdc,
-                deltaOsqth,
+                targetEth,
+                targetUsdc,
+                targetOsqth,
                 boundaries,
                 liquidityEthUsdc,
                 liquidityOsqthEth
@@ -213,24 +219,21 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     }
 
     /**
-     * @notice calculate deltas that will be exchanged during auction
+     * @notice calculate amounts that will be exchanged during auction
      * @param boundaries positions boundaries
      * @param liquidityEthUsdc target liquidity for ETH:USDC pool
      * @param liquidityOsqthEth target liquidity for oSQTH:ETH pool
      * @param ethBalance current wETH balance
      * @param usdcBalance current USDC balance
      * @param osqthBalance current oSQTH balance
-     * @return deltaEth target wETH amount minus current wETH balance
-     * @return deltaUsdc target USDC amount minus current USDC balance
-     * @return deltaOsqth target oSQTH amount minus current oSQTH balance
+     * @return targetEth target wETH amount minus current wETH balance
+     * @return targetUsdc target USDC amount minus current USDC balance
+     * @return targetOsqth target oSQTH amount minus current oSQTH balance
      */
-    function _getDeltas(
+    function _getTargets(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
-        uint128 liquidityOsqthEth,
-        uint256 ethBalance,
-        uint256 usdcBalance,
-        uint256 osqthBalance
+        uint128 liquidityOsqthEth
     )
         internal
         view
@@ -243,11 +246,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultTreasury(vaultTreasury)
             .allAmountsForLiquidity(boundaries, liquidityEthUsdc, liquidityOsqthEth);
 
-        return (ethBalance.suba(ethAmount), usdcBalance.suba(usdcAmount), osqthBalance.suba(osqthAmount));
+        return (ethAmount, usdcAmount, osqthAmount);
     }
 
     /**
-     * @notice calculate deltas that will be exchanged during auction
+     * @notice calculate lp-positions boundaries
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction OsqthEth price
      */
@@ -290,7 +293,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     }
 
     /**
-     * @notice calculate deltas that will be exchanged during auction
+     * @notice get current prices in ticks
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction oSqthEth price
      * @return tick for aEthUsdcPrice
