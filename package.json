@@ -6,6 +6,7 @@
     "compile": "DEBUG=true npx hardhat compile --verbose",
     "lint": "solhint 'contracts/**/*.sol'",
     "test": "npm run format && DEBUG=true npx hardhat compile && DEBUG=true npx hardhat test",
+    "gas": "DEBUG=false REPORT_GAS=true npx hardhat test",
     "test-prod": "npm run format && DEBUG=false npx hardhat compile && DEBUG=false npx hardhat test",
     "audit": "node test/audit/index.js",
     "size": "npx hardhat size-contracts"
@@ -28,6 +29,7 @@
     "ethereum-waffle": "^3.4.4",
     "ethers": "^5.6.1",
     "hardhat-contract-sizer": "^2.5.1",
+    "hardhat-gas-reporter": "^1.0.8",
     "solhint": "^3.3.7",
     "truffle-contract-size": "^2.0.1"
   }

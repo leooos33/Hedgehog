@@ -15,7 +15,7 @@ describe("Strategy rebalance sell", function () {
         swaper = signers[9];
     });
 
-    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
+    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt;
     it("Should deploy contract", async function () {
         await resetFork();
 
@@ -63,7 +63,8 @@ describe("Strategy rebalance sell", function () {
             "0",
             "0"
         );
-        await tx.wait();
+        receipt = await tx.wait();
+        console.log("Gas used:", receipt.gasUsed.toString());
 
         // Balances
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("0");
@@ -115,7 +116,8 @@ describe("Strategy rebalance sell", function () {
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
-        await tx.wait();
+        receipt = await tx.wait();
+        console.log("Gas used:", receipt.gasUsed.toString());
 
         // Balances
         await logBalance(keeper.address);
@@ -165,7 +167,8 @@ describe("Strategy rebalance sell", function () {
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822345524037379645");
 
         tx = await Vault.connect(depositor).withdraw("36822345524037379645", "0", "0", "0");
-        await tx.wait();
+        receipt = await tx.wait();
+        console.log("Gas used:", receipt.gasUsed.toString());
 
         // Balances
         await logBalance(depositor.address);

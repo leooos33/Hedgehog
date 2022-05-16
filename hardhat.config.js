@@ -1,5 +1,6 @@
 require("@nomiclabs/hardhat-waffle");
 require('hardhat-contract-sizer');
+require("hardhat-gas-reporter");
 
 const { getForkingParams } = require('./hardhat.helpers');
 
@@ -33,6 +34,9 @@ module.exports = {
         optimizer: {enabled: process.env.DEBUG ? false : true},
       },
     ]
+  },
+  gasReporter: {
+    enabled: (process.env.REPORT_GAS) ? true : false
   }
 }
 
