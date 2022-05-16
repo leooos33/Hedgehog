@@ -6,7 +6,7 @@ const { utils } = ethers;
 const { resetFork, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock, logBalance } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("Story about several swaps id 1", function () {
+describe("Story about several swaps id 1", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
