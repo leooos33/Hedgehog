@@ -59,6 +59,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(amountUsdc >= _amountUsdcMin, "Amount USDC min");
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
 
+        //TODO: remove console logs here
+        console.log(amountEth);
+        console.log(amountUsdc);
+        console.log(amountOsqth);
         //Pull in tokens
         if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
         if (amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, amountUsdc);

@@ -29,8 +29,8 @@ describe.only("Strategy rebalance sell", function () {
         await contractHelper.deployed();
     });
 
-    const wethInputR = "0";
-    const usdcInputR = "0";
+    const wethInputR = "225269035909074323";
+    const usdcInputR = "10549790205";
     const osqthInputR = "12598046098622284218";
     it("preset", async function () {
         tx = await VaultStorage.setTimeAtLastRebalance(1648646662);
@@ -118,8 +118,9 @@ describe.only("Strategy rebalance sell", function () {
         await tx.wait();
 
         // Balances
-        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("225269035909074323");
-        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("10549790205");
+        await logBalance(keeper.address);
+        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("450538071818148646");
+        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("21099580410");
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();

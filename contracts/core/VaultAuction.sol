@@ -114,23 +114,36 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Exchange tokens with keeper
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
-        if (targetEth > ethBalance) {
-            Constants.weth.transferFrom(_keeper, VaultTreasury, params.targetEth.sub(ethBalance).add(10))
+        //TODO: remove console logs here
+        console.log("!");
+        if (params.targetEth > ethBalance) {
+            console.log(params.targetEth.sub(ethBalance).add(10));
+            Constants.weth.transferFrom(_keeper, vaultTreasury, params.targetEth.sub(ethBalance).add(10));
         } else {
-            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, ethBalance.sub(params.targetUsdc).sub(10))
+            console.log(ethBalance.sub(params.targetEth).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, ethBalance.sub(params.targetEth).sub(10));
         }
 
-        if (targetUsdc > usdcBalance) {
-            Constants.usdc.transferFrom(_keeper, VaultTreasury, params.targetUsdc.sub(usdcBalance).add(10))
+        if (params.targetUsdc > usdcBalance) {
+            console.log(params.targetUsdc.sub(usdcBalance).add(10));
+            Constants.usdc.transferFrom(_keeper, vaultTreasury, params.targetUsdc.sub(usdcBalance).add(10));
         } else {
-            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(params.targetUsdc).sub(10))
+            console.log(usdcBalance.sub(params.targetUsdc).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(params.targetUsdc).sub(10));
         }
 
-        if (targetOsqth > osqthBalance) {
-            Constants.osqth.transferFrom(_keeper, VaultTreasury, params.targetOsqth.sub(osqthBalance).add(10))
+        if (params.targetOsqth > osqthBalance) {
+            console.log(params.targetOsqth.sub(osqthBalance).add(10));
+            Constants.osqth.transferFrom(_keeper, vaultTreasury, params.targetOsqth.sub(osqthBalance).add(10));
         } else {
-            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, osqthBalance.sub(params.targetOsqth).sub(10))
+            console.log(params.targetOsqth.sub(osqthBalance).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(
+                Constants.osqth,
+                _keeper,
+                osqthBalance.sub(params.targetOsqth).sub(10)
+            );
         }
+        console.log("!");
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthUsdc,
@@ -209,6 +222,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         return
             Constants.AuctionParams(
+                priceMultiplier,
                 targetEth,
                 targetUsdc,
                 targetOsqth,
@@ -223,12 +237,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param boundaries positions boundaries
      * @param liquidityEthUsdc target liquidity for ETH:USDC pool
      * @param liquidityOsqthEth target liquidity for oSQTH:ETH pool
-     * @param ethBalance current wETH balance
-     * @param usdcBalance current USDC balance
-     * @param osqthBalance current oSQTH balance
-     * @return targetEth target wETH amount minus current wETH balance
-     * @return targetUsdc target USDC amount minus current USDC balance
-     * @return targetOsqth target oSQTH amount minus current oSQTH balance
      */
     function _getTargets(
         Constants.Boundaries memory boundaries,
