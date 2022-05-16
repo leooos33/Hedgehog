@@ -2,10 +2,10 @@ const { expect } = require("chai");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getUSDC, getERC20Balance, getAndApprove, logBlock } = require("./helpers");
+const { resetFork, getUSDC, getERC20Balance, getAndApprove, logBlock, logBalance } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("Strategy rebalance buy", function () {
+describe.only("Strategy rebalance buy", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -29,9 +29,9 @@ describe("Strategy rebalance buy", function () {
         await contractHelper.deployed();
     });
 
-    const wethInputR = "1355494073418907206";
-    const usdcInputR = "10744100746";
-    const osqthInputR = "11265817624593139053";
+    const wethInputR = "341926209094474837";
+    const usdcInputR = "10146638113";
+    const osqthInputR = "12316339868887357239";
     it("preset", async function () {
         tx = await VaultStorage.connect(keeper).setTimeAtLastRebalance(1648646662);
         await tx.wait();
@@ -43,9 +43,9 @@ describe("Strategy rebalance buy", function () {
     });
 
     it("deposit", async function () {
-        const wethInput = "18702958066838460455";
-        const usdcInput = "30406229225";
-        const osqthInput = "34339364744543638154";
+        const wethInput = "18411172762018689823";
+        const usdcInput = "30629771948";
+        const osqthInput = "35186759758920620435";
 
         await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 
@@ -71,7 +71,7 @@ describe("Strategy rebalance buy", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("0");
 
         // Shares
-        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("124866579487341572537626");
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822345524037379645");
     });
 
     it("swap", async function () {
@@ -118,15 +118,16 @@ describe("Strategy rebalance buy", function () {
         await tx.wait();
 
         // Balances
-        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("2711440602151882055");
-        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("21485915191");
-        expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("800641000891357");
+        await logBalance(keeper.address);
+        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("683852418188949674");
+        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("20293276226");
+        expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("Total amounts:", amount);
-        expect(amount[0].toString()).to.equal("17347011000000000008");
-        expect(amount[1].toString()).to.equal("19664414779");
-        expect(amount[2].toString()).to.equal("45604382000000000009");
+        expect(amount[0].toString()).to.equal("18069247000000000008");
+        expect(amount[1].toString()).to.equal("20483133834");
+        expect(amount[2].toString()).to.equal("47503100000000000009");
     });
 
     it("swap", async function () {
@@ -155,21 +156,22 @@ describe("Strategy rebalance buy", function () {
         // console.log(amount);
 
         // Balances
-        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("5775701272137382293192");
+        expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("5775702057599318538917");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("0");
     });
 
     it("withdraw", async function () {
         // Shares
-        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("124866579487341572537626");
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822345524037379645");
 
-        tx = await Vault.connect(depositor).withdraw("124866579487341572537626", "0", "0", "0");
+        tx = await Vault.connect(depositor).withdraw("36822345524037379645", "0", "0", "0");
         await tx.wait();
 
         // Balances
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("15471554935575394495");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("26219960557");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("45604381728135885848");
+        await logBalance(depositor.address);
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("16115760270422729847");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("27311425744");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("47503099627807977672");
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
