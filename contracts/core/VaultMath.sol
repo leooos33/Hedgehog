@@ -106,7 +106,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
 
         if (liquidity > 0) {
-            (uint256 burned0, uint256 burned1, uint256 fees0, uint256 fees1) = _burnAndCollect(
+            (uint256 burned0, uint256 burned1, uint256 fees0, uint256 fees1) = burnAndCollect(
                 pool,
                 tickLower,
                 tickUpper,
@@ -120,7 +120,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
     }
 
     /// @dev Withdraws liquidity from a range and collects all fees in the process.
-    function _burnAndCollect(
+    function burnAndCollect(
         address pool,
         int24 tickLower,
         int24 tickUpper,

@@ -97,14 +97,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint128 liquidityEthUsdc = IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc();
         uint128 liquidityOsqthEth = IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth();
 
-        IVaultMath(vaultMath)._burnAndCollect(
+        IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             liquidityEthUsdc
         );
 
-        IVaultMath(vaultMath)._burnAndCollect(
+        IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,

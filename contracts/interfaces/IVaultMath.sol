@@ -32,7 +32,7 @@ interface IVaultMath {
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
 
-    function _burnAndCollect(
+    function burnAndCollect(
         address pool,
         int24 tickLower,
         int24 tickUpper,
