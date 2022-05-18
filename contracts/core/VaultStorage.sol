@@ -3,14 +3,13 @@
 pragma solidity =0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {Constants} from "../libraries/Constants.sol";
+import {Faucet} from "../libraries/Faucet.sol";
 
 import "hardhat/console.sol";
 
-abstract contract VaultParams is IERC20, ERC20 {
+contract VaultStorage is Faucet {
     //@dev Uniswap pools tick spacing
     int24 public immutable tickSpacingEthUsdc;
     int24 public immutable tickSpacingOsqthEth;
@@ -20,9 +19,6 @@ abstract contract VaultParams is IERC20, ERC20 {
 
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public cap;
-
-    //@dev governance
-    address public governance;
 
     //@dev lower and upper ticks in Uniswap pools
     // Removed
@@ -84,7 +80,7 @@ abstract contract VaultParams is IERC20, ERC20 {
         uint256 _protocolFee,
         int24 _maxTDEthUsdc,
         int24 _maxTDOsqthEth
-    ) ERC20("Hedging DL", "HDL") {
+    ) Faucet() {
         cap = _cap;
 
         protocolFee = _protocolFee;
@@ -97,8 +93,6 @@ abstract contract VaultParams is IERC20, ERC20 {
         auctionTime = _auctionTime;
         minPriceMultiplier = _minPriceMultiplier;
         maxPriceMultiplier = _maxPriceMultiplier;
-
-        governance = msg.sender;
 
         timeAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;
@@ -182,33 +176,38 @@ abstract contract VaultParams is IERC20, ERC20 {
         protocolFee = _protocolFee;
     }
 
-    /**
-     * @notice owner can transfer his admin power to another address
-     * @param _governance new governance address
-     */
-    function setGovernance(address _governance) external onlyGovernance {
-        governance = _governance;
-    }
-
-    modifier onlyGovernance() {
-        require(msg.sender == governance, "governance");
-        _;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
     function setTotalAmountsBoundaries(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
         int24 _orderOsqthEthUpper
-    ) public {
+    ) public onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
+    }
+
+    function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {
+        accruedFeesEth = _accruedFeesEth;
+    }
+
+    function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external onlyMath {
+        accruedFeesUsdc = _accruedFeesUsdc;
+    }
+
+    function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external onlyMath {
+        accruedFeesOsqth = _accruedFeesOsqth;
+    }
+
+    function updateAccruedFees(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
+    ) external onlyVault {
+        accruedFeesUsdc = accruedFeesUsdc - amountUsdc;
+        accruedFeesEth = accruedFeesEth - amountEth;
+        accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
     /**
@@ -222,6 +221,7 @@ abstract contract VaultParams is IERC20, ERC20 {
     /**
      * Used to for unit testing
      */
+    // TODO: remove on main
     function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }

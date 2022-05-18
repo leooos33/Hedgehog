@@ -22,9 +22,6 @@ library Constants {
     //@dev strategy Uniswap oracle
     IOracle public constant oracle = IOracle(0x65D66c76447ccB45dAf1e8044e918fA786A483A1);
 
-    //TODO: change this before maiinet deploy
-    IUniswapMath public constant uniswapMath = IUniswapMath(0x870526b7973b56163a6997bB7C886F5E4EA53638);
-
     struct SharesInfo {
         uint256 totalSupply;
         uint256 _amountEth;
@@ -46,9 +43,9 @@ library Constants {
 
     struct AuctionParams {
         uint256 priceMultiplier;
-        uint256 deltaEth;
-        uint256 deltaUsdc;
-        uint256 deltaOsqth;
+        uint256 targetEth;
+        uint256 targetUsdc;
+        uint256 targetOsqth;
         Boundaries boundaries;
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;

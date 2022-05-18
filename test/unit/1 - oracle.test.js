@@ -89,8 +89,6 @@
 //   });
 // });
 
-// // TODO: add this pairs to check
-
 // // uint256 osqthEthPrice = Constants.oracle.getTwap(
 // //   Constants.poolEthOsqth,
 // //   address(Constants.weth),
