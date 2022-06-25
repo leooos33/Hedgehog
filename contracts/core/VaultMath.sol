@@ -324,6 +324,9 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
     //TODO
     function getIV() public view onlyVault returns (uin256) {
+        Constants.osqthController.getDenormalizedMark();
+        Constants.osqthController.getIndex();
+        
         return (1e18);
     }
 

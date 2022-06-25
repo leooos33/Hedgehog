@@ -5,6 +5,7 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IOracle} from "./uniswap/IOracle.sol";
+import {IOsqthController} from "./osqth/IController.sol";
 import {IUniswapMath} from "./uniswap/IUniswapMath.sol";
 
 library Constants {
@@ -21,6 +22,8 @@ library Constants {
 
     //@dev strategy Uniswap oracle
     IOracle public constant oracle = IOracle(0x65D66c76447ccB45dAf1e8044e918fA786A483A1);
+
+    IOsqthController public constant osqthController = IOsqthController(0x64187ae08781B09368e6253F9E94951243A493D5);
 
     struct SharesInfo {
         uint256 totalSupply;
