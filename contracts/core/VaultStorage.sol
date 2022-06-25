@@ -33,6 +33,9 @@ contract VaultStorage is Faucet {
     //@dev ETH/USDC price when last rebalance executed
     uint256 public ethPriceAtLastRebalance;
 
+    //@dev implied volatility when last rebalance executed
+    uint256 public ivAtLastRebalance;
+
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
@@ -95,6 +98,7 @@ contract VaultStorage is Faucet {
         maxPriceMultiplier = _maxPriceMultiplier;
 
         timeAtLastRebalance = 0;
+        ivAtLastRebalance = 0;
         maxTDEthUsdc = _maxTDEthUsdc;
         maxTDOsqthEth = _maxTDOsqthEth;
     }
@@ -216,6 +220,14 @@ contract VaultStorage is Faucet {
     // TODO: remove on main
     function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
         timeAtLastRebalance = _timeAtLastRebalance;
+    }
+
+    /**
+     * Used to for unit testing
+     */
+    // TODO: remove on main
+    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public {
+        ivAtLastRebalance = _ivAtLastRebalance;
     }
 
     /**

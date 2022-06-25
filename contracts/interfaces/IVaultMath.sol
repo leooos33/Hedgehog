@@ -65,6 +65,8 @@ interface IVaultMath {
 
     function getPrices() external view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice);
 
+    function getIV() external view returns (uint256);
+
     function getValue(
         uint256 amountEth,
         uint256 amountUsdc,

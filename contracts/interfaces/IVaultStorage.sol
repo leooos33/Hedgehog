@@ -25,6 +25,8 @@ interface IVaultStorage {
 
     function timeAtLastRebalance() external view returns (uint256);
 
+    function ivAtLastRebalance() external view returns (uint256);
+
     function rebalanceTimeThreshold() external view returns (uint256);
 
     function ethPriceAtLastRebalance() external view returns (uint256);

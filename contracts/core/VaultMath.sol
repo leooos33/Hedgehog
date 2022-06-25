@@ -245,7 +245,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         //Get twap in ticks
         (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
 
-        //Check twap deviaiton
+        //Check twap deviation
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
@@ -320,6 +320,11 @@ contract VaultMath is ReentrancyGuard, Faucet {
         uint256 osqthEthPrice
     ) public view onlyVault returns (uint256) {
         return (amountEth + amountOsqth.mul(osqthEthPrice) + amountUsdc.mul(1e30).div(ethUsdcPrice));
+    }
+
+    //TODO
+    function getIV() public view onlyVault returns (uin256) {
+        return (1e18);
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

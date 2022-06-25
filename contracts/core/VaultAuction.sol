@@ -172,14 +172,32 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) internal returns (Constants.AuctionParams memory) {
+
+        //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+
+        //current implied volatility
+        uint256 cIV = IVaultMath(vaultMath).getIV();
+        //previous implied volatility
+        uint256 ivPrev = IVaultStorage(vaultStotage).ivAtLastRebalance();
+
+        bool isPosIVbump = cIV < ivPrev ? true : false;
+
+        uint256 expIVbump;
+        if (isPosIVbump) {
+            expIVbump = ivPrev / cIV;
+        } else {
+            expIVbump = cIV / ivPrev;
+        }
 
         uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
 
         //boundaries for auction prices (current price * multiplier)
         Constants.Boundaries memory boundaries = _getBoundaries(
             ethUsdcPrice.mul(priceMultiplier),
-            osqthEthPrice.mul(priceMultiplier)
+            osqthEthPrice.mul(priceMultiplier),
+            isPosIVbump,
+            expIVbump
         );
         //Current strategy holdings
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
@@ -194,7 +212,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         //Value multiplier
-        uint256 vm = priceMultiplier.div(priceMultiplier + uint256(1e18));
+        uint256 vm;
+        if (isPosIVbump) {
+            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e18).div(cIV);
+        } else {
+            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint128(1e18).div(cIV);
+        }
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
@@ -262,7 +285,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction OsqthEth price
      */
-    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice)
+    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice, bool isPosIVbump, uint256 expIVbump)
         internal
         view
         returns (Constants.Boundaries memory)
@@ -281,15 +304,34 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
         int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
 
+        //base thresholds
         int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
         int24 osqthEthThreshold = IVaultStorage(vaultStotage).osqthEthThreshold();
+
+        int24 baseAdj = _floor( ethUsdcThreshold.mul((expIVbump - 1e18)/2e18+1e18).div(ethUsdcThreshold),
+            tickSpacingEthUsdc).mul(ethUsdcThreshold) - ethUsdcThreshold;
+
+        int24 tickAdj;
+        if (isPosIVbump) {
+            tickAdj = baseAdj < 120 ? tickSpacingEthUsdc : baseAdj;
+
         return
             Constants.Boundaries(
-                tickFloorEthUsdc - ethUsdcThreshold,
-                tickCeilEthUsdc + ethUsdcThreshold,
-                tickFloorOsqthEth - osqthEthThreshold,
-                tickCeilOsqthEth + osqthEthThreshold
+                tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
+                tickCeilEthUsdc + ethUsdcThreshold + tickAdj,
+                tickFloorOsqthEth - osqthEthThreshold - tickAdj,
+                tickCeilOsqthEth + osqthEthThreshold + tickAdj
             );
+        } else {
+            tickAdj = baseAdj > tickSpacingEthUsdc ? 120 : baseAdj;
+        return
+            Constants.Boundaries(
+                tickFloorEthUsdc - ethUsdcThreshold + tickAdj,
+                tickCeilEthUsdc + ethUsdcThreshold - tickAdj,
+                tickFloorOsqthEth - osqthEthThreshold + tickAdj,
+                tickCeilOsqthEth + osqthEthThreshold - tickAdj
+            ); 
+        }
     }
 
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
@@ -316,6 +358,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             _toUint160(((uint256(1e18).div(aOsqthEthPrice)).sqrt()).mul(79228162514264337593543950336))
         );
     }
+
+    function _getIV() internal 
 
     /// @dev Casts uint256 to uint160 with overflow check.
     function _toUint160(uint256 x) internal pure returns (uint160) {
