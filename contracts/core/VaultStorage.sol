@@ -40,10 +40,13 @@ contract VaultStorage is Faucet {
     uint256 public rebalanceTimeThreshold;
     uint256 public rebalancePriceThreshold;
 
+    //@dev iv adjustment parameter
+    uint256 public adjParam;
+    
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public ethUsdcThreshold = 960;
-    int24 public osqthEthThreshold = 960;
+    int24 public ethUsdcThreshold = 1440;
+    int24 public osqthEthThreshold = 1440;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public protocolFee = 0;

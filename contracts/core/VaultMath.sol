@@ -324,10 +324,13 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
     //TODO
     function getIV() public view onlyVault returns (uin256) {
-        Constants.osqthController.getDenormalizedMark();
-        Constants.osqthController.getIndex();
         
-        return (1e18);
+        uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
+        // 365/17.5
+        uint256 k = 20857142857142857142;
+
+        return ((((Constants.osqthController.getDenormalizedMark(_twapPeriod)).div(Constants.osqthController.getIndex(_twapPeriod)))
+        .ln()).mul(k)).sqrt();
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

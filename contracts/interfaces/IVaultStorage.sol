@@ -39,6 +39,8 @@ interface IVaultStorage {
 
     function auctionTime() external view returns (uint256);
 
+    function adjParam() external view returns (uint256);
+
     function twapPeriod() external view returns (uint32);
 
     function maxTDOsqthEth() external view returns (int24);
@@ -52,6 +54,7 @@ interface IVaultStorage {
     function tickSpacingEthUsdc() external view returns (int24);
 
     function tickSpacingOsqthEth() external view returns (int24);
+
 
     function updateAccruedFees(
         uint256,

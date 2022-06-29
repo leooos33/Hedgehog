@@ -179,15 +179,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current implied volatility
         uint256 cIV = IVaultMath(vaultMath).getIV();
         //previous implied volatility
-        uint256 ivPrev = IVaultStorage(vaultStotage).ivAtLastRebalance();
+        uint256 pIV = IVaultStorage(vaultStotage).ivAtLastRebalance();
 
-        bool isPosIVbump = cIV < ivPrev ? true : false;
+        bool isPosIVbump = cIV < pIV ? true : false;
 
         uint256 expIVbump;
         if (isPosIVbump) {
-            expIVbump = ivPrev / cIV;
+            expIVbump = pIV.div(cIV);
         } else {
-            expIVbump = cIV / ivPrev;
+            expIVbump = cIV.div(pIV);
         }
 
         uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
@@ -214,9 +214,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Value multiplier
         uint256 vm;
         if (isPosIVbump) {
-            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e18).div(cIV);
+            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
         } else {
-            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint128(1e18).div(cIV);
+            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint128(1e16).div(cIV);
         }
 
         //Calculate liquidities
@@ -290,10 +290,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         view
         returns (Constants.Boundaries memory)
     {
-        (uint160 _aEthUsdcTick, uint160 _aOsqthEthTick) = _getTicks(aEthUsdcPrice, aOsqthEthPrice);
+        (uint160 _aEthUsdcSqrtX96, uint160 _aOsqthEthSqrtX96) = _getSqrtX96(aEthUsdcPrice, aOsqthEthPrice);
 
-        int24 aEthUsdcTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcTick);
-        int24 aOsqthEthTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthTick);
+        int24 aEthUsdcTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96);
+        int24 aOsqthEthTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthSqrtX96);
 
         int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
         int24 tickSpacingOsqthEth = IVaultStorage(vaultStotage).tickSpacingOsqthEth();
@@ -308,13 +308,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
         int24 osqthEthThreshold = IVaultStorage(vaultStotage).osqthEthThreshold();
 
-        int24 baseAdj = _floor( ethUsdcThreshold.mul((expIVbump - 1e18)/2e18+1e18).div(ethUsdcThreshold),
-            tickSpacingEthUsdc).mul(ethUsdcThreshold) - ethUsdcThreshold;
+        //iv adj parameter
+
+        int24 baseAdj = toInt24(int256((((expIVbump - uint256(1e18))
+        .div(IVaultStorage(vaultStotage).adjParam())).floor() * tickSpacingEthUsdc)
+        .div(1e36)));
 
         int24 tickAdj;
         if (isPosIVbump) {
             tickAdj = baseAdj < 120 ? tickSpacingEthUsdc : baseAdj;
-
         return
             Constants.Boundaries(
                 tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
@@ -342,14 +344,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return compressed * tickSpacing;
     }
 
+
     /**
-     * @notice get current prices in ticks
+     * @notice get current prices in sqrtPriceX96
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction oSqthEth price
-     * @return tick for aEthUsdcPrice
-     * @return tick for aOsqthEthPrice
+     * @return ratio for aEthUsdcPrice
+     * @return ratio for aOsqthEthPrice
      */
-    function _getTicks(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) internal pure returns (uint160, uint160) {
+    function _getSqrtX96(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice) internal pure returns (uint160, uint160) {
         return (
             _toUint160(
                 //sqrt(price)*2**96
@@ -359,11 +362,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
     }
 
-    function _getIV() internal 
-
     /// @dev Casts uint256 to uint160 with overflow check.
     function _toUint160(uint256 x) internal pure returns (uint160) {
         assert(x <= type(uint160).max);
         return uint160(x);
+    }
+
+    /// @dev Casts int256 to int24 with overflow check.
+    function toInt24(int256 value) internal pure returns (int24) {
+        require(value >= type(int24).min && value <= type(int24).max);
+        return int24(value);
     }
 }
