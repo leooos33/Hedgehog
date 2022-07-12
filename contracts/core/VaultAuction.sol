@@ -82,7 +82,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         _executeAuction(keeper, params);
 
-        emit SharedEvents.Rebalance(keeper, params.targetEth, params.targetUsdc, params.targetOsqth);
+        //TODO: uncomment
+        //emit SharedEvents.Rebalance(keeper, targetEth, targetUsdc, targetOsqth);
     }
 
     /**
@@ -93,6 +94,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
     function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
+        //Calculate amounts that need to be exchanged with keeper
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+            params.boundaries,
+            params.liquidityEthUsdc,
+            params.liquidityOsqthEth
+        );
+
         //Get current liquidity in positions
         uint128 liquidityEthUsdc = IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc();
         uint128 liquidityOsqthEth = IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth();
@@ -116,32 +124,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //TODO: remove console logs here
         console.log("!");
-        if (params.targetEth > ethBalance) {
-            console.log(params.targetEth.sub(ethBalance).add(10));
-            Constants.weth.transferFrom(_keeper, vaultTreasury, params.targetEth.sub(ethBalance).add(10));
+        if (targetEth > ethBalance) {
+            console.log(targetEth.sub(ethBalance).add(10));
+            Constants.weth.transferFrom(_keeper, vaultTreasury, targetEth.sub(ethBalance).add(10));
         } else {
-            console.log(ethBalance.sub(params.targetEth).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, ethBalance.sub(params.targetEth).sub(10));
+            console.log(ethBalance.sub(targetEth).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, ethBalance.sub(targetEth).sub(10));
         }
 
-        if (params.targetUsdc > usdcBalance) {
-            console.log(params.targetUsdc.sub(usdcBalance).add(10));
-            Constants.usdc.transferFrom(_keeper, vaultTreasury, params.targetUsdc.sub(usdcBalance).add(10));
+        if (targetUsdc > usdcBalance) {
+            console.log(targetUsdc.sub(usdcBalance).add(10));
+            Constants.usdc.transferFrom(_keeper, vaultTreasury, targetUsdc.sub(usdcBalance).add(10));
         } else {
-            console.log(usdcBalance.sub(params.targetUsdc).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(params.targetUsdc).sub(10));
+            console.log(usdcBalance.sub(targetUsdc).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(targetUsdc).sub(10));
         }
 
-        if (params.targetOsqth > osqthBalance) {
-            console.log(params.targetOsqth.sub(osqthBalance).add(10));
-            Constants.osqth.transferFrom(_keeper, vaultTreasury, params.targetOsqth.sub(osqthBalance).add(10));
+        if (targetOsqth > osqthBalance) {
+            console.log(targetOsqth.sub(osqthBalance).add(10));
+            Constants.osqth.transferFrom(_keeper, vaultTreasury, targetOsqth.sub(osqthBalance).add(10));
         } else {
-            console.log(params.targetOsqth.sub(osqthBalance).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(
-                Constants.osqth,
-                _keeper,
-                osqthBalance.sub(params.targetOsqth).sub(10)
-            );
+            console.log(targetOsqth.sub(osqthBalance).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, osqthBalance.sub(targetOsqth).sub(10));
         }
         console.log("!");
 
@@ -172,7 +176,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) internal returns (Constants.AuctionParams memory) {
-
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
@@ -181,10 +184,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //previous implied volatility
         uint256 pIV = IVaultStorage(vaultStotage).ivAtLastRebalance();
 
-        bool isPosIVbump = cIV < pIV ? true : false;
-
         uint256 expIVbump;
-        if (isPosIVbump) {
+        if (cIV < pIV) {
             expIVbump = pIV.div(cIV);
         } else {
             expIVbump = cIV.div(pIV);
@@ -199,7 +200,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         Constants.Boundaries memory boundaries = _getBoundaries(
             ethUsdcPrice.mul(priceMultiplier),
             osqthEthPrice.mul(priceMultiplier),
-            isPosIVbump,
+            cIV < pIV,
             expIVbump
         );
         //Current strategy holdings
@@ -216,10 +217,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Value multiplier
         uint256 vm;
-        if (isPosIVbump) {
+        if (cIV < pIV) {
             vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
         } else {
-            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint128(1e16).div(cIV);
+            vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
         }
 
         //Calculate liquidities
@@ -239,23 +240,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e18
         );
 
-        //Calculate amounts that need to be exchanged with keeper
-        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
-            boundaries,
-            liquidityEthUsdc,
-            liquidityOsqthEth
-        );
-
-        return
-            Constants.AuctionParams(
-                priceMultiplier,
-                targetEth,
-                targetUsdc,
-                targetOsqth,
-                boundaries,
-                liquidityEthUsdc,
-                liquidityOsqthEth
-            );
+        return Constants.AuctionParams(priceMultiplier, boundaries, liquidityEthUsdc, liquidityOsqthEth);
     }
 
     /**
@@ -288,11 +273,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param aEthUsdcPrice auction EthUsdc price
      * @param aOsqthEthPrice auction OsqthEth price
      */
-    function _getBoundaries(uint256 aEthUsdcPrice, uint256 aOsqthEthPrice, bool isPosIVbump, uint256 expIVbump)
-        internal
-        view
-        returns (Constants.Boundaries memory)
-    {
+    function _getBoundaries(
+        uint256 aEthUsdcPrice,
+        uint256 aOsqthEthPrice,
+        bool isPosIVbump,
+        uint256 expIVbump
+    ) internal view returns (Constants.Boundaries memory) {
         (uint160 _aEthUsdcSqrtX96, uint160 _aOsqthEthSqrtX96) = _getSqrtX96(aEthUsdcPrice, aOsqthEthPrice);
 
         int24 aEthUsdcTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96);
@@ -313,29 +299,33 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //iv adj parameter
 
-        int24 baseAdj = toInt24(int256((((expIVbump - uint256(1e18))
-        .div(IVaultStorage(vaultStotage).adjParam())).floor() * tickSpacingEthUsdc)
-        .div(1e36)));
+        //TODO: check this
+        int24 baseAdj = toInt24(
+            int256(
+                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStotage).adjParam())).floor() *
+                    uint256(int256(tickSpacingEthUsdc))).div(1e36)
+            )
+        );
 
         int24 tickAdj;
         if (isPosIVbump) {
-            tickAdj = baseAdj < 120 ? tickSpacingEthUsdc : baseAdj;
-        return
-            Constants.Boundaries(
-                tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
-                tickCeilEthUsdc + ethUsdcThreshold + tickAdj,
-                tickFloorOsqthEth - osqthEthThreshold - tickAdj,
-                tickCeilOsqthEth + osqthEthThreshold + tickAdj
-            );
+            tickAdj = baseAdj < int24(120) ? tickSpacingEthUsdc : baseAdj;
+            return
+                Constants.Boundaries(
+                    tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
+                    tickCeilEthUsdc + ethUsdcThreshold + tickAdj,
+                    tickFloorOsqthEth - osqthEthThreshold - tickAdj,
+                    tickCeilOsqthEth + osqthEthThreshold + tickAdj
+                );
         } else {
-            tickAdj = baseAdj > tickSpacingEthUsdc ? 120 : baseAdj;
-        return
-            Constants.Boundaries(
-                tickFloorEthUsdc - ethUsdcThreshold + tickAdj,
-                tickCeilEthUsdc + ethUsdcThreshold - tickAdj,
-                tickFloorOsqthEth - osqthEthThreshold + tickAdj,
-                tickCeilOsqthEth + osqthEthThreshold - tickAdj
-            ); 
+            tickAdj = baseAdj > tickSpacingEthUsdc ? int24(120) : baseAdj;
+            return
+                Constants.Boundaries(
+                    tickFloorEthUsdc - ethUsdcThreshold + tickAdj,
+                    tickCeilEthUsdc + ethUsdcThreshold - tickAdj,
+                    tickFloorOsqthEth - osqthEthThreshold + tickAdj,
+                    tickCeilOsqthEth + osqthEthThreshold - tickAdj
+                );
         }
     }
 
@@ -346,7 +336,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         if (tick < 0 && tick % tickSpacing != 0) compressed--;
         return compressed * tickSpacing;
     }
-
 
     /**
      * @notice get current prices in sqrtPriceX96

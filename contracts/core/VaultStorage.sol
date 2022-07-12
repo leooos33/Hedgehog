@@ -42,7 +42,7 @@ contract VaultStorage is Faucet {
 
     //@dev iv adjustment parameter
     uint256 public adjParam;
-    
+
     //@dev ticks thresholds for boundaries calculation
     //values for tests
     int24 public ethUsdcThreshold = 1440;

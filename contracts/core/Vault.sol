@@ -221,14 +221,15 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
-        return (amountEth.mul(shares).div(totalSupply),
-                amountUsdc.mul(shares).div(totalSupply), 
-                amountOsqth.mul(shares).div(totalSupply));
+        return (
+            ethAmount.mul(shares).div(totalSupply),
+            usdcAmount.mul(shares).div(totalSupply),
+            osqthAmount.mul(shares).div(totalSupply)
+        );
     }
+
     //stack too deep?
-    function _burnSharesInPools(uint256 shares, uint256 totalSupply)
-        internal
-    {
+    function _burnSharesInPools(uint256 shares, uint256 totalSupply) internal {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStotage).orderEthUsdcLower(),

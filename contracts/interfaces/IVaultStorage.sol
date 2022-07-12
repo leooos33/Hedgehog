@@ -55,7 +55,6 @@ interface IVaultStorage {
 
     function tickSpacingOsqthEth() external view returns (int24);
 
-
     function updateAccruedFees(
         uint256,
         uint256,
