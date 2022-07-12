@@ -190,6 +190,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             expIVbump = cIV.div(pIV);
         }
 
+        //IV bump > 3 leads to a negative values of one of the lower or upper boundary
+        expIVbump = expIVbump > uint256(3e18) ? uint256(3e18) : expIVbump;
+
         uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
 
         //boundaries for auction prices (current price * multiplier)

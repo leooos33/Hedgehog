@@ -95,15 +95,18 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         uint256 totalSupply = totalSupply();
 
-        //Burn shares
-        _burn(msg.sender, shares);
-
         //Get token amounts to withdraw
         (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, totalSupply);
 
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
+
+        //Burn shares
+        _burn(msg.sender, shares);
+
+        //withdraw user share of tokens from the lp positions in current proportion
+        _burnSharesInPools(shares, totalSupply);
 
         //send tokens to user
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, msg.sender, amountEth);
@@ -174,12 +177,12 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         );
 
         if (_totalSupply == 0) {
-            //deposit in a 50% eth, 24.53% usdc, 25.47% osqth proportion
+            //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
             return (
                 depositorValue,
                 depositorValue.mul(500000000000000000),
-                depositorValue.mul(245300000000000000).mul(ethUsdcPrice).div(uint256(1e30)),
-                depositorValue.mul(254700000000000000).div(osqthEthPrice)
+                depositorValue.mul(250000000000000000).mul(ethUsdcPrice).div(uint256(1e30)),
+                depositorValue.mul(250000000000000000).div(osqthEthPrice)
             );
         } else {
             //Calculate total strategy value
@@ -216,31 +219,15 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             uint256
         )
     {
-        //Get unused token amounts (deposited, but yet not placed to pools)
-        uint256 unusedAmountEth = (_getBalance(Constants.weth).sub(IVaultStorage(vaultStotage).accruedFeesEth()))
-            .mul(shares)
-            .div(totalSupply);
-        uint256 unusedAmountUsdc = (_getBalance(Constants.usdc).sub(IVaultStorage(vaultStotage).accruedFeesUsdc()))
-            .mul(shares)
-            .div(totalSupply);
-        uint256 unusedAmountOsqth = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStotage).accruedFeesOsqth()))
-            .mul(shares)
-            .div(totalSupply);
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
-        //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = burnSharesInPools(shares, totalSupply);
-
-        // Sum up total amounts owed to recipient
-        return (unusedAmountEth.add(amountEth), unusedAmountUsdc.add(amountUsdc), unusedAmountOsqth.add(amountOsqth));
+        return (amountEth.mul(shares).div(totalSupply),
+                amountUsdc.mul(shares).div(totalSupply), 
+                amountOsqth.mul(shares).div(totalSupply));
     }
-
-    function burnSharesInPools(uint256 shares, uint256 totalSupply)
+    //stack too deep?
+    function _burnSharesInPools(uint256 shares, uint256 totalSupply)
         internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
     {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
@@ -256,7 +243,5 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             shares,
             totalSupply
         );
-
-        return (amountEth0.add(amountEth1), amountUsdc, amountOsqth);
     }
 }
