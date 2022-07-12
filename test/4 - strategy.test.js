@@ -59,30 +59,30 @@ describe.only("Strategy deposit", function () {
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822598604818195184");                         
     });
 
-    it("withdraw", async function () {
-        // Shares
-        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822598604818195184");
+    // it("withdraw", async function () {
+    //     // Shares
+    //     expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822598604818195184");
 
-        // Balances
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("65053297");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("124327483");
+    //     // Balances
+    //     expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("65053297");
+    //     expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+    //     expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("124327483");
 
-        // Balances
-        expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302409097592");
-        expect(await getERC20Balance(VaultTreasury.address, usdcAddress)).to.equal("30629982467");
-        expect(await getERC20Balance(VaultTreasury.address, osqthAddress)).to.equal("35187001598284936408");
+    //     // Balances
+    //     expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302409097592");
+    //     expect(await getERC20Balance(VaultTreasury.address, usdcAddress)).to.equal("30629982467");
+    //     expect(await getERC20Balance(VaultTreasury.address, osqthAddress)).to.equal("35187001598284936408");
 
-        tx = await Vault.connect(depositor).withdraw("36822598604818195184", "0", "0", "0");
-        await tx.wait();
+    //     tx = await Vault.connect(depositor).withdraw("36822598604818195184", "0", "0", "0");
+    //     await tx.wait();
 
-        // Balances
-        await logBalance(depositor.address);
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("18411299302474150888");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("30629982467");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("35187001598409263891");
+    //     // Balances
+    //     await logBalance(depositor.address);
+    //     expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("18411299302474150888");
+    //     expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("30629982467");
+    //     expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("35187001598409263891");
 
-        // Shares
-        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
-    });
+    //     // Shares
+    //     expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
+    // });
 });

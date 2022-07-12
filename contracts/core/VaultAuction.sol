@@ -80,10 +80,16 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-        _executeAuction(keeper, params);
+        //Calculate amounts that need to be exchanged with keeper
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+            params.boundaries,
+            params.liquidityEthUsdc,
+            params.liquidityOsqthEth
+        );
 
-        //TODO: uncomment
-        //emit SharedEvents.Rebalance(keeper, targetEth, targetUsdc, targetOsqth);
+        _executeAuction(keeper, params, targetEth, targetUsdc, targetOsqth);
+
+        emit SharedEvents.Rebalance(keeper, targetEth, targetUsdc, targetOsqth);
     }
 
     /**
@@ -93,14 +99,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(address _keeper, Constants.AuctionParams memory params) internal {
-        //Calculate amounts that need to be exchanged with keeper
-        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
-            params.boundaries,
-            params.liquidityEthUsdc,
-            params.liquidityOsqthEth
-        );
-
+    function _executeAuction(
+        address _keeper,
+        Constants.AuctionParams memory params,
+        uint256 targetEth,
+        uint256 targetUsdc,
+        uint256 targetOsqth
+    ) internal {
         //Get current liquidity in positions
         uint128 liquidityEthUsdc = IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc();
         uint128 liquidityOsqthEth = IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth();
@@ -203,17 +208,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             cIV < pIV,
             expIVbump
         );
-        //Current strategy holdings
-        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
         //Value for LPing
-        uint256 totalValue = IVaultMath(vaultMath).getValue(
-            ethBalance,
-            usdcBalance,
-            osqthBalance,
-            ethUsdcPrice,
-            osqthEthPrice
-        );
+        uint256 totalValue = _getTotalValue(ethUsdcPrice, osqthEthPrice);
 
         //Value multiplier
         uint256 vm;
@@ -243,6 +240,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return Constants.AuctionParams(priceMultiplier, boundaries, liquidityEthUsdc, liquidityOsqthEth);
     }
 
+    function _getTotalValue(uint256 ethUsdcPrice, uint256 osqthEthPrice) internal view returns (uint256 totalValue) {
+        //Current strategy holdings
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+        //Value for LPing
+        totalValue = IVaultMath(vaultMath).getValue(ethBalance, usdcBalance, osqthBalance, ethUsdcPrice, osqthEthPrice);
+    }
+
     /**
      * @notice calculate amounts that will be exchanged during auction
      * @param boundaries positions boundaries
@@ -268,6 +273,22 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return (ethAmount, usdcAmount, osqthAmount);
     }
 
+    function _getTickFloors(
+        uint256 aEthUsdcPrice,
+        uint256 aOsqthEthPrice,
+        int24 tickSpacingEthUsdc
+    ) internal view returns (int24, int24) {
+        (uint160 _aEthUsdcSqrtX96, uint160 _aOsqthEthSqrtX96) = _getSqrtX96(aEthUsdcPrice, aOsqthEthPrice);
+
+        return (
+            _floor(IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96), tickSpacingEthUsdc),
+            _floor(
+                IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthSqrtX96),
+                IVaultStorage(vaultStotage).tickSpacingOsqthEth()
+            )
+        );
+    }
+
     /**
      * @notice calculate lp-positions boundaries
      * @param aEthUsdcPrice auction EthUsdc price
@@ -279,19 +300,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         bool isPosIVbump,
         uint256 expIVbump
     ) internal view returns (Constants.Boundaries memory) {
-        (uint160 _aEthUsdcSqrtX96, uint160 _aOsqthEthSqrtX96) = _getSqrtX96(aEthUsdcPrice, aOsqthEthPrice);
-
-        int24 aEthUsdcTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96);
-        int24 aOsqthEthTick = IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthSqrtX96);
-
         int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
-        int24 tickSpacingOsqthEth = IVaultStorage(vaultStotage).tickSpacingOsqthEth();
 
-        int24 tickFloorEthUsdc = _floor(aEthUsdcTick, tickSpacingEthUsdc);
-        int24 tickFloorOsqthEth = _floor(aOsqthEthTick, tickSpacingOsqthEth);
-
-        int24 tickCeilEthUsdc = tickFloorEthUsdc + tickSpacingEthUsdc;
-        int24 tickCeilOsqthEth = tickFloorOsqthEth + tickSpacingOsqthEth;
+        (int24 tickFloorEthUsdc, int24 tickFloorOsqthEth) = _getTickFloors(
+            aEthUsdcPrice,
+            aOsqthEthPrice,
+            tickSpacingEthUsdc
+        );
 
         //base thresholds
         int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
@@ -313,18 +328,18 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             return
                 Constants.Boundaries(
                     tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
-                    tickCeilEthUsdc + ethUsdcThreshold + tickAdj,
+                    tickFloorEthUsdc + tickSpacingEthUsdc + ethUsdcThreshold + tickAdj,
                     tickFloorOsqthEth - osqthEthThreshold - tickAdj,
-                    tickCeilOsqthEth + osqthEthThreshold + tickAdj
+                    tickFloorOsqthEth + IVaultStorage(vaultStotage).tickSpacingOsqthEth() + osqthEthThreshold + tickAdj
                 );
         } else {
             tickAdj = baseAdj > tickSpacingEthUsdc ? int24(120) : baseAdj;
             return
                 Constants.Boundaries(
                     tickFloorEthUsdc - ethUsdcThreshold + tickAdj,
-                    tickCeilEthUsdc + ethUsdcThreshold - tickAdj,
+                    tickFloorEthUsdc + tickSpacingEthUsdc + ethUsdcThreshold - tickAdj,
                     tickFloorOsqthEth - osqthEthThreshold + tickAdj,
-                    tickCeilOsqthEth + osqthEthThreshold - tickAdj
+                    tickFloorOsqthEth + IVaultStorage(vaultStotage).tickSpacingOsqthEth() + osqthEthThreshold - tickAdj
                 );
         }
     }
