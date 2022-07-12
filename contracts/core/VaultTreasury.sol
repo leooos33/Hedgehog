@@ -130,7 +130,6 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
             bytes memory params = abi.encode(pool, token0, token1);
 
-            console.log(address(this));
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
     }

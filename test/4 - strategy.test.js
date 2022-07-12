@@ -24,12 +24,12 @@ describe.only("Strategy deposit", function () {
 
     it("deposit", async function () {
         const amount = await Vault.connect(depositor).calcSharesAndAmounts(
-            "19855700000000000000",
-            "41326682043",
-            "17933300000000000000",
+            "18411299302474150889",
+            "31216859424",
+            "34537692970562685403",
             "0"
         );
-        console.log(amount);
+        console.log("amount", amount);
 
         const wethInput = amount[1].toString();
         const usdcInput = amount[2].toString();
