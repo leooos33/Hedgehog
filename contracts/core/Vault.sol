@@ -94,24 +94,30 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(shares > 0, "0");
 
         uint256 totalSupply = totalSupply();
-
+        console.log("Shares - %s, Total Supply - %s, Ratio - %s", shares, totalSupply, shares/totalSupply);
         //Get token amounts to withdraw
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, totalSupply);
-
-        require(amountEth >= amountEthMin, "amountEthMin");
-        require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
-        require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
+        //(uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, totalSupply);
 
         //Burn shares
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        _burnSharesInPools(shares, totalSupply);
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) =  _burnSharesInPools(shares, totalSupply, false);
+
+        console.log("Total amounts - %s ETH, %s USDC, %s oSQTH", amountEth, amountUsdc, amountOsqth);
+
+        require(amountEth >= amountEthMin, "amountEthMin");
+        require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
+        require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
 
         //send tokens to user
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, msg.sender, amountEth);
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, msg.sender, amountUsdc);
         if (amountOsqth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.osqth, msg.sender, amountOsqth);
+
+        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+        console.log("EthUsdc price at withdraw %s", ethUsdcPrice);
+        console.log("OsqthEth price at withdraw %s", osqthEthPrice);
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
@@ -166,6 +172,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         //Get current prices
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+        console.log("EthUsdc price before rebalance %s", ethUsdcPrice);
+        console.log("OsqthEth price before rebalance %s", osqthEthPrice);
 
         //Calculate total depositor value
         uint256 depositorValue = IVaultMath(vaultMath).getValue(
@@ -175,6 +183,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             ethUsdcPrice,
             osqthEthPrice
         );
+        console.log("Depositor Value %s", depositorValue);
 
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
@@ -212,7 +221,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
      * @return amount of oSQTH to withdraw
      */
     function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        internal
+        internal view
         returns (
             uint256,
             uint256,
@@ -228,21 +237,30 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         );
     }
 
-    //stack too deep?
-    function _burnSharesInPools(uint256 shares, uint256 totalSupply) internal {
+    //stack too deep
+    function _burnSharesInPools(uint256 shares, uint256 totalSupply, bool _isRebalance) internal returns (uint256, uint256, uint256) {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStotage).orderEthUsdcLower(),
             IVaultStorage(vaultStotage).orderEthUsdcUpper(),
             shares,
-            totalSupply
+            totalSupply,
+            _isRebalance
         );
+
         (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStotage).orderOsqthEthLower(),
             IVaultStorage(vaultStotage).orderOsqthEthUpper(),
             shares,
-            totalSupply
+            totalSupply,
+            _isRebalance
         );
+
+        console.log("Total amounts withrawn %s ETH, %s USDC, %s oSQTH", amountEth0 + amountEth1, amountUsdc, amountOsqth);
+        console.log("Amount Eth1 %s, amountOsqth %s", amountEth1, amountOsqth);
+        console.log("Amount USDC %s, amountEth0 %s", amountUsdc, amountEth0);
+
+        return (amountEth0 + amountEth1, amountUsdc, amountOsqth);
     }
 }

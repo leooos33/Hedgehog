@@ -41,7 +41,8 @@ contract VaultStorage is Faucet {
     uint256 public rebalancePriceThreshold;
 
     //@dev iv adjustment parameter
-    uint256 public adjParam;
+    //TODO as param
+    uint256 public adjParam = 83000000000000000;
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests

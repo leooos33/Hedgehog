@@ -100,7 +100,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
         int24 tickLower,
         int24 tickUpper,
         uint256 shares,
-        uint256 totalSupply
+        uint256 totalSupply,
+        bool _isRebalance
     ) external onlyVault returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
@@ -110,7 +111,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
                 pool,
                 tickLower,
                 tickUpper,
-                _toUint128(liquidity)
+                _toUint128(liquidity),
+                _isRebalance
             );
 
             //add share of fees
@@ -124,7 +126,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint128 liquidity
+        uint128 liquidity,
+        bool _isRebalance
     )
         public
         onlyVault
@@ -144,7 +147,15 @@ contract VaultMath is ReentrancyGuard, Faucet {
         feesToVault0 = collect0.sub(burned0);
         feesToVault1 = collect1.sub(burned1);
 
-        uint256 protocolFee = IVaultStorage(vaultStotage).protocolFee();
+        uint256 protocolFee;
+        if (_isRebalance) 
+        {protocolFee = 0;}
+        else {
+            protocolFee  = IVaultStorage(vaultStotage).protocolFee();
+        }
+
+        console.log(protocolFee > 0);
+
         //Account for protocol fee
         if (protocolFee > 0) {
             uint256 feesToProtocol0 = feesToVault0.mul(protocolFee).div(1e6);
@@ -213,11 +224,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return token price
      */
     function getPriceFromTick(int24 tick) public view returns (uint256) {
-        //const = 2^192
-        uint256 const = 6277101735386680763835789423207666416102355444464034512896;
 
         uint160 sqrtRatioAtTick = IUniswapMath(uniswapMath).getSqrtRatioAtTick(tick);
-        return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(const);
+        //const = 2^192
+        return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(6277101735386680763835789423207666416102355444464034512896);
     }
 
     /**
@@ -326,7 +336,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
     function getIV() public view onlyVault returns (uint256) {
         uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
         // 365/17.5
-        uint256 k = 20857142857142857142;
+        //uint256 k = ;
 
         return
             (
@@ -336,7 +346,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
                             Constants.osqthController.getIndex(_twapPeriod)
                         )
                     ).ln()
-                ).mul(k)
+                ).mul(20857142857142857142)
             ).sqrt();
     }
 
