@@ -5,7 +5,7 @@ const { utils } = ethers;
 const { resetFork, getUSDC, getERC20Balance, getAndApprove, logBlock, logBalance } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("Strategy rebalance buy", function () {
+describe.only("Strategy rebalance buy", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -58,9 +58,9 @@ describe("Strategy rebalance buy", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await Vault.connect(depositor).deposit(
-            "17630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            wethInput,
+            usdcInput,
+            osqthInput,
             depositor.address,
             "0",
             "0",
@@ -199,7 +199,7 @@ describe("Strategy rebalance buy", function () {
         // Balances
         await logBalance(depositor.address);
         expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("16645579435043479750");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("22116722925");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("22130408977");
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("45273134287550051529");
 
         // Shares
@@ -207,8 +207,8 @@ describe("Strategy rebalance buy", function () {
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("Total amounts:", amount);
-        //expect(amount[0].toString()).to.equal("8");
-        // expect(amount[1].toString()).to.equal("2");
-        // expect(amount[2].toString()).to.equal("1");
+        expect(amount[0].toString()).to.equal("8");
+         expect(amount[1].toString()).to.equal("10");
+         expect(amount[2].toString()).to.equal("9");
     });
 });

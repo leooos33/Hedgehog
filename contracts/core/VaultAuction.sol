@@ -355,15 +355,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         int24 tickAdj;
         if (isPosIVbump) {
-            tickAdj = baseAdj < int24(120) ? tickSpacing : baseAdj;
+            tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
                     console.log("Tick adj %s", uint256(int256(tickAdj)));
 
             return
                 Constants.Boundaries(
-                    tickFloorEthUsdc + tickSpacing - baseThreshold - tickAdj,
-                    tickFloorEthUsdc + baseThreshold  - tickAdj,
-                    tickFloorOsqthEth - baseThreshold - tickAdj,
-                    tickFloorOsqthEth + IVaultStorage(vaultStorage).tickSpacing() + baseThreshold - tickAdj
+                    tickFloorEthUsdc + tickSpacing + baseThreshold - tickAdj,
+                    tickFloorEthUsdc - baseThreshold  - tickAdj,
+                    tickFloorOsqthEth + tickSpacing + baseThreshold - tickAdj,
+                    tickFloorOsqthEth - baseThreshold - tickAdj
                 );
                 
         } else {

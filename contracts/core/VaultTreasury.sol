@@ -125,7 +125,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickUpper,
         uint128 liquidity
     ) external override onlyKeepers {
-
+        console.log("pre-mint lower %s, pre-mint upper %s", uint256(int256(tickLower)), uint256(int256(tickUpper)));
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
