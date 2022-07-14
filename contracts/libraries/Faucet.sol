@@ -24,7 +24,7 @@ contract Faucet is IFaucet, Ownable {
     address public auction;
     address public vaultMath;
     address public vaultTreasury;
-    address public vaultStotage;
+    address public vaultStorage;
 
     constructor() Ownable() {}
 
@@ -34,16 +34,16 @@ contract Faucet is IFaucet, Ownable {
         address _auction,
         address _vaultMath,
         address _vaultTreasury,
-        address _vaultStotage,
+        address _vaultStorage,
         address _governance
     ) public override onlyOwner {
-        (uniswapMath, vault, auction, vaultMath, vaultTreasury, vaultStotage, governance) = (
+        (uniswapMath, vault, auction, vaultMath, vaultTreasury, vaultStorage, governance) = (
             _uniswapMath,
             _vault,
             _auction,
             _vaultMath,
             _vaultTreasury,
-            _vaultStotage,
+            _vaultStorage,
             _governance
         );
     }

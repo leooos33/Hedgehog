@@ -46,22 +46,22 @@ contract VaultMath is ReentrancyGuard, Faucet {
     {
         (uint256 usdcAmount, uint256 amountWeth0) = _getPositionAmounts(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            IVaultStorage(vaultStorage).orderEthUsdcLower()
         );
 
         (uint256 amountWeth1, uint256 osqthAmount) = _getPositionAmounts(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            IVaultStorage(vaultStorage).orderOsqthEthLower()
         );
 
         return (
             _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(
-                IVaultStorage(vaultStotage).accruedFeesEth()
+                IVaultStorage(vaultStorage).accruedFeesEth()
             ),
-            _getBalance(Constants.usdc).add(usdcAmount).sub(IVaultStorage(vaultStotage).accruedFeesUsdc()),
-            _getBalance(Constants.osqth).add(osqthAmount).sub(IVaultStorage(vaultStotage).accruedFeesOsqth())
+            _getBalance(Constants.usdc).add(usdcAmount).sub(IVaultStorage(vaultStorage).accruedFeesUsdc()),
+            _getBalance(Constants.osqth).add(osqthAmount).sub(IVaultStorage(vaultStorage).accruedFeesOsqth())
         );
     }
 
@@ -82,7 +82,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
             liquidity
         );
 
-        uint256 oneMinusFee = uint256(1e6).sub(IVaultStorage(vaultStotage).protocolFee());
+        uint256 oneMinusFee = uint256(1e6).sub(IVaultStorage(vaultStorage).protocolFee());
 
         uint256 total0;
         if (pool == Constants.poolEthUsdc) {
@@ -100,61 +100,13 @@ contract VaultMath is ReentrancyGuard, Faucet {
         int24 tickLower,
         int24 tickUpper,
         uint256 shares,
-        uint256 totalSupply,
-        bool _isRebalance
-    ) external onlyVault returns (uint256 amount0, uint256 amount1) {
-        (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
-        uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
+        uint256 totalSupply
+        ) external onlyVault returns (uint256, uint256) {
 
-        if (liquidity > 0) {
-            (uint256 burned0, uint256 burned1, uint256 fees0, uint256 fees1) = burnAndCollect(
-                pool,
-                tickLower,
-                tickUpper,
-                _toUint128(liquidity),
-                _isRebalance
-            );
+        (uint256 feesToVault0, uint256 feesToVault1, uint256 burned0, uint256 burned1) = _feesToVault(pool, tickLower, tickUpper, shares, totalSupply);
+        uint256 protocolFee = IVaultStorage(vaultStorage).protocolFee();
 
-            //add share of fees
-            amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
-            amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
-        }
-    }
-
-    /// @dev Withdraws liquidity from a range and collects all fees in the process.
-    function burnAndCollect(
-        address pool,
-        int24 tickLower,
-        int24 tickUpper,
-        uint128 liquidity,
-        bool _isRebalance
-    )
-        public
-        onlyVault
-        returns (
-            uint256 burned0,
-            uint256 burned1,
-            uint256 feesToVault0,
-            uint256 feesToVault1
-        )
-    {
-        if (liquidity > 0) {
-            (burned0, burned1) = IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, liquidity);
-        }
-
-        (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
-
-        feesToVault0 = collect0.sub(burned0);
-        feesToVault1 = collect1.sub(burned1);
-
-        uint256 protocolFee;
-        if (_isRebalance) 
-        {protocolFee = 0;}
-        else {
-            protocolFee  = IVaultStorage(vaultStotage).protocolFee();
-        }
-
-        console.log(protocolFee > 0);
+        console.log("protocol fee > 0 %s" ,protocolFee > 0);
 
         //Account for protocol fee
         if (protocolFee > 0) {
@@ -164,23 +116,78 @@ contract VaultMath is ReentrancyGuard, Faucet {
             feesToVault0 = feesToVault0.sub(feesToProtocol0);
             feesToVault1 = feesToVault1.sub(feesToProtocol1);
             if (pool == Constants.poolEthUsdc) {
-                IVaultStorage(vaultStotage).setAccruedFeesUsdc(
-                    IVaultStorage(vaultStotage).accruedFeesUsdc().add(feesToProtocol0)
+                IVaultStorage(vaultStorage).setAccruedFeesUsdc(
+                    IVaultStorage(vaultStorage).accruedFeesUsdc().add(feesToProtocol0)
                 );
-                IVaultStorage(vaultStotage).setAccruedFeesEth(
-                    IVaultStorage(vaultStotage).accruedFeesEth().add(feesToProtocol1)
+                IVaultStorage(vaultStorage).setAccruedFeesEth(
+                    IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol1)
                 );
             } else if (pool == Constants.poolEthOsqth) {
-                IVaultStorage(vaultStotage).setAccruedFeesEth(
-                    IVaultStorage(vaultStotage).accruedFeesEth().add(feesToProtocol0)
+                IVaultStorage(vaultStorage).setAccruedFeesEth(
+                    IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol0)
                 );
-                IVaultStorage(vaultStotage).setAccruedFeesOsqth(
-                    IVaultStorage(vaultStotage).accruedFeesOsqth().add(feesToProtocol1)
+                IVaultStorage(vaultStorage).setAccruedFeesOsqth(
+                    IVaultStorage(vaultStorage).accruedFeesOsqth().add(feesToProtocol1)
                 );
             }
-
-            emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
         }
+
+        return(
+            //add share of fees
+            burned0.add(feesToVault0.mul(shares).div(totalSupply)),
+            burned1.add(feesToVault1.mul(shares).div(totalSupply))
+        );
+    }
+
+    // @dev returns fees to vault and amount of burned tokens (stack too deep)
+    function _feesToVault(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint256 shares,
+        uint256 totalSupply
+    ) 
+    public
+    onlyVault
+    returns (
+        uint256,
+        uint256,
+        uint256, 
+        uint256 
+    ) {
+        (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
+        uint128 liquidity = _toUint128(uint256(totalLiquidity).mul(shares).div(totalSupply));
+        (uint256 burned0, uint256 burned1, uint256 collect0, uint256 collect1) = burnAndCollect(
+            pool,
+            tickLower,
+            tickUpper,
+            liquidity            
+        );
+        return (collect0.sub(burned0), collect1.sub(burned1), burned0, burned1);
+    }
+
+    /// @dev Withdraws liquidity from a range and collects all fees in the process.
+    function burnAndCollect(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+        )
+        public
+        onlyVault
+        returns (
+            uint256 burned0,
+            uint256 burned1,
+            uint256 collect0,
+            uint256 collect1
+        )
+    {
+        if (liquidity > 0) {
+            (burned0, burned1) = IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, liquidity);
+        }
+
+        (collect0, collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
+
     }
 
     /**
@@ -189,8 +196,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return auction trigger timestamp
      */
     function isTimeRebalance() public view returns (bool, uint256) {
-        uint256 auctionTriggerTime = IVaultStorage(vaultStotage).timeAtLastRebalance().add(
-            IVaultStorage(vaultStotage).rebalanceTimeThreshold()
+        uint256 auctionTriggerTime = IVaultStorage(vaultStorage).timeAtLastRebalance().add(
+            IVaultStorage(vaultStorage).rebalanceTimeThreshold()
         );
 
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
@@ -203,19 +210,19 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return true if hedging is allowed
      */
     function _isPriceRebalance(uint256 _auctionTriggerTime) public view returns (bool) {
-        if (_auctionTriggerTime < IVaultStorage(vaultStotage).timeAtLastRebalance()) return false;
+        if (_auctionTriggerTime < IVaultStorage(vaultStorage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
         uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
             Constants.poolEthUsdc,
             address(Constants.weth),
             address(Constants.usdc),
-            secondsToTrigger + IVaultStorage(vaultStotage).twapPeriod(),
+            secondsToTrigger + IVaultStorage(vaultStorage).twapPeriod(),
             secondsToTrigger
         );
 
-        uint256 cachedRatio = ethUsdcPriceAtTrigger.div(IVaultStorage(vaultStotage).ethPriceAtLastRebalance());
+        uint256 cachedRatio = ethUsdcPriceAtTrigger.div(IVaultStorage(vaultStorage).ethPriceAtLastRebalance());
         uint256 priceTreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
-        return priceTreshold >= IVaultStorage(vaultStotage).rebalancePriceThreshold();
+        return priceTreshold >= IVaultStorage(vaultStorage).rebalancePriceThreshold();
     }
 
     /**
@@ -236,9 +243,9 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return priceMultiplier
      */
     function getPriceMultiplier(uint256 _auctionTriggerTime) external view onlyVault returns (uint256) {
-        uint256 maxPriceMultiplier = IVaultStorage(vaultStotage).maxPriceMultiplier();
-        uint256 minPriceMultiplier = IVaultStorage(vaultStotage).minPriceMultiplier();
-        uint256 auctionTime = IVaultStorage(vaultStotage).auctionTime();
+        uint256 maxPriceMultiplier = IVaultStorage(vaultStorage).maxPriceMultiplier();
+        uint256 minPriceMultiplier = IVaultStorage(vaultStorage).minPriceMultiplier();
+        uint256 auctionTime = IVaultStorage(vaultStorage).auctionTime();
 
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
@@ -260,8 +267,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
         require(
-            deviation0 <= IVaultStorage(vaultStotage).maxTDEthUsdc() ||
-                deviation1 <= IVaultStorage(vaultStotage).maxTDOsqthEth(),
+            deviation0 <= IVaultStorage(vaultStorage).maxTDEthUsdc() ||
+                deviation1 <= IVaultStorage(vaultStorage).maxTDOsqthEth(),
             "Max TWAP Deviation"
         );
 
@@ -296,7 +303,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
     /// @dev Fetches time-weighted average price in ticks from Uniswap pool.
     function _getTwap() internal view returns (int24, int24) {
-        uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
+        uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
         uint32[] memory secondsAgo = new uint32[](2);
         secondsAgo[0] = _twapPeriod;
         secondsAgo[1] = 0;
@@ -334,7 +341,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
     //TODO
     function getIV() public view onlyVault returns (uint256) {
-        uint32 _twapPeriod = IVaultStorage(vaultStotage).twapPeriod();
+        uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
         // 365/17.5
         //uint256 k = ;
 

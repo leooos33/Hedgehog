@@ -11,8 +11,7 @@ import "hardhat/console.sol";
 
 contract VaultStorage is Faucet {
     //@dev Uniswap pools tick spacing
-    int24 public immutable tickSpacingEthUsdc;
-    int24 public immutable tickSpacingOsqthEth;
+    int24 public immutable tickSpacing;
 
     //@dev twap period to use for rebalance calculations
     uint32 public twapPeriod = 420 seconds;
@@ -38,7 +37,7 @@ contract VaultStorage is Faucet {
 
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
-    uint256 public rebalancePriceThreshold;
+    uint256 public rebalancePriceThreshold; //TODO
 
     //@dev iv adjustment parameter
     //TODO as param
@@ -46,8 +45,7 @@ contract VaultStorage is Faucet {
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public ethUsdcThreshold = 1440;
-    int24 public osqthEthThreshold = 1440;
+    int24 public baseThreshold = 1440;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public protocolFee = 0;
@@ -92,8 +90,7 @@ contract VaultStorage is Faucet {
 
         protocolFee = _protocolFee;
 
-        tickSpacingEthUsdc = IUniswapV3Pool(Constants.poolEthUsdc).tickSpacing();
-        tickSpacingOsqthEth = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
+        tickSpacing = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
         rebalancePriceThreshold = _rebalancePriceThreshold;
 
@@ -137,19 +134,11 @@ contract VaultStorage is Faucet {
     }
 
     /**
-     * @notice owner can set the threshold for ETH:USDC liquidity positions
-     * @param _ethUsdcThreshold the rebalance time threshold, in ticks
+     * @notice owner can set the base threshold for boundaries calculation
+     * @param _baseThreshold the rebalance time threshold, in ticks
      */
-    function setEthUsdcThreshold(int24 _ethUsdcThreshold) external onlyGovernance {
-        ethUsdcThreshold = _ethUsdcThreshold;
-    }
-
-    /**
-     * @notice owner can set the threshold for oSQTH:ETH liquidity positions
-     * @param _osqthEthThreshold the rebalance time threshold, in ticks
-     */
-    function setOsqthEthThreshold(int24 _osqthEthThreshold) external onlyGovernance {
-        osqthEthThreshold = _osqthEthThreshold;
+    function setbaseThreshold(int24 _baseThreshold) external onlyGovernance {
+        baseThreshold = _baseThreshold;
     }
 
     /**

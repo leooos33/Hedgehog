@@ -36,9 +36,8 @@ interface IVaultMath {
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint128 liquidity,
-        bool _isRebalance
-    )
+        uint128 liquidity
+        )
         external
         returns (
             uint256 burned0,
@@ -52,9 +51,8 @@ interface IVaultMath {
         int24 tickLower,
         int24 tickUpper,
         uint256 shares,
-        uint256 totalSupply,
-        bool _isRebalance
-    ) external returns (uint256 amount0, uint256 amount1);
+        uint256 totalSupply
+        ) external returns (uint256 amount0, uint256 amount1);
 
     function getTotalAmounts()
         external

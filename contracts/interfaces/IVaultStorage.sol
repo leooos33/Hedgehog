@@ -47,13 +47,9 @@ interface IVaultStorage {
 
     function maxTDEthUsdc() external view returns (int24);
 
-    function ethUsdcThreshold() external view returns (int24);
+    function baseThreshold() external view returns (int24);
 
-    function osqthEthThreshold() external view returns (int24);
-
-    function tickSpacingEthUsdc() external view returns (int24);
-
-    function tickSpacingOsqthEth() external view returns (int24);
+    function tickSpacing() external view returns (int24);
 
     function updateAccruedFees(
         uint256,

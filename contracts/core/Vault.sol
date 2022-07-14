@@ -40,8 +40,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 _amountUsdcMin,
         uint256 _amountOsqthMin
     ) external override nonReentrant returns (uint256) {
-        require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "ZA"); //Zero amount
-        require(to != address(0) && to != address(this), "WA"); //Wrong address
+        require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0)); //Zero amount
+        require(to != address(0) && to != address(this)); //Wrong address
 
         //Poke positions so vault's current holdings are up to date
         IVaultTreasury(vaultTreasury).pokeEthUsdc();
@@ -60,9 +60,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
 
         //TODO: remove console logs here
-        console.log(amountEth);
-        console.log(amountUsdc);
-        console.log(amountOsqth);
+        console.log("Deposited amount of ETH %s", amountEth);
+        console.log("Deposited amount of USDC %s", amountUsdc);
+        console.log("Deposited amount of oSQTH %s", amountOsqth);
+
         //Pull in tokens
         if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
         if (amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, amountUsdc);
@@ -71,7 +72,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Mint shares to user
         _mint(to, _shares);
         //Check deposit cap
-        require(totalSupply() <= IVaultStorage(vaultStotage).cap(), "Cap is reached");
+        require(totalSupply() <= IVaultStorage(vaultStorage).cap(), "Cap is reached");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
@@ -102,7 +103,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) =  _burnSharesInPools(shares, totalSupply, false);
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) =  _burnSharesInPools(shares, totalSupply);
 
         console.log("Total amounts - %s ETH, %s USDC, %s oSQTH", amountEth, amountUsdc, amountOsqth);
 
@@ -115,9 +116,9 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, msg.sender, amountUsdc);
         if (amountOsqth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.osqth, msg.sender, amountOsqth);
 
-        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-        console.log("EthUsdc price at withdraw %s", ethUsdcPrice);
-        console.log("OsqthEth price at withdraw %s", osqthEthPrice);
+        //(uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+        //console.log("EthUsdc price at withdraw %s", ethUsdcPrice);
+        //console.log("OsqthEth price at withdraw %s", osqthEthPrice);
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
@@ -135,7 +136,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 amountOsqth,
         address to
     ) external override nonReentrant onlyGovernance {
-        IVaultStorage(vaultStotage).updateAccruedFees(amountUsdc, amountEth, amountOsqth);
+        IVaultStorage(vaultStorage).updateAccruedFees(amountUsdc, amountEth, amountOsqth);
 
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, to, amountUsdc);
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, to, amountEth);
@@ -238,23 +239,21 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     }
 
     //stack too deep
-    function _burnSharesInPools(uint256 shares, uint256 totalSupply, bool _isRebalance) internal returns (uint256, uint256, uint256) {
+    function _burnSharesInPools(uint256 shares, uint256 totalSupply) internal returns (uint256, uint256, uint256) {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
             shares,
-            totalSupply,
-            _isRebalance
+            totalSupply
         );
 
         (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
             shares,
-            totalSupply,
-            _isRebalance
+            totalSupply
         );
 
         console.log("Total amounts withrawn %s ETH, %s USDC, %s oSQTH", amountEth0 + amountEth1, amountUsdc, amountOsqth);
