@@ -87,10 +87,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityOsqthEth
         );
 
-        console.log("Targets - %s ETH, %s USDC, %s oSQTH", 
-        targetEth, 
-        targetUsdc,
-        targetOsqth);
+        console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
 
         _executeAuction(keeper, params, targetEth, targetUsdc, targetOsqth);
 
@@ -119,23 +116,20 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
-            liquidityEthUsdc,
-            true
+            liquidityEthUsdc
         );
 
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
-            liquidityOsqthEth,
-            true
+            liquidityOsqthEth
         );
 
         //Exchange tokens with keeper
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
-        console.log("Balances - %s ETH,  %s USDC, %s oSQTH",
-        ethBalance, usdcBalance, osqthBalance);
+        console.log("Balances - %s ETH,  %s USDC, %s oSQTH", ethBalance, usdcBalance, osqthBalance);
 
         console.log("!");
         if (targetEth > ethBalance) {
@@ -165,19 +159,19 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthUsdc,
-            params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
+            params.boundaries.ethUsdcLower,
             params.liquidityEthUsdc
         );
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthOsqth,
-            params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
+            params.boundaries.osqthEthLower,
             params.liquidityOsqthEth
         );
 
-         IVaultStorage(vaultStotage).setTotalAmountsBoundaries(
+         IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
              params.boundaries.ethUsdcLower,
              params.boundaries.ethUsdcUpper,
              params.boundaries.osqthEthLower,
@@ -199,7 +193,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 cIV = IVaultMath(vaultMath).getIV();
         console.log("current IV %s", cIV);
         //previous implied volatility
-        uint256 pIV = IVaultStorage(vaultStotage).ivAtLastRebalance();
+        uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
         console.log("previous IV %s", pIV);
 
         uint256 expIVbump;
@@ -228,8 +222,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             expIVbump
         );
 
-        console.log("ethUsdcUpper %s", uint256(int256(boundaries.ethUsdcUpper)));
         console.log("ethUsdcLower %s", uint256(int256(boundaries.ethUsdcLower)));
+        console.log("ethUsdcUpper %s", uint256(int256(boundaries.ethUsdcUpper)));
         
         console.log("osqthEthLower %s", uint256(int256(boundaries.osqthEthLower)));
         console.log("osqthEthUpper %s", uint256(int256(boundaries.osqthEthUpper)));
@@ -254,8 +248,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
             totalValue.mul(ethUsdcPrice).mul(vm),
             ethUsdcPrice,
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
             uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
             1e12
         );
 
@@ -264,8 +258,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
             totalValue.mul(uint256(1e18) - vm),
             osqthEthPrice,
-            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
             1e18
         );
 
@@ -310,16 +304,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function _getTickFloors(
         uint256 aEthUsdcPrice,
         uint256 aOsqthEthPrice,
-        int24 tickSpacingEthUsdc
+        int24 tickSpacing
     ) internal view returns (int24, int24) {
         (uint160 _aEthUsdcSqrtX96, uint160 _aOsqthEthSqrtX96) = _getSqrtX96(aEthUsdcPrice, aOsqthEthPrice);
 
         return (
-            _floor(IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96), tickSpacingEthUsdc),
-            _floor(
-                IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthSqrtX96),
-                IVaultStorage(vaultStotage).tickSpacingOsqthEth()
-            )
+            _floor(IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aEthUsdcSqrtX96), tickSpacing),
+            _floor(IUniswapMath(uniswapMath).getTickAtSqrtRatio(_aOsqthEthSqrtX96), tickSpacing)
         );
     }
 
@@ -334,29 +325,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         bool isPosIVbump,
         uint256 expIVbump
     ) internal view returns (Constants.Boundaries memory) {
-        int24 tickSpacingEthUsdc = IVaultStorage(vaultStotage).tickSpacingEthUsdc();
+        int24 tickSpacing = IVaultStorage(vaultStorage).tickSpacing();
 
         (int24 tickFloorEthUsdc, int24 tickFloorOsqthEth) = _getTickFloors(
             aEthUsdcPrice,
             aOsqthEthPrice,
-            tickSpacingEthUsdc
+            tickSpacing
         );
 
         console.log("tickFloorEthUsdc %s", uint256(int256(tickFloorEthUsdc)));
         console.log("tickFloorOsqthEth %s", uint256(int256(tickFloorOsqthEth)));
 
         //base thresholds
-        int24 ethUsdcThreshold = IVaultStorage(vaultStotage).ethUsdcThreshold();
-        int24 osqthEthThreshold = IVaultStorage(vaultStotage).osqthEthThreshold();
-
-        console.log("ethUsdcThreshold %s", uint256(int256(ethUsdcThreshold)));
+        int24 baseThreshold = IVaultStorage(vaultStorage).baseThreshold();
+        
+        console.log("baseThreshold %s", uint256(int256(baseThreshold)));
 
         //iv adj parameter
 
-        //60 - tickSpacingEthUsdc
+        //60 - tickSpacing
         int24 baseAdj = toInt24(
             int256(
-                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStotage).adjParam())).floor() *
+                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
                     uint256(60)).div(1e36)
             )
         );
@@ -365,27 +355,27 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         int24 tickAdj;
         if (isPosIVbump) {
-            tickAdj = baseAdj < int24(120) ? tickSpacingEthUsdc : baseAdj;
+            tickAdj = baseAdj < int24(120) ? tickSpacing : baseAdj;
                     console.log("Tick adj %s", uint256(int256(tickAdj)));
 
             return
                 Constants.Boundaries(
-                    tickFloorEthUsdc - ethUsdcThreshold - tickAdj,
-                    tickFloorEthUsdc + ethUsdcThreshold + tickSpacingEthUsdc - tickAdj,
-                    tickFloorOsqthEth - osqthEthThreshold - tickAdj,
-                    tickFloorOsqthEth + IVaultStorage(vaultStotage).tickSpacingOsqthEth() + osqthEthThreshold - tickAdj
+                    tickFloorEthUsdc + tickSpacing - baseThreshold - tickAdj,
+                    tickFloorEthUsdc + baseThreshold  - tickAdj,
+                    tickFloorOsqthEth - baseThreshold - tickAdj,
+                    tickFloorOsqthEth + IVaultStorage(vaultStorage).tickSpacing() + baseThreshold - tickAdj
                 );
                 
         } else {
-            tickAdj = baseAdj > tickSpacingEthUsdc ? int24(120) : baseAdj;
+            tickAdj = baseAdj > tickSpacing ? int24(120) : baseAdj;
                     console.log("Tick adj %s", uint256(int256(tickAdj)));
 
             return
                 Constants.Boundaries(
-                    tickFloorEthUsdc - ethUsdcThreshold + tickAdj,
-                    tickFloorEthUsdc + tickSpacingEthUsdc + ethUsdcThreshold - tickAdj,
-                    tickFloorOsqthEth - osqthEthThreshold + tickAdj,
-                    tickFloorOsqthEth + IVaultStorage(vaultStotage).tickSpacingOsqthEth() + osqthEthThreshold - tickAdj
+                    tickFloorEthUsdc + tickSpacing + baseThreshold + tickAdj,
+                    tickFloorEthUsdc  - baseThreshold + tickAdj,
+                    tickFloorOsqthEth + tickSpacing + baseThreshold + tickAdj,
+                    tickFloorOsqthEth - baseThreshold + tickAdj
                 );
         }
     }

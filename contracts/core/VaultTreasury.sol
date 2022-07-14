@@ -125,6 +125,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickUpper,
         uint128 liquidity
     ) external override onlyKeepers {
+
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
@@ -177,24 +178,24 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     function pokeEthUsdc() external override onlyVault {
         poke(
             address(Constants.poolEthUsdc),
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
     }
 
     function pokeEthOsqth() external override onlyVault {
         poke(
             address(Constants.poolEthOsqth),
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
     }
 
     function positionLiquidityEthUsdc() external view override onlyVault returns (uint128) {
         (uint128 liquidityEthUsdc, , , , ) = position(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStotage).orderEthUsdcLower(),
-            IVaultStorage(vaultStotage).orderEthUsdcUpper()
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
         return liquidityEthUsdc;
     }
@@ -202,8 +203,8 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     function positionLiquidityEthOsqth() external view override onlyVault returns (uint128) {
         (uint128 liquidityEthOsqth, , , , ) = position(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStotage).orderOsqthEthLower(),
-            IVaultStorage(vaultStotage).orderOsqthEthUpper()
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
         return liquidityEthOsqth;
     }
