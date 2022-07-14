@@ -5,7 +5,7 @@ const { utils } = ethers;
 const { resetFork, getWETH, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock, logBalance } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("Strategy rebalance, sell with comissions", function () {
+describe.only("Strategy rebalance, sell with comissions", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -20,7 +20,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         await resetFork();
 
         const params = [...deploymentParams];
-        params[6] = "100000";
+        params[6] = "10000";
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
         await logBlock();
         //14487789 1648646654
@@ -132,7 +132,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         await tx.wait();
 
         // Balances
-        await logBalance(keeper.address);
+        //await logBalance(keeper.address);
 
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
         const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
@@ -154,9 +154,9 @@ describe("Strategy rebalance, sell with comissions", function () {
         console.log("Strategy USDC balance after rebalance %s", usdcAmountS);
         console.log("Strategy oSQTH balance after rebalance %s", osqthAmountS);
 
-        expect(amount[0].toString()).to.equal("16232313000000000008");
-        expect(amount[1].toString()).to.equal("16622901877");
-        expect(amount[2].toString()).to.equal("39849718000000000009");
+        expect(amount[0].toString()).to.equal("18035903242253536949");
+        expect(amount[1].toString()).to.equal("18469890973");
+        expect(amount[2].toString()).to.equal("44277464452284603778");
     });
 
     it("swap", async function () {

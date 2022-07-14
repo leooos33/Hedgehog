@@ -133,6 +133,8 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
 
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
+        console.log("Balances1 - %s ETH,  %s USDC, %s oSQTH", _getBalance(Constants.weth), _getBalance(Constants.usdc), _getBalance(Constants.osqth));
+
     }
 
     function transfer(

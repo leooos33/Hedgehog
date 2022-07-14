@@ -157,26 +157,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         }
         console.log("!");
 
-        IVaultTreasury(vaultTreasury).mintLiquidity(
-            Constants.poolEthUsdc,
-            params.boundaries.ethUsdcUpper,
-            params.boundaries.ethUsdcLower,
-            params.liquidityEthUsdc
-        );
+        //(uint256 ethBalance1, uint256 usdcBalance1, uint256 osqthBalance1) = IVaultMath(vaultMath).getTotalAmounts();
 
-        IVaultTreasury(vaultTreasury).mintLiquidity(
-            Constants.poolEthOsqth,
-            params.boundaries.osqthEthUpper,
-            params.boundaries.osqthEthLower,
-            params.liquidityOsqthEth
-        );
-
-         IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
-             params.boundaries.ethUsdcLower,
+         IVaultTreasury(vaultTreasury).mintLiquidity(
+             Constants.poolEthUsdc,
              params.boundaries.ethUsdcUpper,
-             params.boundaries.osqthEthLower,
-             params.boundaries.osqthEthUpper
+             params.boundaries.ethUsdcLower,
+             params.liquidityEthUsdc
          );
+
+         IVaultTreasury(vaultTreasury).mintLiquidity(
+             Constants.poolEthOsqth,
+             params.boundaries.osqthEthUpper,
+             params.boundaries.osqthEthLower,
+             params.liquidityOsqthEth
+         );
+
+          IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
+              params.boundaries.ethUsdcLower,
+              params.boundaries.ethUsdcUpper,
+              params.boundaries.osqthEthLower,
+              params.boundaries.osqthEthUpper
+          );
     }
 
     /**
@@ -231,7 +233,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Value for LPing
         uint256 totalValue = _getTotalValue(ethUsdcPrice, osqthEthPrice);
-
+        console.log("EthUsdcPrice %s, OsqthEthPrice %s", ethUsdcPrice, osqthEthPrice);
         console.log("Total Value to Rebalance %s", totalValue);
 
         //Value multiplier

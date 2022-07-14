@@ -75,6 +75,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
             tickLower,
             tickUpper
         );
+
         (uint256 amount0, uint256 amount1) = IVaultTreasury(vaultTreasury).amountsForLiquidity(
             pool,
             tickLower,
@@ -86,12 +87,12 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
         uint256 total0;
         if (pool == Constants.poolEthUsdc) {
-            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee.mul(1e30));
+            total0 = amount0.add(uint256(tokensOwed0).mul(oneMinusFee).div(1e30));
         } else {
-            total0 = (amount0.add(tokensOwed0)).mul(oneMinusFee).div(1e6);
+            total0 = amount0.add(uint256(tokensOwed0).mul(oneMinusFee).div(1e30));
         }
 
-        return (total0, (amount1.add(tokensOwed1)).mul(oneMinusFee).div(1e6));
+        return (total0, amount1.add(uint256(tokensOwed1).mul(oneMinusFee).div(1e30)));
     }
 
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
@@ -110,12 +111,12 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
         //Account for protocol fee
         if (protocolFee > 0) {
-            uint256 feesToProtocol0 = feesToVault0.mul(protocolFee).div(1e6);
-            uint256 feesToProtocol1 = feesToVault1.mul(protocolFee).div(1e6);
 
-            feesToVault0 = feesToVault0.sub(feesToProtocol0);
-            feesToVault1 = feesToVault1.sub(feesToProtocol1);
+        uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
+        uint256 feesToProtocol1 = feesToVault1.mul(protocolFee).div(1e34);
+
             if (pool == Constants.poolEthUsdc) {
+
                 IVaultStorage(vaultStorage).setAccruedFeesUsdc(
                     IVaultStorage(vaultStorage).accruedFeesUsdc().add(feesToProtocol0)
                 );
@@ -123,6 +124,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol1)
                 );
             } else if (pool == Constants.poolEthOsqth) {
+
                 IVaultStorage(vaultStorage).setAccruedFeesEth(
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol0)
                 );
@@ -130,7 +132,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
                     IVaultStorage(vaultStorage).accruedFeesOsqth().add(feesToProtocol1)
                 );
             }
+
         }
+
+
 
         return(
             //add share of fees
