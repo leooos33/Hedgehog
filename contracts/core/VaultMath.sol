@@ -116,11 +116,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
                 _toUint128(liquidity)
             );
 
-        return(
-            burned0.add(fees0.mul(shares).div(totalSupply)),
-            burned1.add(fees1.mul(shares).div(totalSupply))
-        );
-
+        amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
+        amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
         }
 
     }
@@ -185,8 +182,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
         feesToVault1 = collect1.sub(burned1);
 
         uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
-        uint256 feesToProtocol1 = feesToVault1.mul(protocolFee).div(1e34);
+        uint256 feesToProtocol1 = feesToVault1.div(protocolFee).div(1e34);
 
+        feesToVault0 = feesToVault0.sub(feesToProtocol0);
+        feesToVault1 = feesToVault1.sub(feesToProtocol1);
 
             if (pool == Constants.poolEthUsdc) {
 
@@ -210,12 +209,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
                     IVaultStorage(vaultStorage).accruedFeesOsqth().add(feesToProtocol1)
                 );
                 console.log("accruedFeesOsqth",  IVaultStorage(vaultStorage).accruedFeesOsqth());
-
             }
-        
-
-
-
         emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
         }
     }

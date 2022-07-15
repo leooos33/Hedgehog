@@ -119,6 +119,12 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //console.log("EthUsdc price at withdraw %s", ethUsdcPrice);
         //console.log("OsqthEth price at withdraw %s", osqthEthPrice);
 
+        uint256 ethAmount = _getBalance(Constants.weth);
+        uint256 usdcAmount = _getBalance(Constants.usdc);
+        uint256 osqthAmount = _getBalance(Constants.osqth);
+
+        console.log("SB %s ETH, %s USDC, %s oSQTH", ethAmount, usdcAmount, osqthAmount);
+
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
 

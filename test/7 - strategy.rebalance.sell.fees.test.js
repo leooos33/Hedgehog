@@ -212,17 +212,18 @@ describe.only("Strategy rebalance, sell with comissions", function () {
         console.log("oSQTH balance %s", osqthBalance);
         
          assert(assertWP(ethBalance, "16852576355677400402", 10, 18), "!");
-         assert(assertWP(usdcBalance, "22503640319", 4, 6), "!");
+         assert(assertWP(usdcBalance, "22503519308", 4, 6), "!");
          assert(assertWP(osqthBalance, "44277464452284603778", 9, 18), "!");
+         console.log("good");
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
 
-        console.log("Total amounts: %s", amount);
-        expect(amount[0].toString()).to.equal("8");
-        expect(amount[1].toString()).to.equal("10");
-        expect(amount[2].toString()).to.equal("9");
+         console.log("Total amounts: %s", amount);
+         expect(amount[0].toString()).to.equal("1553");
+         expect(amount[1].toString()).to.equal("9");
+         expect(amount[2].toString()).to.equal("9");
     });
 });
