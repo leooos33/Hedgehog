@@ -97,7 +97,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 totalSupply = totalSupply();
         console.log("Shares - %s, Total Supply - %s, Ratio - %s", shares, totalSupply, shares/totalSupply);
         //Get token amounts to withdraw
-        //(uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _getWithdrawAmounts(shares, totalSupply);
 
         //Burn shares
         _burn(msg.sender, shares);

@@ -78,6 +78,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
+        //Auction params
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         //Calculate amounts that need to be exchanged with keeper
