@@ -250,8 +250,9 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
     function getPrices() public view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
-        int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
-        int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
+        (, int24 ethUsdcTick, , , , , ) = IUniswapV3Pool(Constants.poolEthUsdc).slot0();
+        (, int24 osqthEthTick, , , , , ) = IUniswapV3Pool(Constants.poolEthOsqth).slot0();
+
 
         //Get twap in ticks
         (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
@@ -270,10 +271,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
         osqthEthPrice = uint256(1e18).div(getPriceFromTick(osqthEthTick));
     }
 
-    /// @dev Fetches current price in ticks from Uniswap pool.
-    function _getTick(address pool) internal view returns (int24 tick) {
-        (, tick, , , , , ) = IUniswapV3Pool(pool).slot0();
-    }
 
     /// @dev Wrapper around `LiquidityAmounts.getLiquidityForAmounts()`.
     function _liquidityForAmounts(
