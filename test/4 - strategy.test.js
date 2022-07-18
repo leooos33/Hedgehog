@@ -53,9 +53,9 @@ describe("Strategy deposit", function () {
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("129473829");
 
         // Balances
-        assert(assertWP(await getERC20Balance(VaultTreasury.address, wethAddress), wethInput, 8, 18), "test");
-        assert(assertWP(await getERC20Balance(VaultTreasury.address, usdcAddress), usdcInput, 6, 6), "test");
-        assert(assertWP(await getERC20Balance(VaultTreasury.address, osqthAddress), osqthInput, 8, 18), "test");
+        expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302313104906");
+        expect(await getERC20Balance(VaultTreasury.address, usdcAddress)).to.equal("31216859424");
+        expect(await getERC20Balance(VaultTreasury.address, osqthAddress)).to.equal("34537692970260579800");
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("36822598604626209811");
@@ -78,11 +78,16 @@ describe("Strategy deposit", function () {
         tx = await Vault.connect(depositor).withdraw("36822598604626209811", "0", "0", "0");
         await tx.wait();
 
+        // console.log("~!!!!!!!!!")
+        // await logBalance(VaultTreasury.address);
+        expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302313104906");
+        expect(await getERC20Balance(VaultTreasury.address, usdcAddress)).to.equal("31216859424");
+        expect(await getERC20Balance(VaultTreasury.address, osqthAddress)).to.equal("34537692970260579800");
+
         // Balances
-        await logBalance(depositor.address);
-        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("18411299302382124613");
-        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("31216859424");
-        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("34537692970390053629");
+        expect(await getERC20Balance(depositor.address, wethAddress)).to.equal("69019707");
+        expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal("129473829");
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");

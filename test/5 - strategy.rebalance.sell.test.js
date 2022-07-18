@@ -163,9 +163,9 @@ describe("Strategy rebalance sell", function () {
         console.log("Strategy USDC balance after rebalance %s", usdcAmountS);
         console.log("Strategy oSQTH balance after rebalance %s", osqthAmountS);
 
-        expect(amount[0].toString()).to.equal("17738094000000000008");
+        expect(amount[0].toString()).to.equal("17738094885977060967");
         expect(amount[1].toString()).to.equal("25777591933");
-        expect(amount[2].toString()).to.equal("37253712000000000009");
+        expect(amount[2].toString()).to.equal("37253712117474339113");
     });
 
     it("swap_after_rebalance_USDC_to_ETH", async function () {
@@ -211,7 +211,7 @@ describe("Strategy rebalance sell", function () {
         //await logBalance(depositor.address);
 
         assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "16616861176168954947", 16, 18), "1!");
-        assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "29599677414", 4, 6), "2!");
+        assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "29588211158", 4, 6), "2!");
         assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "37253712117545625008", 16, 18), "3!");
 
         // Shares
@@ -221,8 +221,8 @@ describe("Strategy rebalance sell", function () {
         //TODO
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("Total amounts:", amount);
-        expect(amount[0].toString()).to.equal("8");
-        expect(amount[1].toString()).to.equal("9");
+        expect(amount[0].toString()).to.equal("1223");
+        expect(amount[1].toString()).to.equal("11466265");
         expect(amount[2].toString()).to.equal("9");
     });
 });
