@@ -45,10 +45,6 @@ library Constants {
     }
 
     struct AuctionParams {
-        uint256 priceMultiplier;
-        // uint256 targetEth;
-        // uint256 targetUsdc;
-        // uint256 targetOsqth;
         Boundaries boundaries;
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;

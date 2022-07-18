@@ -4,6 +4,7 @@ pragma solidity =0.8.4;
 pragma abicoder v2;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
@@ -44,7 +45,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         require(isTimeRebalanceAllowed, "Time rebalance not allowed");
 
-        _rebalance(keeper, auctionTriggerTime);
+        _executeAuction(keeper, auctionTriggerTime);
 
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
@@ -67,32 +68,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //check if rebalancing based on price threshold is allowed
         require(IVaultMath(vaultMath)._isPriceRebalance(auctionTriggerTime), "Price rebalance not allowed");
 
-        _rebalance(keeper, auctionTriggerTime);
+        _executeAuction(keeper, auctionTriggerTime);
 
         emit SharedEvents.PriceRebalance(keeper, amountEth, amountUsdc, amountOsqth);
-    }
-
-    /**
-     * @notice rebalancing function to adjust proportion of tokens
-     * @param keeper keeper address
-     * @param _auctionTriggerTime timestamp when auction started
-     */
-    function _rebalance(address keeper, uint256 _auctionTriggerTime) internal {
-        //Auction params
-        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
-
-        //Calculate amounts that need to be exchanged with keeper
-        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
-            params.boundaries,
-            params.liquidityEthUsdc,
-            params.liquidityOsqthEth
-        );
-
-        console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
-
-        _executeAuction(keeper, params, targetEth, targetUsdc, targetOsqth);
-
-        emit SharedEvents.Rebalance(keeper, targetEth, targetUsdc, targetOsqth);
     }
 
     /**
@@ -104,64 +82,43 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function _executeAuction(
         address _keeper,
-        Constants.AuctionParams memory params,
-        uint256 targetEth,
-        uint256 targetUsdc,
-        uint256 targetOsqth
+        uint256 _auctionTriggerTime
     ) internal {
-        //Get current liquidity in positions
-        uint128 liquidityEthUsdc = IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc();
-        uint128 liquidityOsqthEth = IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth();
 
+        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
+
+        //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
-            liquidityEthUsdc
+            IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc()
         );
 
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
-            liquidityOsqthEth
+            IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
-        //Exchange tokens with keeper
+        //Calculate amounts that need to be exchanged with keeper
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-
         console.log("Balances - %s ETH,  %s USDC, %s oSQTH", ethBalance, usdcBalance, osqthBalance);
 
-        //_swapWithKeeper(ethBalance, targetEth, Constants.weth);
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+            params.boundaries,
+            params.liquidityEthUsdc,
+            params.liquidityOsqthEth
+        );
+        console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
 
-        console.log("!");
-        if (targetEth > ethBalance) {
-            console.log("Eth to exchange %s", targetEth.sub(ethBalance).add(10));
-            Constants.weth.transferFrom(_keeper, vaultTreasury, targetEth.sub(ethBalance).add(10));
-        } else {
-            console.log("Eth to exchange %s", ethBalance.sub(targetEth).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.weth, _keeper, ethBalance.sub(targetEth).sub(10));
-        }
+        //Exchange tokens with keeper
+        _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
+        _swapWithKeeper(usdcBalance, targetUsdc, address(Constants.usdc), _keeper);
+        _swapWithKeeper(osqthBalance, targetOsqth, address(Constants.osqth), _keeper);
 
-        if (targetUsdc > usdcBalance) {
-            console.log("USDC to exchange %s", targetUsdc.sub(usdcBalance).add(10));
-            Constants.usdc.transferFrom(_keeper, vaultTreasury, targetUsdc.sub(usdcBalance).add(10));
-        } else {
-            console.log("USDC to exchange %s", usdcBalance.sub(targetUsdc).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.usdc, _keeper, usdcBalance.sub(targetUsdc).sub(10));
-        }
-
-        if (targetOsqth > osqthBalance) {
-            console.log("oSQTH to exchange %s", targetOsqth.sub(osqthBalance).add(10));
-            Constants.osqth.transferFrom(_keeper, vaultTreasury, targetOsqth.sub(osqthBalance).add(10));
-        } else {
-            console.log("oSQTH to exchange %s", targetOsqth.sub(osqthBalance).sub(10));
-            IVaultTreasury(vaultTreasury).transfer(Constants.osqth, _keeper, osqthBalance.sub(targetOsqth).sub(10));
-        }
-        console.log("!");
-
-        //(uint256 ethBalance1, uint256 usdcBalance1, uint256 osqthBalance1) = IVaultMath(vaultMath).getTotalAmounts();
-
+        //Place new positions
          IVaultTreasury(vaultTreasury).mintLiquidity(
              Constants.poolEthUsdc,
              params.boundaries.ethUsdcUpper,
@@ -226,8 +183,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         console.log("Expected IV bump %s", expIVbump);
 
 
-        console.log("Auction EthUsdc Price %s", ethUsdcPrice.mul(priceMultiplier));
-        console.log("Auction OsqthEth Price %s", osqthEthPrice.mul(priceMultiplier));
+        console.log("Auction EthUsdc Price %s, Auction OsqthEth Price %s", ethUsdcPrice.mul(priceMultiplier), osqthEthPrice.mul(priceMultiplier));
         console.log("isPosIVbump", isPosIVbump);
 
         //boundaries for auction prices (current price * multiplier)
@@ -238,10 +194,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             expIVbump
         );
 
-        console.log("ethUsdcLower %s", uint256(int256(boundaries.ethUsdcLower)));
-        console.log("ethUsdcUpper %s", uint256(int256(boundaries.ethUsdcUpper)));
-        console.log("osqthEthLower %s", uint256(int256(boundaries.osqthEthLower)));
-        console.log("osqthEthUpper %s", uint256(int256(boundaries.osqthEthUpper)));
+        console.log("ethUsdcLower %s, ethUsdcUpper %s", uint256(int256(boundaries.ethUsdcLower)), uint256(int256(boundaries.ethUsdcUpper)));
+        console.log("osqthEthLower %s, osqthEthUpper %s", uint256(int256(boundaries.osqthEthLower)), uint256(int256(boundaries.osqthEthUpper)));
         
         uint256 totalValue;
         {
@@ -389,12 +343,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return int24(value);
     }
 
-    // function _swapWithKeeper(uint256 balance, uint256 target, address coin) internal {
+     function _swapWithKeeper(uint256 balance, uint256 target, address coin, address keeper) internal {
 
-    //     if (target >= balance) {
+         if (target >= balance) {
+            console.log("COIN to exchange %s", target.sub(balance).add(10));
+            IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
+         } else {
+            console.log("COIN to exchange %s", balance.sub(target).sub(10));
+            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
+         }
 
-    //     } else {
-
-    //     }
-    //}
+    }
 }
