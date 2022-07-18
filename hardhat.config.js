@@ -18,7 +18,7 @@ const CHAIN_IDS = {
 module.exports = {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize:  true ,
+      allowUnlimitedContractSize: process.env.DEBUG ? true : false,
       chainId: CHAIN_IDS.hardhat,
       forking: getForkingParams()
     },
@@ -27,11 +27,11 @@ module.exports = {
     compilers: [
       {
         version: "0.7.6",
-        optimizer: {enabled: process.env.DEBUG ? false : true},
+        optimizer: { enabled: process.env.DEBUG ? false : true },
       },
       {
         version: "0.8.4",
-        optimizer: {enabled: process.env.DEBUG ? false : true},
+        optimizer: { enabled: process.env.DEBUG ? false : true },
       },
     ]
   },
