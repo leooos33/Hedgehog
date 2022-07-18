@@ -37,7 +37,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
     function getTotalAmounts()
         public
         view
-        onlyVault
         returns (
             uint256,
             uint256,
@@ -121,35 +120,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
         }
 
     }
-
-    // @dev returns fees to vault and amount of burned tokens (stack too deep)
-    // function _feesToVault(
-    //     address pool,
-    //     int24 tickLower,
-    //     int24 tickUpper,
-    //     uint256 shares,
-    //     uint256 totalSupply
-    // ) 
-    // public
-    // onlyVault
-    // returns (
-    //     uint256,
-    //     uint256,
-    //     uint256, 
-    //     uint256 
-    // ) {
-    //     (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
-
-    //     uint128 liquidity = _toUint128(uint256(totalLiquidity).mul(shares).div(totalSupply));
-        
-    //     (uint256 burned0, uint256 burned1, uint256 collect0, uint256 collect1) = burnAndCollect(
-    //         pool,
-    //         tickLower,
-    //         tickUpper,
-    //         liquidity            
-    //     );
-    //     return (collect0.sub(burned0), collect1.sub(burned1), burned0, burned1);
-    // }
 
     /// @dev Withdraws liquidity from a range and collects all fees in the process.
     function burnAndCollect(
@@ -266,7 +236,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime) external view onlyVault returns (uint256) {
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external view returns (uint256) {
         uint256 maxPriceMultiplier = IVaultStorage(vaultStorage).maxPriceMultiplier();
         uint256 minPriceMultiplier = IVaultStorage(vaultStorage).minPriceMultiplier();
         uint256 auctionTime = IVaultStorage(vaultStorage).auctionTime();
@@ -278,7 +248,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         return minPriceMultiplier.add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
 
-    function getPrices() public view onlyVault returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
+    function getPrices() public view returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         int24 ethUsdcTick = _getTick(Constants.poolEthUsdc);
         int24 osqthEthTick = _getTick(Constants.poolEthOsqth);
@@ -359,12 +329,12 @@ contract VaultMath is ReentrancyGuard, Faucet {
         uint256 amountOsqth,
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
-    ) public view onlyVault returns (uint256) {
+    ) external pure returns (uint256) {
         return (amountEth + amountOsqth.mul(osqthEthPrice) + amountUsdc.mul(1e30).div(ethUsdcPrice));
     }
 
     //TODO
-    function getIV() public view onlyVault returns (uint256) {
+    function getIV() external view returns (uint256) {
         uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
         // 365/17.5
         //uint256 k = ;
@@ -381,9 +351,17 @@ contract VaultMath is ReentrancyGuard, Faucet {
             ).sqrt();
     }
 
+    function getAmountsToDeposit(uint256 ethToDeposit) external view returns (uint256 usdcToDeposit, uint256 osqthToDeposit) {
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = getTotalAmounts();
+
+        usdcToDeposit = uint256(usdcAmount).mul(ethToDeposit).div(ethAmount);
+        osqthToDeposit = osqthAmount.mul(ethToDeposit).div(ethAmount);
+    }
+
     /// @dev Casts uint256 to uint128 with overflow check.
     function _toUint128(uint256 x) internal pure returns (uint128) {
         assert(x <= type(uint128).max);
         return uint128(x);
     }
+
 }

@@ -129,7 +129,8 @@ describe.only("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
-        await tx.wait();
+        receipt = await tx.wait();
+        console.log("Gas used rebalance: %s", receipt.gasUsed);
 
         // Balances
         //await logBalance(keeper.address);
@@ -191,6 +192,10 @@ describe.only("Strategy rebalance, sell with comissions", function () {
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
 
         console.log("Strategy ETH amount after second swap %s, USDC Amount %s, oSQTH amount %s", amount[0], amount[1], amount[2]);
+
+        const amountDeposit = await VaultMath.connect(Vault.address).getAmountsToDeposit("1000000000000000000");
+
+        console.log("USDC to deposit %s, oSQTH to deposit %s", amountDeposit[0], amountDeposit[1]);
 
     });
 

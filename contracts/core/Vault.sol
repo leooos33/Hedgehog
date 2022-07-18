@@ -218,31 +218,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         }
     }
 
-    /**
-     * @notice Calculate tokens amounts to withdraw
-     * @param shares amount of shares to burn
-     * @param totalSupply current supply of shares
-     * @return amount of wETH to withdraw
-     * @return amount of USDC to withdraw
-     * @return amount of oSQTH to withdraw
-     */
-    function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        internal view
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
-    {
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
-
-        return (
-            ethAmount.mul(shares).div(totalSupply),
-            usdcAmount.mul(shares).div(totalSupply),
-            osqthAmount.mul(shares).div(totalSupply)
-        );
-    }
-
     //stack too deep
     function _burnSharesInPools(uint256 shares, uint256 totalSupply) internal returns (uint256, uint256, uint256) {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(

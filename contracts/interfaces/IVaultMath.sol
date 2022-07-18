@@ -20,14 +20,6 @@ interface IVaultMath {
             uint256
         );
 
-    function _getWithdrawAmounts(uint256 shares, uint256 totalSupply)
-        external
-        returns (
-            uint256,
-            uint256,
-            uint256
-        );
-
     function isTimeRebalance() external returns (bool, uint256);
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
@@ -85,5 +77,7 @@ interface IVaultMath {
         uint256 digits
     ) external returns (uint128);
 
+    function getAmountsToDeposit(uint256 ethToDeposit) external view returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
+    
     function getPriceFromTick(int24 tick) external returns (uint256);
 }
