@@ -101,8 +101,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         int24 tickUpper,
         uint256 shares,
         uint256 totalSupply
-        ) external onlyVault returns (uint256 amount0, uint256 amount1) {
-
+    ) external onlyVault returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
 
         uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
@@ -115,10 +114,9 @@ contract VaultMath is ReentrancyGuard, Faucet {
                 _toUint128(liquidity)
             );
 
-        amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
-        amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
+            amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
+            amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
         }
-
     }
 
     /// @dev Withdraws liquidity from a range and collects all fees in the process.
@@ -127,7 +125,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-        )
+    )
         public
         onlyVault
         returns (
@@ -144,43 +142,40 @@ contract VaultMath is ReentrancyGuard, Faucet {
         (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
 
         uint256 protocolFee = IVaultStorage(vaultStorage).protocolFee();
-        console.log("protocol fee > 0 %s" ,protocolFee > 0);
+        console.log("protocol fee > 0 %s", protocolFee > 0);
 
         if (protocolFee > 0) {
+            feesToVault0 = collect0.sub(burned0);
+            feesToVault1 = collect1.sub(burned1);
 
-        feesToVault0 = collect0.sub(burned0);
-        feesToVault1 = collect1.sub(burned1);
+            uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
+            uint256 feesToProtocol1 = feesToVault1.div(protocolFee).div(1e34);
 
-        uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
-        uint256 feesToProtocol1 = feesToVault1.div(protocolFee).div(1e34);
-
-        feesToVault0 = feesToVault0.sub(feesToProtocol0);
-        feesToVault1 = feesToVault1.sub(feesToProtocol1);
+            feesToVault0 = feesToVault0.sub(feesToProtocol0);
+            feesToVault1 = feesToVault1.sub(feesToProtocol1);
 
             if (pool == Constants.poolEthUsdc) {
-
                 IVaultStorage(vaultStorage).setAccruedFeesUsdc(
                     IVaultStorage(vaultStorage).accruedFeesUsdc().add(feesToProtocol0)
                 );
-                console.log("accruedFeesUsdc %s",  IVaultStorage(vaultStorage).accruedFeesUsdc());
+                console.log("accruedFeesUsdc %s", IVaultStorage(vaultStorage).accruedFeesUsdc());
 
                 IVaultStorage(vaultStorage).setAccruedFeesEth(
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol1)
                 );
-                console.log("accruedFeesEth %s",  IVaultStorage(vaultStorage).accruedFeesEth());
-
+                console.log("accruedFeesEth %s", IVaultStorage(vaultStorage).accruedFeesEth());
             } else if (pool == Constants.poolEthOsqth) {
                 IVaultStorage(vaultStorage).setAccruedFeesEth(
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol0)
                 );
-                console.log("accruedFeesEth %s",  IVaultStorage(vaultStorage).accruedFeesEth());
+                console.log("accruedFeesEth %s", IVaultStorage(vaultStorage).accruedFeesEth());
 
                 IVaultStorage(vaultStorage).setAccruedFeesOsqth(
                     IVaultStorage(vaultStorage).accruedFeesOsqth().add(feesToProtocol1)
                 );
-                console.log("accruedFeesOsqth",  IVaultStorage(vaultStorage).accruedFeesOsqth());
+                console.log("accruedFeesOsqth", IVaultStorage(vaultStorage).accruedFeesOsqth());
             }
-        emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
+            emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
         }
     }
 
@@ -225,10 +220,12 @@ contract VaultMath is ReentrancyGuard, Faucet {
      * @return token price
      */
     function getPriceFromTick(int24 tick) public view returns (uint256) {
-
         uint160 sqrtRatioAtTick = IUniswapMath(uniswapMath).getSqrtRatioAtTick(tick);
         //const = 2^192
-        return (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(6277101735386680763835789423207666416102355444464034512896);
+        return
+            (uint256(sqrtRatioAtTick)).pow(uint256(2e18)).mul(1e36).div(
+                6277101735386680763835789423207666416102355444464034512896
+            );
     }
 
     /**
@@ -253,7 +250,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
         (, int24 ethUsdcTick, , , , , ) = IUniswapV3Pool(Constants.poolEthUsdc).slot0();
         (, int24 osqthEthTick, , , , , ) = IUniswapV3Pool(Constants.poolEthOsqth).slot0();
 
-
         //Get twap in ticks
         (int24 twapEthUsdc, int24 twapOsqthEth) = _getTwap();
 
@@ -270,7 +266,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
         ethUsdcPrice = uint256(1e30).div(getPriceFromTick(ethUsdcTick));
         osqthEthPrice = uint256(1e18).div(getPriceFromTick(osqthEthTick));
     }
-
 
     /// @dev Wrapper around `LiquidityAmounts.getLiquidityForAmounts()`.
     function _liquidityForAmounts(
@@ -348,7 +343,11 @@ contract VaultMath is ReentrancyGuard, Faucet {
             ).sqrt();
     }
 
-    function getAmountsToDeposit(uint256 ethToDeposit) external view returns (uint256 usdcToDeposit, uint256 osqthToDeposit) {
+    function getAmountsToDeposit(uint256 ethToDeposit)
+        external
+        view
+        returns (uint256 usdcToDeposit, uint256 osqthToDeposit)
+    {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = getTotalAmounts();
 
         usdcToDeposit = uint256(usdcAmount).mul(ethToDeposit).div(ethAmount);
@@ -360,5 +359,4 @@ contract VaultMath is ReentrancyGuard, Faucet {
         assert(x <= type(uint128).max);
         return uint128(x);
     }
-
 }

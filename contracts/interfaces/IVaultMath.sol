@@ -29,7 +29,7 @@ interface IVaultMath {
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-        )
+    )
         external
         returns (
             uint256 burned0,
@@ -44,7 +44,7 @@ interface IVaultMath {
         int24 tickUpper,
         uint256 shares,
         uint256 totalSupply
-        ) external returns (uint256 amount0, uint256 amount1);
+    ) external returns (uint256 amount0, uint256 amount1);
 
     function getTotalAmounts()
         external
@@ -77,7 +77,10 @@ interface IVaultMath {
         uint256 digits
     ) external returns (uint128);
 
-    function getAmountsToDeposit(uint256 ethToDeposit) external view returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
-    
+    function getAmountsToDeposit(uint256 ethToDeposit)
+        external
+        view
+        returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
+
     function getPriceFromTick(int24 tick) external returns (uint256);
 }

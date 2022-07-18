@@ -95,14 +95,14 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(shares > 0, "0");
 
         uint256 totalSupply = totalSupply();
-        console.log("Shares - %s, Total Supply - %s, Ratio - %s", shares, totalSupply, shares/totalSupply);
+        console.log("Shares - %s, Total Supply - %s, Ratio - %s", shares, totalSupply, shares / totalSupply);
         //Get token amounts to withdraw
 
         //Burn shares
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) =  _burnSharesInPools(shares, totalSupply);
+        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _burnSharesInPools(shares, totalSupply);
 
         console.log("Total amounts - %s ETH, %s USDC, %s oSQTH", amountEth, amountUsdc, amountOsqth);
 
@@ -219,7 +219,14 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     }
 
     //stack too deep
-    function _burnSharesInPools(uint256 shares, uint256 totalSupply) internal returns (uint256, uint256, uint256) {
+    function _burnSharesInPools(uint256 shares, uint256 totalSupply)
+        internal
+        returns (
+            uint256,
+            uint256,
+            uint256
+        )
+    {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcUpper(),
@@ -236,7 +243,12 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             totalSupply
         );
 
-        console.log("Total amounts withrawn %s ETH, %s USDC, %s oSQTH", amountEth0 + amountEth1, amountUsdc, amountOsqth);
+        console.log(
+            "Total amounts withrawn %s ETH, %s USDC, %s oSQTH",
+            amountEth0 + amountEth1,
+            amountUsdc,
+            amountOsqth
+        );
         console.log("Amount Eth1 %s, amountOsqth %s", amountEth1, amountOsqth);
         console.log("Amount USDC %s, amountEth0 %s", amountUsdc, amountEth0);
 
