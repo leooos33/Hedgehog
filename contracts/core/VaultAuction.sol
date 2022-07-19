@@ -86,15 +86,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
             IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc()
         );
 
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
@@ -108,6 +108,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityOsqthEth
         );
         console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
+
 
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
@@ -368,9 +369,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         if (target >= balance) {
             console.log("COIN to exchange %s", target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
+            console.log("good");
         } else {
             console.log("COIN to exchange %s", balance.sub(target).sub(10));
             IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
+            console.log("good");
         }
     }
 }
