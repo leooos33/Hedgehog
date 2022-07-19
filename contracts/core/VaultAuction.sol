@@ -86,17 +86,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
-            params.boundaries.ethUsdcUpper,
-            params.boundaries.ethUsdcLower,
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc()
         );
 
-        console.log("BRRRRRRRRRRRRRRRRRRRRRRRRRRR");
-
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
-            params.boundaries.osqthEthUpper,
-            params.boundaries.osqthEthLower,
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
