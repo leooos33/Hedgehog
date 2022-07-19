@@ -45,14 +45,14 @@ contract VaultMath is ReentrancyGuard, Faucet {
     {
         (uint256 usdcAmount, uint256 amountWeth0) = _getPositionAmounts(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            IVaultStorage(vaultStorage).orderEthUsdcLower()
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
 
         (uint256 amountWeth1, uint256 osqthAmount) = _getPositionAmounts(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            IVaultStorage(vaultStorage).orderOsqthEthLower()
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
 
         return (
