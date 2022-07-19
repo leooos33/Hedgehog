@@ -229,16 +229,16 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     {
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
             shares,
             totalSupply
         );
 
         (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             shares,
             totalSupply
         );
