@@ -109,7 +109,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
         console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
 
-
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
         _swapWithKeeper(usdcBalance, targetUsdc, address(Constants.usdc), _keeper);

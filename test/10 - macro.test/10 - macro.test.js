@@ -6,6 +6,7 @@ const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH,
 const { hardhatDeploy, deploymentParams } = require("../deploy");
 const { BigNumber } = require("ethers");
 
+//TODO: make all test logs in > style
 describe.only("Macro test", function () {
     let swaper, depositor, keeper, governance, swapAmount;
     it("Should set actors", async function () {
@@ -97,6 +98,21 @@ describe.only("Macro test", function () {
         console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
+
+    // it("withdraw1", async function () {
+    //     tx = await Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0");
+    //     await tx.wait();
+
+    //     // State
+    //     const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
+    //     const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
+    //     const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
+    //     const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
+    //     console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
+    //     console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
+    //     console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
+    //     console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+    // });
 
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
@@ -266,6 +282,36 @@ describe.only("Macro test", function () {
          const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
          console.log("> Total amounts:", amount);
      });
+
+     it("withdraw1", async function () {
+        tx = await Vault.connect(depositor1).withdraw(await getERC20Balance(depositor1.address, Vault.address), "0", "0", "0");
+        await tx.wait();
+
+        // State
+        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
+        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
+        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
+        const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
+        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
+        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
+        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
+        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+    });
+
+    it("withdraw3", async function () {
+        tx = await Vault.connect(depositor3).withdraw(await getERC20Balance(depositor3.address, Vault.address), "0", "0", "0");
+        await tx.wait();
+
+        // State
+        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, wethAddress);
+        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor3.address, usdcAddress);
+        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, osqthAddress);
+        const userShareAfterWithdraw = await getERC20Balance(depositor3.address, Vault.address);
+        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
+        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
+        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
+        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+    });
 });
 
 
