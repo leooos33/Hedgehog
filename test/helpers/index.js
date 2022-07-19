@@ -7,6 +7,7 @@ const {
     getERC20Allowance,
     getERC20Balance,
     getAndApprove,
+    getAndApprove2,
 } = require("./tokenHelpers");
 
 const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock, logBalance } = require("./testHelpers");
@@ -15,6 +16,7 @@ module.exports = {
     logBalance,
     logBlock,
     getAndApprove,
+    getAndApprove2,
     resetFork,
     assertWP,
     toWEIS,

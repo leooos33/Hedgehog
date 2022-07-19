@@ -43,12 +43,12 @@ const assertWP = (a, b, pres = 4, num = 18) => {
     return false;
 };
 
-const resetFork = async () => {
+const resetFork = async (blockNumber = 14487787) => {
     await network.provider.request({
         method: "hardhat_reset",
         params: [
             {
-                forking: getResetParams(),
+                forking: getResetParams(blockNumber),
             },
         ],
     });
@@ -58,7 +58,7 @@ const logBlock = async () => {
     const blockNumBefore = await ethers.provider.getBlockNumber();
     const blockBefore = await ethers.provider.getBlock(blockNumBefore);
     const timestampBefore = blockBefore.timestamp;
-    console.log(blockNumBefore, timestampBefore);
+    console.log("blockNumber:", blockNumBefore, "timestamp:", timestampBefore);
 };
 
 const logBalance = async (address) => {

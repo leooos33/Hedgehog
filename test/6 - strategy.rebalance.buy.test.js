@@ -92,7 +92,7 @@ describe("Strategy rebalance buy", function () {
         amount = await contractHelper.connect(swaper).getTwapR();
         // console.log(amount);
 
-        tx = await contractHelper.connect(swaper).swapR(testAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {
@@ -164,7 +164,7 @@ describe("Strategy rebalance buy", function () {
         // amount = await contractHelper.connect(swaper).getTwapR();
         // console.log(amount);
 
-        tx = await contractHelper.connect(swaper).swapR(testAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {

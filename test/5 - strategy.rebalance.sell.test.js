@@ -101,7 +101,7 @@ describe("Strategy rebalance sell", function () {
 
         amount = await contractHelper.connect(swaper).getTwap();
 
-        tx = await contractHelper.connect(swaper).swap(testAmount);
+        tx = await contractHelper.connect(swaper).swapWETH_USDC(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {
@@ -181,7 +181,7 @@ describe("Strategy rebalance sell", function () {
         // amount = await contractHelper.connect(swaper).getTwapR();
         // console.log(amount);
 
-        tx = await contractHelper.connect(swaper).swapR(testAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         receipt = await tx.wait();
         console.log("Gas used:", receipt.gasUsed.toString());
 

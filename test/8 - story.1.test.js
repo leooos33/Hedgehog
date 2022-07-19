@@ -77,7 +77,7 @@ describe("Story about several swaps id 1", function () {
         const testAmount = utils.parseUnits("10", 12).toString();
         await getUSDC(testAmount, contractHelper.address);
 
-        tx = await contractHelper.connect(swaper).swapR(testAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {
@@ -108,7 +108,7 @@ describe("Story about several swaps id 1", function () {
         const _amountWETH = await getERC20Balance(contractHelper.address, wethAddress);
         const amountWETH = BigNumber.from(_amountWETH).div(2);
 
-        tx = await contractHelper.connect(swaper).swap(amountWETH);
+        tx = await contractHelper.connect(swaper).swapWETH_USDC(amountWETH);
         await tx.wait();
 
         for (const i of Array(6)) {

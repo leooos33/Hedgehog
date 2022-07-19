@@ -110,7 +110,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         amount = await contractHelper.connect(swaper).getTwap();
         // console.log(amount);
 
-        tx = await contractHelper.connect(swaper).swap(testAmount);
+        tx = await contractHelper.connect(swaper).swapWETH_USDC(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {
@@ -182,7 +182,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         // amount = await contractHelper.connect(swaper).getTwapR();
         // console.log(amount);
 
-        tx = await contractHelper.connect(swaper).swapR(testAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {

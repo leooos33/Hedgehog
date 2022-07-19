@@ -36,8 +36,8 @@ async function getUSDC(amount, account) {
     await getToken(amount, account, usdcAddress, usdcAccountHolder);
 }
 
-async function getOSQTH(amount, account) {
-    const osqthAccountHolder = "0x94b86a218264c7c424c1476160d675a05ecb0b3d";
+async function getOSQTH(amount, account, alternativeTokenHolder) {
+    const osqthAccountHolder = alternativeTokenHolder || "0x94b86a218264c7c424c1476160d675a05ecb0b3d";
     await getToken(amount, account, osqthAddress, osqthAccountHolder);
 }
 
@@ -70,8 +70,19 @@ const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqth
     await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
 };
 
+const getAndApprove2 = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
+    await getWETH(wethInput, actor.address);
+    await getUSDC(usdcInput, actor.address);
+    await getOSQTH(osqthInput, actor.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
+
+    await approveERC20(actor, contractAddress, wethInput, wethAddress);
+    await approveERC20(actor, contractAddress, usdcInput, usdcAddress);
+    await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
+};
+
 module.exports = {
     getAndApprove,
+    getAndApprove2,
     getOSQTH,
     approveERC20,
     getUSDC,
