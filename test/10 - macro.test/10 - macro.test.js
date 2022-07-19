@@ -7,7 +7,7 @@ const { hardhatDeploy, deploymentParams } = require("../deploy");
 const { BigNumber } = require("ethers");
 
 //TODO: make all test logs in > style
-describe.only("Macro test", function () {
+describe("Macro test", function () {
     let swaper, depositor, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
