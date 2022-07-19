@@ -115,7 +115,9 @@ contract VaultMath is ReentrancyGuard, Faucet {
             );
 
             amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
+            console.log("burned0 %s", amount0);
             amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
+            console.log("burned1 %s", amount1);
         }
     }
 
@@ -135,8 +137,12 @@ contract VaultMath is ReentrancyGuard, Faucet {
             uint256 feesToVault1
         )
     {
+        console.log("tickLower at burn %s", uint256(int256(tickLower)));
+        console.log("tickUpper at burn %s", uint256(int256(tickUpper)));
         if (liquidity > 0) {
             (burned0, burned1) = IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, liquidity);
+            console.log("burned0 %s", burned0);
+            console.log("burned1 %s", burned1);
         }
 
         (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);

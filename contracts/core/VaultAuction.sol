@@ -86,15 +86,17 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
-            params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
+            params.boundaries.ethUsdcLower,
             IVaultTreasury(vaultTreasury).positionLiquidityEthUsdc()
         );
 
+        console.log("BRRRRRRRRRRRRRRRRRRRRRRRRRRR");
+
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthOsqth,
-            params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
+            params.boundaries.osqthEthLower,
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
@@ -130,10 +132,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
-            params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
-            params.boundaries.osqthEthLower,
-            params.boundaries.osqthEthUpper
+            params.boundaries.ethUsdcLower,
+            params.boundaries.osqthEthUpper,
+            params.boundaries.osqthEthLower
         );
     }
 
@@ -226,7 +228,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e12
         );
 
-        console.log("liquidityEthUsdc %s", liquidityEthUsdc);
+        console.log("liquidityEthUsdc to mint %s", liquidityEthUsdc);
 
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
             totalValue.mul(uint256(1e18) - vm),
@@ -236,7 +238,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e18
         );
 
-        console.log("liquidityOsqthEth %s", liquidityOsqthEth);
+        console.log("liquidityOsqthEth to mint %s", liquidityOsqthEth);
 
         return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth);
     }

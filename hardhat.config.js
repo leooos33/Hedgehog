@@ -18,7 +18,7 @@ const CHAIN_IDS = {
 module.exports = {
   networks: {
     hardhat: {
-      allowUnlimitedContractSize: process.env.DEBUG ? true : false,
+      allowUnlimitedContractSize: true,
       chainId: CHAIN_IDS.hardhat,
       forking: getForkingParams()
     },

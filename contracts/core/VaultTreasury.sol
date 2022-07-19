@@ -198,15 +198,22 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     function positionLiquidityEthUsdc() external view override onlyVault returns (uint128) {
+        console.log("IVaultStorage(vaultStorage).orderEthUsdcLower() %s",             uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcLower())));
+        console.log("IVaultStorage(vaultStorage).orderEthUsdcUpper() %s",             uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcUpper())));
+
         (uint128 liquidityEthUsdc, , , , ) = position(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
+        console.log("liquidityEthUsdc to burn %s", liquidityEthUsdc);
         return liquidityEthUsdc;
     }
 
     function positionLiquidityEthOsqth() external view override onlyVault returns (uint128) {
+        console.log("IVaultStorage(vaultStorage).orderOsqthEthLower() %s",             uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthLower())));
+        console.log("IVaultStorage(vaultStorage).orderOsqthEthUpper() %s",             uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthUpper())));
+
         (uint128 liquidityEthOsqth, , , , ) = position(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
