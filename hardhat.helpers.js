@@ -1,9 +1,4 @@
-const path = require('path');
-const fs = require('fs');
-const dotenv = require('dotenv');
-
-const envDir = path.join(__dirname, '.env');
-const { ALCHEMY_KEY } = dotenv.parse(fs.readFileSync(envDir));
+const { ALCHEMY_KEY } = require('./shared/config');
 
 const getForkingParams = (blockNumber = 14487787) => {
     return {

@@ -7,7 +7,7 @@ const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
 //TODO: make all test logs in > style
-describe("Macro test", function () {
+describe.only("Macro test", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, notgovernance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -49,9 +49,9 @@ describe("Macro test", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "25411036696556123607",
-            usdcInput: "12170566753",
-            osqthInput: "189650820539609445621",
+            wethInput: "25052265118289021574",
+            usdcInput: "14993292352",
+            osqthInput: "160272479011744457983",
         },
         keeper: {
             // Added here amounts for 2 reabalances
@@ -59,7 +59,7 @@ describe("Macro test", function () {
             usdcInput: BigNumber.from("35170786530").add(BigNumber.from("6086663569")).toString(),
             osqthInput: BigNumber.from("226662623566831825098").add(BigNumber.from("38536032101104376335")).toString(),
         },
-    }
+    };
     it("preset", async function () {
         tx = await VaultStorage.connect(keeper).setTimeAtLastRebalance(1648646662);
         await tx.wait();
@@ -70,10 +70,34 @@ describe("Macro test", function () {
         tx = await VaultStorage.setIvAtLastRebalance("1214682673158336601");
         await tx.wait();
 
-        await getAndApprove2(keeper, VaultAuction.address, presets.keeper.wethInput, presets.keeper.usdcInput, presets.keeper.osqthInput);
-        await getAndApprove2(depositor1, Vault.address, presets.depositor1.wethInput, presets.depositor1.usdcInput, presets.depositor1.osqthInput);
-        await getAndApprove2(depositor2, Vault.address, presets.depositor2.wethInput, presets.depositor2.usdcInput, presets.depositor2.osqthInput);
-        await getAndApprove2(depositor3, Vault.address, presets.depositor3.wethInput, presets.depositor3.usdcInput, presets.depositor3.osqthInput);
+        await getAndApprove2(
+            keeper,
+            VaultAuction.address,
+            presets.keeper.wethInput,
+            presets.keeper.usdcInput,
+            presets.keeper.osqthInput
+        );
+        await getAndApprove2(
+            depositor1,
+            Vault.address,
+            presets.depositor1.wethInput,
+            presets.depositor1.usdcInput,
+            presets.depositor1.osqthInput
+        );
+        await getAndApprove2(
+            depositor2,
+            Vault.address,
+            presets.depositor2.wethInput,
+            presets.depositor2.usdcInput,
+            presets.depositor2.osqthInput
+        );
+        await getAndApprove2(
+            depositor3,
+            Vault.address,
+            presets.depositor3.wethInput,
+            presets.depositor3.usdcInput,
+            presets.depositor3.osqthInput
+        );
     });
 
     it("deposit1", async function () {
@@ -125,7 +149,7 @@ describe("Macro test", function () {
     });
 
     it("swap1", async function () {
-        await mineSomeBlocks(2216)
+        await mineSomeBlocks(2216);
 
         swapAmount = utils.parseUnits("100", 18).toString();
         await getWETH(swapAmount, contractHelper.address);
@@ -138,11 +162,11 @@ describe("Macro test", function () {
 
         await mineSomeBlocks(554);
 
-        swapAmount = utils.parseUnits("40", 18).toString();
-        await getOSQTH(swapAmount, contractHelper.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
+        swapAmount = utils.parseUnits("100", 18).toString();
+        await getWETH(swapAmount, contractHelper.address);
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
+        tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
         await tx.wait();
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
@@ -202,7 +226,12 @@ describe("Macro test", function () {
     });
 
     it("withdraw2", async function () {
-        tx = await Vault.connect(depositor2).withdraw(await getERC20Balance(depositor2.address, Vault.address), "0", "0", "0");
+        tx = await Vault.connect(depositor2).withdraw(
+            await getERC20Balance(depositor2.address, Vault.address),
+            "0",
+            "0",
+            "0"
+        );
         await tx.wait();
 
         // State
@@ -217,16 +246,16 @@ describe("Macro test", function () {
     });
 
     it("swap2", async function () {
-        await mineSomeBlocks(1108)
+        await mineSomeBlocks(1108);
 
         swapAmount = utils.parseUnits("1000000", 6).toString();
         await getUSDC(swapAmount, contractHelper.address);
-        const beforeSwapWETH = await getERC20Balance(contractHelper.address, wethAddress)
+        const beforeSwapWETH = await getERC20Balance(contractHelper.address, wethAddress);
         console.log("> WETH before swap:", beforeSwapWETH);
         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
         tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
         await tx.wait();
-        const afterSwapWETH = await getERC20Balance(contractHelper.address, wethAddress)
+        const afterSwapWETH = await getERC20Balance(contractHelper.address, wethAddress);
         console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
         console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
 
@@ -243,11 +272,11 @@ describe("Macro test", function () {
 
         await mineSomeBlocks(554);
 
-        swapAmount = utils.parseUnits("100", 18).toString();
-        await getWETH(swapAmount, contractHelper.address);
+        swapAmount = utils.parseUnits("40", 18).toString();
+        await getOSQTH(swapAmount, contractHelper.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
+        tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
         await tx.wait();
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
@@ -263,12 +292,7 @@ describe("Macro test", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(
-            keeper.address,
-            "0",
-            "0",
-            "0"
-        );
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, "0", "0", "0");
         await tx.wait();
 
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
@@ -283,7 +307,12 @@ describe("Macro test", function () {
     });
 
     it("withdraw1", async function () {
-        tx = await Vault.connect(depositor1).withdraw(await getERC20Balance(depositor1.address, Vault.address), "0", "0", "0");
+        tx = await Vault.connect(depositor1).withdraw(
+            await getERC20Balance(depositor1.address, Vault.address),
+            "0",
+            "0",
+            "0"
+        );
         await tx.wait();
 
         // State
@@ -298,7 +327,12 @@ describe("Macro test", function () {
     });
 
     it("withdraw3", async function () {
-        tx = await Vault.connect(depositor3).withdraw(await getERC20Balance(depositor3.address, Vault.address), "0", "0", "0");
+        tx = await Vault.connect(depositor3).withdraw(
+            await getERC20Balance(depositor3.address, Vault.address),
+            "0",
+            "0",
+            "0"
+        );
         await tx.wait();
 
         // State
@@ -358,7 +392,9 @@ describe("Macro test", function () {
                 governance.address
             );
             await tx.wait();
-        } catch (err) { console.log("> I'm error due to input too big"); }
+        } catch (err) {
+            console.log("> I'm error due to input too big");
+        }
     });
 
     it("feees time! 😝 but not governance", async function () {
@@ -373,7 +409,9 @@ describe("Macro test", function () {
                 notgovernance.address
             );
             await tx.wait();
-        } catch (err) { console.log("> I'm error due to notgovernance"); }
+        } catch (err) {
+            console.log("> I'm error due to notgovernance");
+        }
     });
 
     it("feees time! 😝 - all", async function () {
@@ -403,10 +441,9 @@ describe("Macro test", function () {
     });
 });
 
-
 const mineSomeBlocks = async (blocksToMine) => {
     await logBlock();
-    await hre.network.provider.send("hardhat_mine", [`0x${(blocksToMine).toString(16)}`]);
-    console.log(`${blocksToMine} blocks was mine`)
+    await hre.network.provider.send("hardhat_mine", [`0x${blocksToMine.toString(16)}`]);
+    console.log(`${blocksToMine} blocks was mine`);
     await logBlock();
-}
+};
