@@ -7,7 +7,7 @@ const { hardhatDeploy, deploymentParams } = require("../deploy");
 const { BigNumber } = require("ethers");
 
 //TODO: make all test logs in > style
-describe("Macro test", function () {
+describe.only("Macro test", function () {
     let swaper, depositor, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -311,6 +311,9 @@ describe("Macro test", function () {
         console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
         console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
         console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+
+        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        console.log("> Total amounts:", amount);
     });
 });
 

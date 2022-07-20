@@ -208,6 +208,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 ethUsdcPrice,
                 osqthEthPrice
             );
+            console.log("totalValue %s", totalValue);
+            console.log("_totalSupply %s", _totalSupply);
 
             return (
                 _totalSupply.mul(depositorValue).div(totalValue),

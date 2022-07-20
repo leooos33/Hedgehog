@@ -117,23 +117,23 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthUsdc,
-            params.boundaries.ethUsdcUpper,
             params.boundaries.ethUsdcLower,
+            params.boundaries.ethUsdcUpper,
             params.liquidityEthUsdc
         );
 
         IVaultTreasury(vaultTreasury).mintLiquidity(
             Constants.poolEthOsqth,
-            params.boundaries.osqthEthUpper,
             params.boundaries.osqthEthLower,
+            params.boundaries.osqthEthUpper,
             params.liquidityOsqthEth
         );
 
         IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
-            params.boundaries.ethUsdcUpper,
             params.boundaries.ethUsdcLower,
-            params.boundaries.osqthEthUpper,
-            params.boundaries.osqthEthLower
+            params.boundaries.ethUsdcUpper,
+            params.boundaries.osqthEthLower,
+            params.boundaries.osqthEthUpper
         );
     }
 
@@ -216,6 +216,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             console.log("EthUsdcPrice %s, OsqthEthPrice %s", ethUsdcPrice, osqthEthPrice);
             console.log("Total Value to Rebalance %s", totalValue);
         }
+
+        console.log("uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)) %s", uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)));
+        console.log("uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)) %s", uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)));
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
@@ -320,10 +323,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
             return
                 Constants.Boundaries(
-                    tickFloorEthUsdc + tickSpacing + baseThreshold - tickAdj,
                     tickFloorEthUsdc - baseThreshold - tickAdj,
-                    tickFloorOsqthEth + tickSpacing + baseThreshold - tickAdj,
-                    tickFloorOsqthEth - baseThreshold - tickAdj
+                    tickFloorEthUsdc + tickSpacing + baseThreshold - tickAdj,
+                    tickFloorOsqthEth - baseThreshold - tickAdj,
+                    tickFloorOsqthEth + tickSpacing + baseThreshold - tickAdj
                 );
         } else {
             tickAdj = baseAdj > tickSpacing ? int24(120) : baseAdj;
@@ -331,10 +334,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
             return
                 Constants.Boundaries(
-                    tickFloorEthUsdc + tickSpacing + baseThreshold + tickAdj,
                     tickFloorEthUsdc - baseThreshold + tickAdj,
-                    tickFloorOsqthEth + tickSpacing + baseThreshold + tickAdj,
-                    tickFloorOsqthEth - baseThreshold + tickAdj
+                    tickFloorEthUsdc + tickSpacing + baseThreshold + tickAdj,
+                    tickFloorOsqthEth - baseThreshold + tickAdj,
+                    tickFloorOsqthEth + tickSpacing + baseThreshold + tickAdj
                 );
         }
     }

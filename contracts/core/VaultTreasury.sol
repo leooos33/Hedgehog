@@ -231,6 +231,8 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
+        console.log("liquidityEthOsqth to burn %s", liquidityEthOsqth);
+
         return liquidityEthOsqth;
     }
 }

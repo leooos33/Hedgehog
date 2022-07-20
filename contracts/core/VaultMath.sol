@@ -55,6 +55,11 @@ contract VaultMath is ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
 
+        console.log("IVaultStorage(vaultStorage).accruedFeesEth() %s", IVaultStorage(vaultStorage).accruedFeesEth());
+        console.log("IVaultStorage(vaultStorage).accruedFeesUsdc() %s", IVaultStorage(vaultStorage).accruedFeesUsdc());
+        console.log("IVaultStorage(vaultStorage).accruedFeesOsqth() %s", IVaultStorage(vaultStorage).accruedFeesOsqth());
+
+
         return (
             _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(
                 IVaultStorage(vaultStorage).accruedFeesEth()
@@ -311,8 +316,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
     function getLiquidityForValue(
         uint256 v,
         uint256 p,
-        uint256 pL,
         uint256 pH,
+        uint256 pL,
         uint256 digits
     ) external pure returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
