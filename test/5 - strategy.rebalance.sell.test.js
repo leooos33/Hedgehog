@@ -138,7 +138,7 @@ describe("Strategy rebalance sell", function () {
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
         receipt = await tx.wait();
-        console.log("> Gas used rebalance: %s", receipt.gasUsed);
+        console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
 
         // Balances
         await logBalance(keeper.address);
@@ -183,7 +183,7 @@ describe("Strategy rebalance sell", function () {
 
         tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
         receipt = await tx.wait();
-        console.log("> Gas used:", receipt.gasUsed.toString());
+        // console.log("> Gas used:", receipt.gasUsed.toString());
 
         for (const i of Array(6)) {
             await hre.network.provider.request({
@@ -205,7 +205,7 @@ describe("Strategy rebalance sell", function () {
 
         tx = await Vault.connect(depositor).withdraw("35260912783549456917", "0", "0", "0");
         receipt = await tx.wait();
-        console.log("> Gas used:", receipt.gasUsed.toString());
+        console.log("> Gas used withdraw:", receipt.gasUsed.toString());
 
         // Balances
         //await logBalance(depositor.address);

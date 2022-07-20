@@ -139,7 +139,7 @@ describe("Strategy rebalance, sell with comissions", function () {
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
         receipt = await tx.wait();
-        console.log("> Gas used rebalance: %s", receipt.gasUsed);
+        console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
 
         // Balances
         //await logBalance(keeper.address);
