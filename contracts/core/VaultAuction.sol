@@ -100,14 +100,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Calculate amounts that need to be exchanged with keeper
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-        console.log("Balances - %s ETH,  %s USDC, %s oSQTH", ethBalance, usdcBalance, osqthBalance);
 
         (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
             params.boundaries,
             params.liquidityEthUsdc,
             params.liquidityOsqthEth
         );
-        console.log("Targets - %s ETH, %s USDC, %s oSQTH", targetEth, targetUsdc, targetOsqth);
 
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
@@ -145,10 +143,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        console.log("Current EthUsdcPrice %s, Current OsqthEthPrice %s", ethUsdcPrice, osqthEthPrice);
-
         uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
-        console.log("Price Multiplier %s", priceMultiplier);
 
         uint256 expIVbump;
         uint256 vm;
@@ -156,10 +151,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         {
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
-            console.log("current IV %s", cIV);
+
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
-            console.log("previous IV %s", pIV);
 
             isPosIVbump = cIV < pIV;
 
@@ -173,15 +167,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //IV bump > 3 leads to a negative values of one of the lower or upper boundary
             expIVbump = expIVbump > uint256(3e18) ? uint256(3e18) : expIVbump;
         }
-        console.log("Value Multiplier %s", vm);
-        console.log("Expected IV bump %s", expIVbump);
-
-        console.log(
-            "Auction EthUsdc Price %s, Auction OsqthEth Price %s",
-            ethUsdcPrice.mul(priceMultiplier),
-            osqthEthPrice.mul(priceMultiplier)
-        );
-        console.log("isPosIVbump", isPosIVbump);
 
         //boundaries for auction prices (current price * multiplier)
         Constants.Boundaries memory boundaries = _getBoundaries(
@@ -189,17 +174,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             osqthEthPrice.mul(priceMultiplier),
             isPosIVbump,
             expIVbump
-        );
-
-        console.log(
-            "ethUsdcLower %s, ethUsdcUpper %s",
-            uint256(int256(boundaries.ethUsdcLower)),
-            uint256(int256(boundaries.ethUsdcUpper))
-        );
-        console.log(
-            "osqthEthLower %s, osqthEthUpper %s",
-            uint256(int256(boundaries.osqthEthLower)),
-            uint256(int256(boundaries.osqthEthUpper))
         );
 
         uint256 totalValue;
@@ -213,18 +187,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 ethUsdcPrice,
                 osqthEthPrice
             );
-            console.log("EthUsdcPrice %s, OsqthEthPrice %s", ethUsdcPrice, osqthEthPrice);
-            console.log("Total Value to Rebalance %s", totalValue);
         }
-
-        console.log(
-            "uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)) %s",
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower))
-        );
-        console.log(
-            "uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)) %s",
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper))
-        );
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
@@ -235,8 +198,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e12
         );
 
-        console.log("liquidityEthUsdc to mint %s", liquidityEthUsdc);
-
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
             totalValue.mul(uint256(1e18) - vm),
             osqthEthPrice,
@@ -244,8 +205,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
             1e18
         );
-
-        console.log("liquidityOsqthEth to mint %s", liquidityOsqthEth);
 
         return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth);
     }
@@ -302,13 +261,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             tickSpacing
         );
 
-        console.log("tickFloorEthUsdc %s", uint256(int256(tickFloorEthUsdc)));
-        console.log("tickFloorOsqthEth %s", uint256(int256(tickFloorOsqthEth)));
-
         //base thresholds
         int24 baseThreshold = IVaultStorage(vaultStorage).baseThreshold();
-
-        console.log("baseThreshold %s", uint256(int256(baseThreshold)));
 
         //iv adj parameter
         //60 - tickSpacing
@@ -320,12 +274,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             )
         );
 
-        console.log("Base adj %s", uint256(int256(baseAdj)));
-
         int24 tickAdj;
         if (isPosIVbump) {
             tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
-            console.log("Tick adj %s", uint256(int256(tickAdj)));
 
             return
                 Constants.Boundaries(
@@ -336,7 +287,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 );
         } else {
             tickAdj = baseAdj > tickSpacing ? int24(120) : baseAdj;
-            console.log("Tick adj %s", uint256(int256(tickAdj)));
 
             return
                 Constants.Boundaries(
@@ -375,13 +325,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         address keeper
     ) internal {
         if (target >= balance) {
-            console.log("COIN to exchange %s", target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
-            console.log("good");
         } else {
-            console.log("COIN to exchange %s", balance.sub(target).sub(10));
             IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
-            console.log("good");
         }
     }
 }

@@ -125,7 +125,6 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickUpper,
         uint128 liquidity
     ) external override onlyKeepers {
-        console.log("pre-mint lower %s, pre-mint upper %s", uint256(int256(tickLower)), uint256(int256(tickUpper)));
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
@@ -133,12 +132,6 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
 
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
-        console.log(
-            "Balances1 - %s ETH,  %s USDC, %s oSQTH",
-            _getBalance(Constants.weth),
-            _getBalance(Constants.usdc),
-            _getBalance(Constants.osqth)
-        );
     }
 
     function transfer(
@@ -198,40 +191,21 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     function positionLiquidityEthUsdc() external view override onlyVault returns (uint128) {
-        console.log(
-            "IVaultStorage(vaultStorage).orderEthUsdcLower() %s",
-            uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcLower()))
-        );
-        console.log(
-            "IVaultStorage(vaultStorage).orderEthUsdcUpper() %s",
-            uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcUpper()))
-        );
-
         (uint128 liquidityEthUsdc, , , , ) = position(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
-        console.log("liquidityEthUsdc to burn %s", liquidityEthUsdc);
+
         return liquidityEthUsdc;
     }
 
     function positionLiquidityEthOsqth() external view override onlyVault returns (uint128) {
-        console.log(
-            "IVaultStorage(vaultStorage).orderOsqthEthLower() %s",
-            uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthLower()))
-        );
-        console.log(
-            "IVaultStorage(vaultStorage).orderOsqthEthUpper() %s",
-            uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthUpper()))
-        );
-
         (uint128 liquidityEthOsqth, , , , ) = position(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
-        console.log("liquidityEthOsqth to burn %s", liquidityEthOsqth);
 
         return liquidityEthOsqth;
     }

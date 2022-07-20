@@ -60,9 +60,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
 
         //TODO: remove console logs here
-        console.log("Deposited amount of ETH %s", amountEth);
-        console.log("Deposited amount of USDC %s", amountUsdc);
-        console.log("Deposited amount of oSQTH %s", amountOsqth);
 
         //Pull in tokens
         if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
@@ -95,7 +92,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(shares > 0, "0");
 
         uint256 totalSupply = totalSupply();
-        console.log("Shares - %s, Total Supply - %s, Ratio - %s", shares, totalSupply, shares / totalSupply);
+
         //Get token amounts to withdraw
 
         //Burn shares
@@ -103,8 +100,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         //withdraw user share of tokens from the lp positions in current proportion
         (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _burnSharesInPools(shares, totalSupply);
-
-        console.log("Total amounts - %s ETH, %s USDC, %s oSQTH", amountEth, amountUsdc, amountOsqth);
 
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
@@ -116,14 +111,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         if (amountOsqth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.osqth, msg.sender, amountOsqth);
 
         //(uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-        //console.log("EthUsdc price at withdraw %s", ethUsdcPrice);
-        //console.log("OsqthEth price at withdraw %s", osqthEthPrice);
 
         // uint256 ethAmount = _getBalance(Constants.weth);
         // uint256 usdcAmount = _getBalance(Constants.usdc);
         // uint256 osqthAmount = _getBalance(Constants.osqth);
-
-        // console.log("SB %s ETH, %s USDC, %s oSQTH", ethAmount, usdcAmount, osqthAmount);
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
@@ -178,8 +169,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         //Get current prices
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-        console.log("EthUsdc price before rebalance %s", ethUsdcPrice);
-        console.log("OsqthEth price before rebalance %s", osqthEthPrice);
 
         //Calculate total depositor value
         uint256 depositorValue = IVaultMath(vaultMath).getValue(
@@ -189,7 +178,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             ethUsdcPrice,
             osqthEthPrice
         );
-        console.log("Depositor Value %s", depositorValue);
 
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
@@ -208,8 +196,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 ethUsdcPrice,
                 osqthEthPrice
             );
-            console.log("totalValue %s", totalValue);
-            console.log("_totalSupply %s", _totalSupply);
 
             return (
                 _totalSupply.mul(depositorValue).div(totalValue),
@@ -244,15 +230,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             shares,
             totalSupply
         );
-
-        console.log(
-            "Total amounts withrawn %s ETH, %s USDC, %s oSQTH",
-            amountEth0 + amountEth1,
-            amountUsdc,
-            amountOsqth
-        );
-        console.log("Amount Eth1 %s, amountOsqth %s", amountEth1, amountOsqth);
-        console.log("Amount USDC %s, amountEth0 %s", amountUsdc, amountEth0);
 
         return (amountEth0 + amountEth1, amountUsdc, amountOsqth);
     }

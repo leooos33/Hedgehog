@@ -55,13 +55,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
 
-        console.log("IVaultStorage(vaultStorage).accruedFeesEth() %s", IVaultStorage(vaultStorage).accruedFeesEth());
-        console.log("IVaultStorage(vaultStorage).accruedFeesUsdc() %s", IVaultStorage(vaultStorage).accruedFeesUsdc());
-        console.log(
-            "IVaultStorage(vaultStorage).accruedFeesOsqth() %s",
-            IVaultStorage(vaultStorage).accruedFeesOsqth()
-        );
-
         return (
             _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(
                 IVaultStorage(vaultStorage).accruedFeesEth()
@@ -122,9 +115,8 @@ contract VaultMath is ReentrancyGuard, Faucet {
             );
 
             amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
-            console.log("burned0 %s", amount0);
+
             amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
-            console.log("burned1 %s", amount1);
         }
     }
 
@@ -144,18 +136,13 @@ contract VaultMath is ReentrancyGuard, Faucet {
             uint256 feesToVault1
         )
     {
-        console.log("tickLower at burn %s", uint256(int256(tickLower)));
-        console.log("tickUpper at burn %s", uint256(int256(tickUpper)));
         if (liquidity > 0) {
             (burned0, burned1) = IVaultTreasury(vaultTreasury).burn(pool, tickLower, tickUpper, liquidity);
-            console.log("burned0 %s", burned0);
-            console.log("burned1 %s", burned1);
         }
 
         (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
 
         uint256 protocolFee = IVaultStorage(vaultStorage).protocolFee();
-        console.log("protocol fee > 0 %s", protocolFee > 0);
 
         if (protocolFee > 0) {
             feesToVault0 = collect0.sub(burned0);
@@ -171,22 +158,18 @@ contract VaultMath is ReentrancyGuard, Faucet {
                 IVaultStorage(vaultStorage).setAccruedFeesUsdc(
                     IVaultStorage(vaultStorage).accruedFeesUsdc().add(feesToProtocol0)
                 );
-                console.log("accruedFeesUsdc %s", IVaultStorage(vaultStorage).accruedFeesUsdc());
 
                 IVaultStorage(vaultStorage).setAccruedFeesEth(
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol1)
                 );
-                console.log("accruedFeesEth %s", IVaultStorage(vaultStorage).accruedFeesEth());
             } else if (pool == Constants.poolEthOsqth) {
                 IVaultStorage(vaultStorage).setAccruedFeesEth(
                     IVaultStorage(vaultStorage).accruedFeesEth().add(feesToProtocol0)
                 );
-                console.log("accruedFeesEth %s", IVaultStorage(vaultStorage).accruedFeesEth());
 
                 IVaultStorage(vaultStorage).setAccruedFeesOsqth(
                     IVaultStorage(vaultStorage).accruedFeesOsqth().add(feesToProtocol1)
                 );
-                console.log("accruedFeesOsqth", IVaultStorage(vaultStorage).accruedFeesOsqth());
             }
             emit SharedEvents.CollectFees(feesToVault0, feesToVault1, feesToProtocol0, feesToProtocol1);
         }
