@@ -1,28 +1,30 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
+const { BigNumber } = require("ethers");
 
 const governance = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 
-const deploymentParams = [
+let deploymentParams = [
     utils.parseUnits("4000000000000", 18),
-    10,
+    BigNumber.from("10"),
     utils.parseUnits("0.05", 18),
-    "10",
-    "950000000000000000",
-    "1050000000000000000",
-    "0",
-    "1000",
-    "1000",
+    BigNumber.from("10"),
+    BigNumber.from("950000000000000000"),
+    BigNumber.from("1050000000000000000"),
+    BigNumber.from("0"),
+    BigNumber.from("1000"),
+    BigNumber.from("1000"),
 ];
 
-const hardhatDeploy = async (governance, params) => {
-    const UniswapMath = await deployContract("UniswapMath", [], false);
+deploymentParams.map((i) => console.log(i.toString()));
 
-    const Vault = await deployContract("Vault", [], false);
-    const VaultAuction = await deployContract("VaultAuction", [], false);
-    const VaultMath = await deployContract("VaultMath", [], false);
-    const VaultTreasury = await deployContract("VaultTreasury", [], false);
-    const VaultStorage = await deployContract("VaultStorage", params, false);
+const hardhatDeploy = async (governance, params) => {
+    const UniswapMath = await deployContract("UniswapMath", []);
+    const Vault = await deployContract("Vault", []);
+    const VaultAuction = await deployContract("VaultAuction", []);
+    const VaultMath = await deployContract("VaultMath", []);
+    const VaultTreasury = await deployContract("VaultTreasury", []);
+    const VaultStorage = await deployContract("VaultStorage", params);
 
     const arguments = [
         UniswapMath.address,
@@ -39,26 +41,21 @@ const hardhatDeploy = async (governance, params) => {
     console.log("VaultMath:", arguments[3]);
     console.log("VaultTreasury:", arguments[4]);
     console.log("VaultStorage:", arguments[5]);
-
     let tx;
-
     tx = await Vault.setComponents(...arguments);
     await tx.wait();
-
     tx = await VaultAuction.setComponents(...arguments);
     await tx.wait();
-
     tx = await VaultMath.setComponents(...arguments);
     await tx.wait();
-
     tx = await VaultTreasury.setComponents(...arguments);
     await tx.wait();
-
     tx = await VaultStorage.setComponents(...arguments);
     await tx.wait();
 };
 
 const deployContract = async (name, params, deploy = true) => {
+    console.log("Deploying ->", name);
     const Contract = await ethers.getContractFactory(name);
     let contract = await Contract.deploy(...params);
     if (deploy) {
