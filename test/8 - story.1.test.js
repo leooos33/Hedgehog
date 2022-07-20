@@ -101,7 +101,7 @@ describe("Story about several swaps id 1", function () {
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-        console.log("Total amounts:", amount);
+        console.log("> Total amounts:", amount);
     });
 
     it("swap halth ETH to USDC", async function () {
@@ -134,6 +134,6 @@ describe("Story about several swaps id 1", function () {
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-        console.log("Total amounts:", amount);
+        console.log("> Total amounts:", amount);
     });
 });

@@ -141,7 +141,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 amountOsqth,
         address to
     ) external override nonReentrant onlyGovernance {
-        IVaultStorage(vaultStorage).updateAccruedFees(amountUsdc, amountEth, amountOsqth);
+        IVaultStorage(vaultStorage).updateAccruedFees(amountEth, amountUsdc, amountOsqth);
 
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, to, amountUsdc);
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, to, amountEth);

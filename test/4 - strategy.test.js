@@ -29,13 +29,13 @@ describe("Strategy deposit", function () {
             "34537692970562685403",
             "0"
         );
-        console.log("amount", amount);
+        console.log("> amount", amount);
 
         const wethInput = amount[1].toString();
         const usdcInput = amount[2].toString();
         const osqthInput = amount[3].toString();
 
-        console.log("wethInput %s", wethInput);
+        console.log("> wethInput %s", wethInput);
 
         await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 
@@ -78,7 +78,7 @@ describe("Strategy deposit", function () {
         tx = await Vault.connect(depositor).withdraw("36822598604626209811", "0", "0", "0");
         await tx.wait();
 
-        // console.log("~!!!!!!!!!")
+        // console.log("> ~!!!!!!!!!")
         // await logBalance(VaultTreasury.address);
         expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302313104906");
         expect(await getERC20Balance(VaultTreasury.address, usdcAddress)).to.equal("31216859424");

@@ -1,9 +1,9 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("../common");
-const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("../helpers");
-const { hardhatDeploy, deploymentParams } = require("../deploy");
+const { wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("./helpers");
+const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
 //TODO: make all test logs in > style

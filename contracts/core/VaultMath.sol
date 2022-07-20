@@ -57,8 +57,10 @@ contract VaultMath is ReentrancyGuard, Faucet {
 
         console.log("IVaultStorage(vaultStorage).accruedFeesEth() %s", IVaultStorage(vaultStorage).accruedFeesEth());
         console.log("IVaultStorage(vaultStorage).accruedFeesUsdc() %s", IVaultStorage(vaultStorage).accruedFeesUsdc());
-        console.log("IVaultStorage(vaultStorage).accruedFeesOsqth() %s", IVaultStorage(vaultStorage).accruedFeesOsqth());
-
+        console.log(
+            "IVaultStorage(vaultStorage).accruedFeesOsqth() %s",
+            IVaultStorage(vaultStorage).accruedFeesOsqth()
+        );
 
         return (
             _getBalance(Constants.weth).add(amountWeth0).add(amountWeth1).sub(

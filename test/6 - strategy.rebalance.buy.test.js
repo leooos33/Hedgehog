@@ -66,10 +66,10 @@ describe("Strategy rebalance buy", function () {
         const userOsqthBalanceAfterDeposit = await getERC20Balance(depositor.address, osqthAddress);
         const userShareAfterDeposit = await getERC20Balance(depositor.address, Vault.address);
 
-        console.log("userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
-        console.log("userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
-        console.log("userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
-        console.log("userShareAfterDeposit", userShareAfterDeposit);
+        console.log("> userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
+        console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
+        console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
+        console.log("> userShareAfterDeposit", userShareAfterDeposit);
 
         expect(await userEthBalanceAfterDeposit).to.equal("50667970");
         expect(await userUsdcBalanceAfterDeposit).to.equal("0");
@@ -81,7 +81,7 @@ describe("Strategy rebalance buy", function () {
 
     it("swap_before_rebalance_USDC_to_ETH", async function () {
         const testAmount = utils.parseUnits("10", 12).toString();
-        console.log("Swap %s USDC for ETH", testAmount);
+        console.log("> Swap %s USDC for ETH", testAmount);
 
         await getUSDC(testAmount, contractHelper.address);
 
@@ -123,9 +123,9 @@ describe("Strategy rebalance buy", function () {
         expect(keeperUsdcBalanceBeforeRebalance).to.equal(usdcInput);
         expect(keeperOsqthBalanceBeforeRebalance).to.equal(osqthInput);
 
-        console.log("Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-        console.log("Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-        console.log("Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+        console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
+        console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
+        console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
         await tx.wait();
@@ -136,16 +136,16 @@ describe("Strategy rebalance buy", function () {
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
         const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
         const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-        console.log("Keeper ETH balance after rebalance %s", ethAmountK);
-        console.log("Keeper USDC balance after rebalance %s", usdcAmountK);
-        console.log("Keeper oSQTH balance after rebalance %s", osqthAmountK);
+        console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
+        console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
+        console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
         expect(ethAmountK).to.equal("21671725497180554");
         expect(usdcAmountK).to.equal("22471165983");
         expect(osqthAmountK).to.equal("116118024363260453");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-        console.log("Total amounts:", amount);
+        console.log("> Total amounts:", amount);
         expect(amount[0].toString()).to.equal("17950710875410023718");
         expect(amount[1].toString()).to.equal("17568391131");
         expect(amount[2].toString()).to.equal("45273134287455003664");
@@ -198,7 +198,7 @@ describe("Strategy rebalance buy", function () {
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-        console.log("Total amounts:", amount);
+        console.log("> Total amounts:", amount);
         expect(amount[0].toString()).to.equal("1563");
         expect(amount[1].toString()).to.equal("13686062");
         expect(amount[2].toString()).to.equal("9");

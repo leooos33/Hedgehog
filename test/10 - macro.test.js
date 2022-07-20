@@ -1,18 +1,19 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("../common");
-const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("../helpers");
-const { hardhatDeploy, deploymentParams } = require("../deploy");
+const { wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("./helpers");
+const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
 //TODO: make all test logs in > style
-describe.only("Macro test", function () {
-    let swaper, depositor, keeper, governance, swapAmount;
+describe("Macro test", function () {
+    let swaper, depositor1, depositor2, depositor3, keeper, governance, notgovernance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
         // console.log(signers.length);
         governance = signers[0];
+        notgovernance = signers[1];
         depositor1 = signers[7];
         keeper = signers[8];
         swaper = signers[9];
@@ -99,21 +100,6 @@ describe.only("Macro test", function () {
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
 
-    // it("withdraw1", async function () {
-    //     tx = await Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0");
-    //     await tx.wait();
-
-    //     // State
-    //     const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
-    //     const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
-    //     const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
-    //     const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
-    //     console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-    //     console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-    //     console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-    //     console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
-    // });
-
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
             "37630456391863397407",
@@ -138,7 +124,7 @@ describe.only("Macro test", function () {
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
 
-    it("swap", async function () {
+    it("swap1", async function () {
         await mineSomeBlocks(2216)
 
         swapAmount = utils.parseUnits("100", 18).toString();
@@ -215,75 +201,88 @@ describe.only("Macro test", function () {
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
 
-     it("withdraw2", async function () {
-         tx = await Vault.connect(depositor2).withdraw(await getERC20Balance(depositor2.address, Vault.address), "0", "0", "0");
-         await tx.wait();
+    it("withdraw2", async function () {
+        tx = await Vault.connect(depositor2).withdraw(await getERC20Balance(depositor2.address, Vault.address), "0", "0", "0");
+        await tx.wait();
 
-         // State
-         const userEthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, wethAddress);
-         const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor2.address, usdcAddress);
-         const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, osqthAddress);
-         const userShareAfterWithdraw = await getERC20Balance(depositor2.address, Vault.address);
-         console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-         console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-         console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-         console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
-     });
+        // State
+        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, wethAddress);
+        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor2.address, usdcAddress);
+        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, osqthAddress);
+        const userShareAfterWithdraw = await getERC20Balance(depositor2.address, Vault.address);
+        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
+        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
+        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
+        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+    });
 
-     it("swap", async function () {
-         await mineSomeBlocks(2216)
+    it("swap2", async function () {
+        await mineSomeBlocks(1108)
 
-         swapAmount = utils.parseUnits("1000000", 6).toString();
-         await getUSDC(swapAmount, contractHelper.address);
-         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-         tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
-         await tx.wait();
-         console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        swapAmount = utils.parseUnits("1000000", 6).toString();
+        await getUSDC(swapAmount, contractHelper.address);
+        const beforeSwapWETH = await getERC20Balance(contractHelper.address, wethAddress)
+        console.log("> WETH before swap:", beforeSwapWETH);
+        console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
+        await tx.wait();
+        const afterSwapWETH = await getERC20Balance(contractHelper.address, wethAddress)
+        console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
 
-         await mineSomeBlocks(554);
+        const newETH = BigNumber.from(afterSwapWETH).sub(BigNumber.from(beforeSwapWETH));
+        await mineSomeBlocks(1108);
 
-         swapAmount = utils.parseUnits("100", 18).toString();
-         await getWETH(swapAmount, contractHelper.address);
-         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
-         await tx.wait();
-         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        swapAmount = newETH.toString();
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+        await tx.wait();
+        console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
 
-         await mineSomeBlocks(554);
-     });
+        await mineSomeBlocks(554);
 
-     it("rebalance", async function () {
-         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-         console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+        swapAmount = utils.parseUnits("100", 18).toString();
+        await getWETH(swapAmount, contractHelper.address);
+        console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
+        await tx.wait();
+        console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
 
-         tx = await VaultAuction.connect(keeper).timeRebalance(
-             keeper.address,
-             "0",
-             "0",
-             "0"
-         );
-         await tx.wait();
+        await mineSomeBlocks(554);
+    });
 
-         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
-         const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
-         const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-         console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
-         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
-         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
+    it("rebalance", async function () {
+        const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
+        const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
+        const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
+        console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
+        console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
+        console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
-         console.log("> Total amounts:", amount);
-     });
+        tx = await VaultAuction.connect(keeper).timeRebalance(
+            keeper.address,
+            "0",
+            "0",
+            "0"
+        );
+        await tx.wait();
 
-     it("withdraw1", async function () {
+        const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
+        const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
+        const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
+        console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
+        console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
+        console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
+
+        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        console.log("> Total amounts:", amount);
+    });
+
+    it("withdraw1", async function () {
         tx = await Vault.connect(depositor1).withdraw(await getERC20Balance(depositor1.address, Vault.address), "0", "0", "0");
         await tx.wait();
 
@@ -314,6 +313,93 @@ describe.only("Macro test", function () {
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("> Total amounts:", amount);
+    });
+
+    it("feees time! 😝 only half", async function () {
+        // State
+        const governanceEthBalanceBefore = await getERC20Balance(governance.address, wethAddress);
+        const governanceUsdcBalanceBefore = await getERC20Balance(governance.address, usdcAddress);
+        const governanceOsqthBalanceBefore = await getERC20Balance(governance.address, osqthAddress);
+        console.log("> governanceEthBalanceBefore %s", governanceEthBalanceBefore);
+        console.log("> governanceUsdcBalanceBefore %s", governanceUsdcBalanceBefore);
+        console.log("> governanceOsqthBalanceBefore %s", governanceOsqthBalanceBefore);
+
+        const fee0 = await VaultStorage.connect(governance).accruedFeesEth();
+        const fee1 = await VaultStorage.connect(governance).accruedFeesUsdc();
+        const fee2 = await VaultStorage.connect(governance).accruedFeesOsqth();
+        console.log("Fees:", fee0.toString(), fee1.toString(), fee2.toString());
+
+        tx = await Vault.connect(governance).collectProtocol(
+            fee0.div(BigNumber.from(2)).toString(),
+            fee1.div(BigNumber.from(2)).toString(),
+            fee2.div(BigNumber.from(2)).toString(),
+            governance.address
+        );
+        await tx.wait();
+
+        // State
+        const governanceEthBalanceAfter = await getERC20Balance(governance.address, wethAddress);
+        const governanceUsdcBalanceAfter = await getERC20Balance(governance.address, usdcAddress);
+        const governanceOsqthBalanceAfter = await getERC20Balance(governance.address, osqthAddress);
+        console.log("> governanceEthBalanceAfter %s", governanceEthBalanceAfter);
+        console.log("> governanceUsdcBalanceAfter %s", governanceUsdcBalanceAfter);
+        console.log("> governanceOsqthBalanceAfter %s", governanceOsqthBalanceAfter);
+    });
+
+    it("feees time! 😝 greater then could", async function () {
+        const fee0 = await VaultStorage.connect(governance).accruedFeesEth();
+        const fee1 = await VaultStorage.connect(governance).accruedFeesUsdc();
+        const fee2 = await VaultStorage.connect(governance).accruedFeesOsqth();
+        try {
+            tx = await Vault.connect(governance).collectProtocol(
+                fee0.add(BigNumber.from(2)).toString(),
+                fee1.add(BigNumber.from(2)).toString(),
+                fee2.add(BigNumber.from(2)).toString(),
+                governance.address
+            );
+            await tx.wait();
+        } catch (err) { console.log("> I'm error due to input too big"); }
+    });
+
+    it("feees time! 😝 but not governance", async function () {
+        const fee0 = await VaultStorage.connect(governance).accruedFeesEth();
+        const fee1 = await VaultStorage.connect(governance).accruedFeesUsdc();
+        const fee2 = await VaultStorage.connect(governance).accruedFeesOsqth();
+        try {
+            tx = await Vault.connect(notgovernance).collectProtocol(
+                fee0.toString(),
+                fee1.toString(),
+                fee2.toString(),
+                notgovernance.address
+            );
+            await tx.wait();
+        } catch (err) { console.log("> I'm error due to notgovernance"); }
+    });
+
+    it("feees time! 😝 - all", async function () {
+        // State
+        const governanceEthBalanceBefore = await getERC20Balance(governance.address, wethAddress);
+        const governanceUsdcBalanceBefore = await getERC20Balance(governance.address, usdcAddress);
+        const governanceOsqthBalanceBefore = await getERC20Balance(governance.address, osqthAddress);
+        console.log("> governanceEthBalanceBefore %s", governanceEthBalanceBefore);
+        console.log("> governanceUsdcBalanceBefore %s", governanceUsdcBalanceBefore);
+        console.log("> governanceOsqthBalanceBefore %s", governanceOsqthBalanceBefore);
+
+        const fee0 = (await VaultStorage.connect(governance).accruedFeesEth()).toString();
+        const fee1 = (await VaultStorage.connect(governance).accruedFeesUsdc()).toString();
+        const fee2 = (await VaultStorage.connect(governance).accruedFeesOsqth()).toString();
+        console.log("Fees:", fee0, fee1, fee2);
+
+        tx = await Vault.connect(governance).collectProtocol(fee0, fee1, fee2, governance.address);
+        await tx.wait();
+
+        // State
+        const governanceEthBalanceAfter = await getERC20Balance(governance.address, wethAddress);
+        const governanceUsdcBalanceAfter = await getERC20Balance(governance.address, usdcAddress);
+        const governanceOsqthBalanceAfter = await getERC20Balance(governance.address, osqthAddress);
+        console.log("> governanceEthBalanceAfter %s", governanceEthBalanceAfter);
+        console.log("> governanceUsdcBalanceAfter %s", governanceUsdcBalanceAfter);
+        console.log("> governanceOsqthBalanceAfter %s", governanceOsqthBalanceAfter);
     });
 });
 
