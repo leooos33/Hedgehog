@@ -1,28 +1,29 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
+const { BigNumber } = require("ethers");
 
 const governance = "0x14dc79964da2c08b23698b3d3cc7ca32193d9955"; // ACCOUNT #7 in hardhat
 
 const deploymentParams = [
     utils.parseUnits("4000000000000", 18),
-    10,
+    BigNumber.from("10"),
     utils.parseUnits("0.05", 18),
-    "10",
-    "950000000000000000",
-    "1050000000000000000",
-    "0",
-    "1000",
-    "1000",
+    BigNumber.from("10"),
+    BigNumber.from("950000000000000000"),
+    BigNumber.from("1050000000000000000"),
+    BigNumber.from("0"),
+    BigNumber.from("1000"),
+    BigNumber.from("1000"),
 ];
 
 const hardhatDeploy = async (governance, params) => {
-    const UniswapMath = await deployContract("UniswapMath", [], false);
+    const UniswapMath = await deployContract("UniswapMath", []);
 
-    const Vault = await deployContract("Vault", [], false);
-    const VaultAuction = await deployContract("VaultAuction", [], false);
-    const VaultMath = await deployContract("VaultMath", [], false);
-    const VaultTreasury = await deployContract("VaultTreasury", [], false);
-    const VaultStorage = await deployContract("VaultStorage", params, false);
+    const Vault = await deployContract("Vault", []);
+    const VaultAuction = await deployContract("VaultAuction", []);
+    const VaultMath = await deployContract("VaultMath", []);
+    const VaultTreasury = await deployContract("VaultTreasury", []);
+    const VaultStorage = await deployContract("VaultStorage", params);
 
     const arguments = [
         UniswapMath.address,
