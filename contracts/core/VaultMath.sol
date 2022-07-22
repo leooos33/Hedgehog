@@ -320,7 +320,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
         return (amountEth + amountOsqth.mul(osqthEthPrice) + amountUsdc.mul(1e30).div(ethUsdcPrice));
     }
 
-    //TODO
     function getIV() external view returns (uint256) {
         uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
 

@@ -127,11 +127,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityOsqthEth
         );
 
-        IVaultStorage(vaultStorage).setTotalAmountsBoundaries(
+        IVaultStorage(vaultStorage).setSnapshot(
             params.boundaries.ethUsdcLower,
             params.boundaries.ethUsdcUpper,
             params.boundaries.osqthEthLower,
-            params.boundaries.osqthEthUpper
+            params.boundaries.osqthEthUpper,
+            block.timestamp,
+            IVaultMath(vaultMath).getIV()
         );
     }
 
@@ -268,9 +270,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //60 - tickSpacing
         int24 baseAdj = toInt24(
             int256(
-                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() * uint256(int256(tickSpacing))).div(
-                    1e36
-                )
+                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
+                    uint256(int256(tickSpacing))).div(1e36)
             )
         );
 

@@ -207,7 +207,7 @@ describe("Strategy rebalance, sell with comissions", function () {
             amount[2]
         );
 
-        const amountDeposit = await VaultMath.connect(Vault.address).getAmountsToDeposit("1000000000000000000");
+        const amountDeposit = await Vault.getAmountsToDeposit("1000000000000000000");
 
         console.log("> USDC to deposit %s, oSQTH to deposit %s", amountDeposit[0], amountDeposit[1]);
     });

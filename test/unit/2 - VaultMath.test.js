@@ -232,7 +232,7 @@
 //     });
 
 //     it("_getTotalAmounts", async function () {
-//         tx = await contract.setTotalAmountsBoundaries(
+//         tx = await contract.setSnapshot(
 //             "193980",
 //             "196080",
 //             "12180",

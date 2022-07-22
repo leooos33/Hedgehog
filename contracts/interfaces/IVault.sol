@@ -29,5 +29,8 @@ interface IVault is IFaucet {
         address to
     ) external;
 
-    function getAmountsToDeposit(uint256 ethToDeposit) external view returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
+    function getAmountsToDeposit(uint256 ethToDeposit)
+        external
+        view
+        returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
 }

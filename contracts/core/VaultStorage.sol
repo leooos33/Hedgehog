@@ -40,7 +40,6 @@ contract VaultStorage is Faucet {
     uint256 public rebalancePriceThreshold; //TODO
 
     //@dev iv adjustment parameter
-    //TODO as param
     uint256 public adjParam = 83000000000000000;
 
     //@dev ticks thresholds for boundaries calculation
@@ -48,12 +47,12 @@ contract VaultStorage is Faucet {
     int24 public baseThreshold = 1440;
 
     //@dev protocol fee expressed as multiple of 1e-6
-    uint256 public protocolFee = 0;
+    uint256 public protocolFee;
 
     //@dev accrued fees
-    uint256 public accruedFeesEth = 0;
-    uint256 public accruedFeesUsdc = 0;
-    uint256 public accruedFeesOsqth = 0;
+    uint256 public accruedFeesEth;
+    uint256 public accruedFeesUsdc;
+    uint256 public accruedFeesOsqth;
 
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
@@ -138,8 +137,16 @@ contract VaultStorage is Faucet {
      * @notice owner can set the base threshold for boundaries calculation
      * @param _baseThreshold the rebalance time threshold, in ticks
      */
-    function setbaseThreshold(int24 _baseThreshold) external onlyGovernance {
+    function setBaseThreshold(int24 _baseThreshold) external onlyGovernance {
         baseThreshold = _baseThreshold;
+    }
+
+    /**
+     * @notice owner can set the base threshold for boundaries calculation
+     * @param _adjParam the iv adjustment parameter
+     */
+    function setAdjParam(uint256 _adjParam) external onlyGovernance {
+        adjParam = _adjParam;
     }
 
     /**
@@ -174,16 +181,25 @@ contract VaultStorage is Faucet {
         protocolFee = _protocolFee;
     }
 
-    function setTotalAmountsBoundaries(
+    function setSnapshot(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
-        int24 _orderOsqthEthUpper
-    ) public onlyVault {
+        int24 _orderOsqthEthUpper,
+        uint256 _timeAtLastRebalance,
+        uint256 _ivAtLastRebalance
+    )
+        public
+        // uint256 _ethPriceAtLastRebalance
+        onlyVault
+    {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
+        timeAtLastRebalance = _timeAtLastRebalance;
+        ivAtLastRebalance = _ivAtLastRebalance;
+        // ethPriceAtLastRebalance = ethPriceAtLastRebalance;
     }
 
     function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {

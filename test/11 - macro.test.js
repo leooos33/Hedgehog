@@ -6,7 +6,6 @@ const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH,
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-//TODO: make all test logs in > style
 describe("Macro test", function () {
     let swaper, depositor, keeper, governance, swapAmount;
     it("Should set actors", async function () {

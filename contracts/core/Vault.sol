@@ -18,7 +18,7 @@ import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 
-import {VaultAuction} from "./VaultAuction.sol"; 
+import {VaultAuction} from "./VaultAuction.sol";
 
 import "hardhat/console.sol";
 
@@ -214,8 +214,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
     function getAmountsToDeposit(uint256 ethToDeposit)
         external
-        override
         view
+        override
         returns (uint256 usdcToDeposit, uint256 osqthToDeposit)
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();

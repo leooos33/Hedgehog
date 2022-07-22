@@ -65,10 +65,13 @@ interface IVaultStorage {
 
     function cap() external view returns (uint256);
 
-    function setTotalAmountsBoundaries(
+    function setSnapshot(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
         int24 _orderOsqthEthLower,
-        int24 _orderOsqthEthUpper
+        int24 _orderOsqthEthUpper,
+        uint256 _timeAtLastRebalance,
+        uint256 _ivAtLastRebalance
+        // uint256 _ethPriceAtLastRebalance
     ) external;
 }

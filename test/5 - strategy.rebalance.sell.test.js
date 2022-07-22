@@ -218,7 +218,6 @@ describe("Strategy rebalance sell", function () {
         //console.log("> Shares after withdraw %s", await getERC20Balance(depositor.address, Vault.address));
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
-        //TODO
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("> Total amounts:", amount);
         expect(amount[0].toString()).to.equal("1223");

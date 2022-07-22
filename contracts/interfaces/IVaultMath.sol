@@ -6,7 +6,6 @@ pragma abicoder v2;
 import "../libraries/Constants.sol";
 
 interface IVaultMath {
-
     function isTimeRebalance() external returns (bool, uint256);
 
     function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
