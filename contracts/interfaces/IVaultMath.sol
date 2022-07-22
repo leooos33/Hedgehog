@@ -6,19 +6,6 @@ pragma abicoder v2;
 import "../libraries/Constants.sol";
 
 interface IVaultMath {
-    function _calcSharesAndAmounts(
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth,
-        uint256 _totalSupply
-    )
-        external
-        returns (
-            uint256,
-            uint256,
-            uint256,
-            uint256
-        );
 
     function isTimeRebalance() external returns (bool, uint256);
 
@@ -76,11 +63,6 @@ interface IVaultMath {
         uint256 pH,
         uint256 digits
     ) external returns (uint128);
-
-    function getAmountsToDeposit(uint256 ethToDeposit)
-        external
-        view
-        returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
 
     function getPriceFromTick(int24 tick) external returns (uint256);
 }

@@ -18,7 +18,7 @@ import {Constants} from "../libraries/Constants.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 
-import {VaultAuction} from "./VaultAuction.sol";
+import {VaultAuction} from "./VaultAuction.sol"; 
 
 import "hardhat/console.sol";
 
@@ -44,8 +44,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(to != address(0) && to != address(this)); //Wrong address
 
         //Poke positions so vault's current holdings are up to date
-        IVaultTreasury(vaultTreasury).pokeEthUsdc();
-        IVaultTreasury(vaultTreasury).pokeEthOsqth();
+        IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO
+        IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO
 
         //Calculate shares to mint
         (uint256 _shares, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = calcSharesAndAmounts(
@@ -58,8 +58,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(amountEth >= _amountEthMin, "Amount ETH min");
         require(amountUsdc >= _amountUsdcMin, "Amount USDC min");
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
-
-        //TODO: remove console logs here
 
         //Pull in tokens
         if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
@@ -93,13 +91,27 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         uint256 totalSupply = totalSupply();
 
-        //Get token amounts to withdraw
-
         //Burn shares
         _burn(msg.sender, shares);
 
         //withdraw user share of tokens from the lp positions in current proportion
-        (uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = _burnSharesInPools(shares, totalSupply);
+        (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
+            Constants.poolEthUsdc,
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            shares,
+            totalSupply
+        );
+
+        (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
+            Constants.poolEthOsqth,
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            shares,
+            totalSupply
+        );
+
+        uint256 amountEth = amountEth0 + amountEth1;
 
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
@@ -109,12 +121,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, msg.sender, amountEth);
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, msg.sender, amountUsdc);
         if (amountOsqth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.osqth, msg.sender, amountOsqth);
-
-        //(uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-
-        // uint256 ethAmount = _getBalance(Constants.weth);
-        // uint256 usdcAmount = _getBalance(Constants.usdc);
-        // uint256 osqthAmount = _getBalance(Constants.osqth);
 
         emit SharedEvents.Withdraw(msg.sender, shares, amountEth, amountUsdc, amountOsqth);
     }
@@ -206,31 +212,15 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         }
     }
 
-    //stack too deep
-    function _burnSharesInPools(uint256 shares, uint256 totalSupply)
-        internal
-        returns (
-            uint256,
-            uint256,
-            uint256
-        )
+    function getAmountsToDeposit(uint256 ethToDeposit)
+        external
+        override
+        view
+        returns (uint256 usdcToDeposit, uint256 osqthToDeposit)
     {
-        (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcLower(),
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            shares,
-            totalSupply
-        );
+        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
-        (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthLower(),
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            shares,
-            totalSupply
-        );
-
-        return (amountEth0 + amountEth1, amountUsdc, amountOsqth);
+        usdcToDeposit = uint256(usdcAmount).mul(ethToDeposit).div(ethAmount);
+        osqthToDeposit = osqthAmount.mul(ethToDeposit).div(ethAmount);
     }
 }

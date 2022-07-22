@@ -115,7 +115,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
             );
 
             amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
-
             amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
         }
     }
@@ -324,8 +323,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
     //TODO
     function getIV() external view returns (uint256) {
         uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
-        // 365/17.5
-        //uint256 k = ;
 
         return
             (
@@ -337,17 +334,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
                     ).ln()
                 ).mul(20857142857142857142)
             ).sqrt();
-    }
-
-    function getAmountsToDeposit(uint256 ethToDeposit)
-        external
-        view
-        returns (uint256 usdcToDeposit, uint256 osqthToDeposit)
-    {
-        (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = getTotalAmounts();
-
-        usdcToDeposit = uint256(usdcAmount).mul(ethToDeposit).div(ethAmount);
-        osqthToDeposit = osqthAmount.mul(ethToDeposit).div(ethAmount);
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

@@ -268,7 +268,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //60 - tickSpacing
         int24 baseAdj = toInt24(
             int256(
-                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() * uint256(60)).div(
+                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() * uint256(int256(tickSpacing))).div(
                     1e36
                 )
             )
