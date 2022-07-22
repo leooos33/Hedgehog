@@ -6,7 +6,7 @@ const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH,
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test", function () {
+describe.only("Macro test", function () {
     let swaper, depositor, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -304,6 +304,9 @@ describe("Macro test", function () {
 
         const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
         console.log("> Total amounts:", amount);
+
+        const AuctionParams = await VaultAuction.connect(keeper.address).getAuctionParams("14487789");
+        console.log("AuctionParams %s", AuctionParams);
     });
 
     it("withdraw1", async function () {

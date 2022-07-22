@@ -137,7 +137,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.totalValue,
             params.ethUsdcPrice
         );
-        console.log("params.ethUsdcPrice %s", params.ethUsdcPrice);
     }
 
     /**
@@ -302,6 +301,19 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         }
     }
 
+    function _swapWithKeeper(
+        uint256 balance,
+        uint256 target,
+        address coin,
+        address keeper
+    ) internal {
+        if (target >= balance) {
+            IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
+        } else {
+            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
+        }
+    }
+
     /// @dev Rounds tick down towards negative infinity so that it's a multiple
     /// of `tickSpacing`.
     function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
@@ -322,16 +334,20 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return int24(value);
     }
 
-    function _swapWithKeeper(
-        uint256 balance,
-        uint256 target,
-        address coin,
-        address keeper
-    ) internal {
-        if (target >= balance) {
-            IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
-        } else {
-            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
-        }
+    function getAuctionParams(uint256 _auctionTriggerTime) external returns (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) {
+        Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
+
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+            auctionDetails.boundaries,
+            auctionDetails.liquidityEthUsdc,
+            auctionDetails.liquidityOsqthEth
+        );
+
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+        deltaEth = targetEth >= ethBalance ? targetEth - ethBalance : ethBalance - targetEth;
+        deltaUsdc = targetUsdc >= usdcBalance ? targetUsdc - usdcBalance : usdcBalance - targetUsdc;
+        deltaOsqth = targetOsqth >= osqthBalance ? targetOsqth - osqthBalance : osqthBalance - targetOsqth;
     }
+
 }
