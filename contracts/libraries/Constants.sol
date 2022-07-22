@@ -48,5 +48,6 @@ library Constants {
         Boundaries boundaries;
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;
+        uint256 totalValue;
     }
 }

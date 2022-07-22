@@ -54,6 +54,9 @@ contract VaultStorage is Faucet {
     uint256 public accruedFeesUsdc;
     uint256 public accruedFeesOsqth;
 
+    //@dev total value
+    uint256 public totalValue;
+
     //@dev rebalance auction duration (seconds)
     uint256 public auctionTime;
 
@@ -187,7 +190,8 @@ contract VaultStorage is Faucet {
         int24 _orderOsqthEthLower,
         int24 _orderOsqthEthUpper,
         uint256 _timeAtLastRebalance,
-        uint256 _ivAtLastRebalance
+        uint256 _ivAtLastRebalance,
+        uint256 _totalValue
     )
         public
         // uint256 _ethPriceAtLastRebalance
@@ -200,6 +204,7 @@ contract VaultStorage is Faucet {
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
         // ethPriceAtLastRebalance = ethPriceAtLastRebalance;
+        totalValue = _totalValue;
     }
 
     function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {

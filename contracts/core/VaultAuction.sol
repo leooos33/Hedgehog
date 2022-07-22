@@ -133,7 +133,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.boundaries.osqthEthLower,
             params.boundaries.osqthEthUpper,
             block.timestamp,
-            IVaultMath(vaultMath).getIV()
+            IVaultMath(vaultMath).getIV(),
+            params.totalValue
         );
     }
 
@@ -208,7 +209,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e18
         );
 
-        return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth);
+        return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth, totalValue);
     }
 
     /**
