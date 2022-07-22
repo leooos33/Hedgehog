@@ -191,10 +191,11 @@ contract VaultStorage is Faucet {
         int24 _orderOsqthEthUpper,
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
-        uint256 _totalValue
+        uint256 _totalValue,
+        uint256 _ethPriceAtLastRebalance
     )
         public
-        // uint256 _ethPriceAtLastRebalance
+        // 
         onlyVault
     {
         orderEthUsdcLower = _orderEthUsdcLower;
@@ -203,7 +204,7 @@ contract VaultStorage is Faucet {
         orderOsqthEthUpper = _orderOsqthEthUpper;
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
-        // ethPriceAtLastRebalance = ethPriceAtLastRebalance;
+        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
         totalValue = _totalValue;
     }
 

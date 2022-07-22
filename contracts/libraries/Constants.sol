@@ -25,18 +25,6 @@ library Constants {
 
     IOsqthController public constant osqthController = IOsqthController(0x64187ae08781B09368e6253F9E94951243A493D5);
 
-    struct SharesInfo {
-        uint256 totalSupply;
-        uint256 _amountEth;
-        uint256 _amountUsdc;
-        uint256 _amountOsqth;
-        uint256 osqthEthPrice;
-        uint256 ethUsdcPrice;
-        uint256 usdcAmount;
-        uint256 ethAmount;
-        uint256 osqthAmount;
-    }
-
     struct Boundaries {
         int24 ethUsdcLower;
         int24 ethUsdcUpper;
@@ -49,5 +37,6 @@ library Constants {
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;
         uint256 totalValue;
+        uint256 ethUsdcPrice;
     }
 }
