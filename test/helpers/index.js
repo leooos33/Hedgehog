@@ -12,7 +12,15 @@ const {
 
 const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock, logBalance } = require("./testHelpers");
 
+const mineSomeBlocks = async (blocksToMine) => {
+    await logBlock();
+    await hre.network.provider.send("hardhat_mine", [`0x${blocksToMine.toString(16)}`]);
+    console.log(`${blocksToMine} blocks was mine`);
+    await logBlock();
+};
+
 module.exports = {
+    mineSomeBlocks,
     logBalance,
     logBlock,
     getAndApprove,

@@ -2,12 +2,21 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
-const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("./helpers");
+const {
+    mineSomeBlocks,
+    resetFork,
+    logBlock,
+    getAndApprove2,
+    getERC20Balance,
+    getWETH,
+    getOSQTH,
+    getUSDC,
+} = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
 describe.only("Macro test", function () {
-    let swaper, depositor, keeper, governance, swapAmount;
+    let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
         // console.log(signers.length);
@@ -210,7 +219,7 @@ describe.only("Macro test", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 
@@ -292,6 +301,10 @@ describe.only("Macro test", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
+        tx = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        // const AuctionParamsBefore = await tx.wait();
+        console.log("AuctionParamsBefore %s", tx);
+
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, "0", "0", "0");
         await tx.wait();
 
@@ -302,11 +315,11 @@ describe.only("Macro test", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
 
-        const AuctionParams = await VaultAuction.connect(keeper.address).getAuctionParams("14487789");
-        console.log("AuctionParams %s", AuctionParams);
+        tx = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        console.log("AuctionParamsAfter %s", tx);
     });
 
     it("withdraw1", async function () {
@@ -349,10 +362,3 @@ describe.only("Macro test", function () {
         console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
     });
 });
-
-const mineSomeBlocks = async (blocksToMine) => {
-    await logBlock();
-    await hre.network.provider.send("hardhat_mine", [`0x${blocksToMine.toString(16)}`]);
-    console.log(`${blocksToMine} blocks was mine`);
-    await logBlock();
-};

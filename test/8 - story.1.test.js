@@ -100,7 +100,7 @@ describe("Story about several swaps id 1", function () {
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("25740571518");
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 
@@ -133,7 +133,7 @@ describe("Story about several swaps id 1", function () {
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 });

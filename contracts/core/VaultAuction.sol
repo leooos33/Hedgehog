@@ -334,7 +334,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         return int24(value);
     }
 
-    function getAuctionParams(uint256 _auctionTriggerTime) external returns (uint256 deltaEth, uint256 deltaUsdc, uint256 deltaOsqth) {
+    function getAuctionParams(uint256 _auctionTriggerTime)
+        external
+        returns (
+            uint256 deltaEth,
+            uint256 deltaUsdc,
+            uint256 deltaOsqth
+        )
+    {
         Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
 
         (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
@@ -349,5 +356,4 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         deltaUsdc = targetUsdc >= usdcBalance ? targetUsdc - usdcBalance : usdcBalance - targetUsdc;
         deltaOsqth = targetOsqth >= osqthBalance ? targetOsqth - osqthBalance : osqthBalance - targetOsqth;
     }
-
 }

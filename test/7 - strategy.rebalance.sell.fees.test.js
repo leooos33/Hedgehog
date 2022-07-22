@@ -155,7 +155,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("31972818233");
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("11393494089268587318");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
 
         const ethAmountS = amount[0].toString();
         const usdcAmountS = amount[1].toString();
@@ -198,7 +198,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("2932061859554793050380");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
 
         console.log(
             "Strategy ETH amount after second swap %s, USDC Amount %s, oSQTH amount %s",
@@ -237,7 +237,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
 
         console.log("> Total amounts: %s", amount);
         expect(amount[0].toString()).to.equal("1553");

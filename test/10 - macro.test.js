@@ -2,7 +2,16 @@ const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
-const { resetFork, logBlock, getAndApprove2, getERC20Balance, getWETH, getOSQTH, getUSDC } = require("./helpers");
+const {
+    mineSomeBlocks,
+    resetFork,
+    logBlock,
+    getAndApprove2,
+    getERC20Balance,
+    getWETH,
+    getOSQTH,
+    getUSDC,
+} = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
@@ -196,7 +205,7 @@ describe("Macro test", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 
@@ -301,7 +310,7 @@ describe("Macro test", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 
@@ -344,7 +353,7 @@ describe("Macro test", function () {
         console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
         console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
 
-        const amount = await VaultMath.connect(Vault.address).getTotalAmounts();
+        const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
     });
 
@@ -439,10 +448,3 @@ describe("Macro test", function () {
         console.log("> governanceOsqthBalanceAfter %s", governanceOsqthBalanceAfter);
     });
 });
-
-const mineSomeBlocks = async (blocksToMine) => {
-    await logBlock();
-    await hre.network.provider.send("hardhat_mine", [`0x${blocksToMine.toString(16)}`]);
-    console.log(`${blocksToMine} blocks was mine`);
-    await logBlock();
-};

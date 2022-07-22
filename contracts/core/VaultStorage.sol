@@ -193,19 +193,15 @@ contract VaultStorage is Faucet {
         uint256 _ivAtLastRebalance,
         uint256 _totalValue,
         uint256 _ethPriceAtLastRebalance
-    )
-        public
-        // 
-        onlyVault
-    {
+    ) public onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
         orderOsqthEthUpper = _orderOsqthEthUpper;
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
-        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
         totalValue = _totalValue;
+        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
     function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {
