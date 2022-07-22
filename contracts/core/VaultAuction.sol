@@ -143,7 +143,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @notice calculate all auction parameters
      * @param _auctionTriggerTime timestamp when auction started
      */
-    function _getAuctionParams(uint256 _auctionTriggerTime) internal returns (Constants.AuctionParams memory) {
+    function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
@@ -336,6 +336,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
+        view
         returns (
             uint256 deltaEth,
             uint256 deltaUsdc,

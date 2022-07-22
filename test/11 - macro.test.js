@@ -301,9 +301,8 @@ describe.only("Macro test", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-        tx = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
-        // const AuctionParamsBefore = await tx.wait();
-        console.log("AuctionParamsBefore %s", tx);
+        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        console.log("AuctionParamsBefore %s", AuctionParamsBefore);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, "0", "0", "0");
         await tx.wait();
@@ -318,8 +317,8 @@ describe.only("Macro test", function () {
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
 
-        tx = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
-        console.log("AuctionParamsAfter %s", tx);
+        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        console.log("AuctionParamsAfter %s", AuctionParamsAfter);
     });
 
     it("withdraw1", async function () {

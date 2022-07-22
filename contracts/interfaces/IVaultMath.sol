@@ -61,7 +61,7 @@ interface IVaultMath {
         uint256 pL,
         uint256 pH,
         uint256 digits
-    ) external returns (uint128);
+    ) external pure returns (uint128);
 
-    function getPriceFromTick(int24 tick) external returns (uint256);
+    function getPriceFromTick(int24 tick) external view returns (uint256);
 }
