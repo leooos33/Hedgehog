@@ -67,7 +67,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 amountOsqth
     ) external override nonReentrant notPaused {
         //check if rebalancing based on price threshold is allowed
-        require(IVaultMath(vaultMath)._isPriceRebalance(auctionTriggerTime), "C11");
+        require(IVaultMath(vaultMath).isPriceRebalance(auctionTriggerTime), "C11");
 
         _executeAuction(keeper, auctionTriggerTime);
 
@@ -338,6 +338,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
         view
+        override
         returns (
             uint256 deltaEth,
             uint256 deltaUsdc,

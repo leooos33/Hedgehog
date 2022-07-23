@@ -166,7 +166,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) internal onlyKeepers {
+    ) internal {
         (uint128 liquidity, , , , ) = position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {

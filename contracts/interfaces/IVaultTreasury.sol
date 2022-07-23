@@ -69,9 +69,9 @@ interface IVaultTreasury {
             uint128
         );
 
-    function positionLiquidityEthUsdc() external returns (uint128);
+    function positionLiquidityEthUsdc() external view returns (uint128);
 
-    function positionLiquidityEthOsqth() external returns (uint128);
+    function positionLiquidityEthOsqth() external view returns (uint128);
 
     function pokeEthUsdc() external;
 

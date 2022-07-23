@@ -4,71 +4,73 @@ pragma solidity =0.8.4;
 
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
+
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import "hardhat/console.sol";
 
-contract VaultStorage is Faucet {
+contract VaultStorage is IVaultStorage, Faucet {
     //@dev Uniswap pools tick spacing
-    int24 public immutable tickSpacing;
+    int24 public immutable override tickSpacing;
 
     //@dev twap period to use for rebalance calculations
-    uint32 public twapPeriod = 420 seconds;
+    uint32 public override twapPeriod = 420 seconds;
 
     //@dev max amount of wETH that strategy accept for deposit
-    uint256 public cap;
+    uint256 public override cap;
 
     //@dev lower and upper ticks in Uniswap pools
     // Removed
-    int24 public orderEthUsdcLower;
-    int24 public orderEthUsdcUpper;
-    int24 public orderOsqthEthLower;
-    int24 public orderOsqthEthUpper;
+    int24 public override orderEthUsdcLower;
+    int24 public override orderEthUsdcUpper;
+    int24 public override orderOsqthEthLower;
+    int24 public override orderOsqthEthUpper;
 
     //@dev timestamp when last rebalance executed
-    uint256 public timeAtLastRebalance;
+    uint256 public override timeAtLastRebalance;
 
     //@dev ETH/USDC price when last rebalance executed
-    uint256 public ethPriceAtLastRebalance;
+    uint256 public override ethPriceAtLastRebalance;
 
     //@dev implied volatility when last rebalance executed
-    uint256 public ivAtLastRebalance;
+    uint256 public override ivAtLastRebalance;
 
     //@dev time difference to trigger a hedge (seconds)
-    uint256 public rebalanceTimeThreshold;
-    uint256 public rebalancePriceThreshold;
+    uint256 public override rebalanceTimeThreshold;
+    uint256 public override rebalancePriceThreshold;
 
     //@dev iv adjustment parameter
-    uint256 public adjParam = 83000000000000000;
+    uint256 public override adjParam = 83000000000000000;
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public baseThreshold = 1440;
+    int24 public override baseThreshold = 1440;
 
     //@dev protocol fee expressed as multiple of 1e-6
-    uint256 public protocolFee;
+    uint256 public override protocolFee;
 
     //@dev accrued fees
-    uint256 public accruedFeesEth;
-    uint256 public accruedFeesUsdc;
-    uint256 public accruedFeesOsqth;
+    uint256 public override accruedFeesEth;
+    uint256 public override accruedFeesUsdc;
+    uint256 public override accruedFeesOsqth;
 
     //@dev total value
     uint256 public totalValue;
 
     //@dev rebalance auction duration (seconds)
-    uint256 public auctionTime;
+    uint256 public override auctionTime;
 
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
-    uint256 public minPriceMultiplier;
-    uint256 public maxPriceMultiplier;
+    uint256 public override minPriceMultiplier;
+    uint256 public override maxPriceMultiplier;
     //@dev max TWAP deviation for EthUsdc price in ticks
-    int24 public maxTDEthUsdc;
+    int24 public override maxTDEthUsdc;
     //@dev max TWAP deviation for oSqthEth price in ticks
-    int24 public maxTDOsqthEth;
+    int24 public override maxTDOsqthEth;
 
-    bool public isSystemPaused = false;
+    bool public override isSystemPaused = false;
 
     /**
      * @notice strategy constructor
@@ -191,7 +193,7 @@ contract VaultStorage is Faucet {
         uint256 _ivAtLastRebalance,
         uint256 _totalValue,
         uint256 _ethPriceAtLastRebalance
-    ) public onlyVault {
+    ) public override onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
@@ -202,15 +204,15 @@ contract VaultStorage is Faucet {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
-    function setAccruedFeesEth(uint256 _accruedFeesEth) external onlyMath {
+    function setAccruedFeesEth(uint256 _accruedFeesEth) external override onlyMath {
         accruedFeesEth = _accruedFeesEth;
     }
 
-    function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external onlyMath {
+    function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external override onlyMath {
         accruedFeesUsdc = _accruedFeesUsdc;
     }
 
-    function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external onlyMath {
+    function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external override onlyMath {
         accruedFeesOsqth = _accruedFeesOsqth;
     }
 
@@ -218,7 +220,7 @@ contract VaultStorage is Faucet {
         uint256 amountEth,
         uint256 amountUsdc,
         uint256 amountOsqth
-    ) external onlyVault {
+    ) external override onlyVault {
         accruedFeesUsdc = accruedFeesUsdc - amountUsdc;
         accruedFeesEth = accruedFeesEth - amountEth;
         accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
@@ -228,7 +230,7 @@ contract VaultStorage is Faucet {
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
         uint256 _ethPriceAtLastRebalance
-    ) public onlyVault {
+    ) public override onlyVault {
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;

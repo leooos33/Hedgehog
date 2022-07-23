@@ -26,14 +26,14 @@ describe("VaultMath", function () {
         await contractHelper.deployed();
     });
 
-    it("_isPriceRebalance", async function () {
+    it("isPriceRebalance", async function () {
         tx = await VaultStorage.setTimeAtLastRebalance("1648646626");
         await tx.wait();
 
         tx = await VaultStorage.setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
 
-        const resp = await VaultMath._isPriceRebalance("1648646636");
+        const resp = await VaultMath.isPriceRebalance("1648646636");
         console.log(resp);
     });
 });

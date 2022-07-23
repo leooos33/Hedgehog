@@ -17,4 +17,13 @@ interface IAuction {
         uint256 _amountUsdc,
         uint256 _amountOsqth
     ) external;
+
+    function getAuctionParams(uint256 _auctionTriggerTime)
+        external
+        view
+        returns (
+            uint256 deltaEth,
+            uint256 deltaUsdc,
+            uint256 deltaOsqth
+        );
 }

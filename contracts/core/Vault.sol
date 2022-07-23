@@ -176,7 +176,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 amountUsdc,
         uint256 amountOsqth,
         address to
-    ) external override nonReentrant onlyGovernance {
+    ) external nonReentrant onlyGovernance {
         IVaultStorage(vaultStorage).updateAccruedFees(amountEth, amountUsdc, amountOsqth);
 
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, to, amountUsdc);
@@ -202,6 +202,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     )
         public
         view
+        override
         returns (
             uint256,
             uint256,

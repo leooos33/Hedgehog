@@ -82,7 +82,5 @@ interface IVaultStorage {
         uint256 _ethPriceAtLastRebalance
     ) external;
 
-    function setPause(bool _pause) external;
-
     function isSystemPaused() external view returns (bool);
 }

@@ -22,15 +22,23 @@ interface IVault is IFaucet {
         uint256
     ) external;
 
-    function collectProtocol(
-        uint256 amountUsdc,
-        uint256 amountEth,
-        uint256 amountOsqth,
-        address to
-    ) external;
-
     function getAmountsToDeposit(uint256 ethToDeposit)
         external
         view
         returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
+
+    function calcSharesAndAmounts(
+        uint256 _amountEth,
+        uint256 _amountUsdc,
+        uint256 _amountOsqth,
+        uint256 _totalSupply
+    )
+        external
+        view
+        returns (
+            uint256,
+            uint256,
+            uint256,
+            uint256
+        );
 }

@@ -6,9 +6,9 @@ pragma abicoder v2;
 import "../libraries/Constants.sol";
 
 interface IVaultMath {
-    function isTimeRebalance() external returns (bool, uint256);
+    function isTimeRebalance() external view returns (bool, uint256);
 
-    function _isPriceRebalance(uint256 _auctionTriggerTime) external returns (bool);
+    function isPriceRebalance(uint256 _auctionTriggerTime) external view returns (bool);
 
     function burnAndCollect(
         address pool,
@@ -51,7 +51,7 @@ interface IVaultMath {
         uint256 amountOsqth,
         uint256 ethUsdcPrice,
         uint256 osqthEthPrice
-    ) external view returns (uint256);
+    ) external pure returns (uint256);
 
     function getPriceMultiplier(uint256 _auctionTriggerTime) external view returns (uint256);
 
