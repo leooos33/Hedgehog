@@ -44,8 +44,19 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(to != address(0) && to != address(this)); //Wrong address
 
         //Poke positions so vault's current holdings are up to date
-        IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO
-        IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO
+        IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO check poke
+        IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO check poke
+
+        uint256 _totalSupply = totalSupply();
+        if (_totalSupply == 0) {
+            (uint256 ethPrice, ) = IVaultMath(vaultMath).getPrices();
+
+            IVaultStorage(vaultStorage).setParamsBeforeDeposit(
+                block.timestamp,
+                IVaultMath(vaultMath).getIV(),
+                ethPrice
+            );
+        }
 
         //Calculate shares to mint
         (uint256 _shares, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = calcSharesAndAmounts(
@@ -55,6 +66,9 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             totalSupply()
         );
 
+        console.log(amountEth);
+        console.log(amountUsdc);
+        console.log(amountOsqth);
         require(amountEth >= _amountEthMin, "Amount ETH min");
         require(amountUsdc >= _amountUsdcMin, "Amount USDC min");
         require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
@@ -67,7 +81,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Mint shares to user
         _mint(to, _shares);
         //Check deposit cap
-        require(totalSupply() <= IVaultStorage(vaultStorage).cap(), "Cap is reached");
+        require(totalSupply() + _shares <= IVaultStorage(vaultStorage).cap(), "Cap is reached");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;

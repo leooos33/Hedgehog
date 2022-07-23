@@ -37,7 +37,7 @@ contract VaultStorage is Faucet {
 
     //@dev time difference to trigger a hedge (seconds)
     uint256 public rebalanceTimeThreshold;
-    uint256 public rebalancePriceThreshold; //TODO
+    uint256 public rebalancePriceThreshold;
 
     //@dev iv adjustment parameter
     uint256 public adjParam = 83000000000000000;
@@ -107,10 +107,6 @@ contract VaultStorage is Faucet {
         maxTDOsqthEth = _maxTDOsqthEth;
     }
 
-    function setTwapPeriod(uint32 _twapPeriod) external onlyGovernance {
-        twapPeriod = _twapPeriod;
-    }
-
     /**
      * @notice owner can set the strategy cap in USD terms
      * @dev deposits are rejected if it would put the strategy above the cap amount
@@ -118,6 +114,14 @@ contract VaultStorage is Faucet {
      */
     function setCap(uint256 _cap) external onlyGovernance {
         cap = _cap;
+    }
+
+    /**
+     * @notice owner can set the protocol fee expressed as multiple of 1e-6
+     * @param _protocolFee the protocol fee, scaled by 1e18
+     */
+    function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
+        protocolFee = _protocolFee;
     }
 
     /**
@@ -176,14 +180,6 @@ contract VaultStorage is Faucet {
         maxPriceMultiplier = _maxPriceMultiplier;
     }
 
-    /**
-     * @notice owner can set the protocol fee expressed as multiple of 1e-6
-     * @param _protocolFee the protocol fee, scaled by 1e18
-     */
-    function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
-        protocolFee = _protocolFee;
-    }
-
     function setSnapshot(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
@@ -226,27 +222,27 @@ contract VaultStorage is Faucet {
         accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public {
+    function setParamsBeforeDeposit(
+        uint256 _timeAtLastRebalance,
+        uint256 _ivAtLastRebalance,
+        uint256 _ethPriceAtLastRebalance
+    ) public onlyVault {
         timeAtLastRebalance = _timeAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public {
         ivAtLastRebalance = _ivAtLastRebalance;
+        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
+    //TODO: remove in poduction
     /**
      * Used to for unit testing
      */
-    // TODO: remove on main
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public {
+    function setParamsBeforeDepositMock(
+        uint256 _timeAtLastRebalance,
+        uint256 _ivAtLastRebalance,
+        uint256 _ethPriceAtLastRebalance
+    ) public onlyGovernance {
+        timeAtLastRebalance = _timeAtLastRebalance;
+        ivAtLastRebalance = _ivAtLastRebalance;
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }
