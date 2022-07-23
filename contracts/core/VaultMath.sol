@@ -184,9 +184,6 @@ contract VaultMath is ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).rebalanceTimeThreshold()
         );
 
-        console.log("block.timestamp: %s", block.timestamp);
-        console.log("auctionTriggerTime: %s", auctionTriggerTime);
-
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 

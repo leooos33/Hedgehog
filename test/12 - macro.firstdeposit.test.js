@@ -118,9 +118,9 @@ describe("Macro test", function () {
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
 
-    it("withdraw1 -> 0.5", async function () {
+    it("withdraw1 -> No liquidity", async function () {
         await expect(Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0")).to.be.revertedWith(
-            "No liquidity"
+            "C6"
         );
     });
 

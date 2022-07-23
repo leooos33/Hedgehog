@@ -62,9 +62,7 @@ describe("Strategy deposit", function () {
     });
 
     it("withdraw: with `No liquidity`", async function () {
-        await expect(Vault.connect(depositor).withdraw("36822598604626209811", "0", "0", "0")).to.be.revertedWith(
-            "No liquidity"
-        );
+        await expect(Vault.connect(depositor).withdraw("36822598604626209811", "0", "0", "0")).to.be.revertedWith("C6");
 
         // await logBalance(VaultTreasury.address);
         expect(await getERC20Balance(VaultTreasury.address, wethAddress)).to.equal("18411299302313104906");
