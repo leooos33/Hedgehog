@@ -26,13 +26,13 @@ async function getToken(amount, account, tokenAddress, accountHolder) {
     });
 }
 
-async function getWETH(amount, account) {
-    const wethAccountHolder = "0x2f0b23f53734252bda2277357e97e1517d6b042a";
+async function getWETH(amount, account, alternativeTokenHolder) {
+    const wethAccountHolder = alternativeTokenHolder || "0x2f0b23f53734252bda2277357e97e1517d6b042a";
     await getToken(amount, account, wethAddress, wethAccountHolder);
 }
 
-async function getUSDC(amount, account) {
-    const usdcAccountHolder = "0x2e6907a0ce523ccb5532ffea2e411df1eee26607";
+async function getUSDC(amount, account, alternativeTokenHolder) {
+    const usdcAccountHolder = alternativeTokenHolder || "0x2e6907a0ce523ccb5532ffea2e411df1eee26607";
     await getToken(amount, account, usdcAddress, usdcAccountHolder);
 }
 
