@@ -50,7 +50,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
 
-    //TODO: check price rebalance
     /**
      * @notice strategy rebalancing based on price threshold
      * @param keeper keeper address

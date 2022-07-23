@@ -97,7 +97,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         protocolFee = _protocolFee;
 
         tickSpacing = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
-        // tickSpacing = 0; //TODO: change me back on robsten
+        // tickSpacing = 0; //TODO: change me back on robsten or remove on mainnet
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
         rebalancePriceThreshold = _rebalancePriceThreshold;
 

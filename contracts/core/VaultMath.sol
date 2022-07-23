@@ -189,7 +189,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
 
-    // TODO: make me internal on mainnet
     /**
      * @notice check if hedging based on price threshold is allowed
      * @param _auctionTriggerTime timestamp when auction started
