@@ -19,7 +19,6 @@ describe("Macro test", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, notgovernance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
-        // console.log(signers.length);
         governance = signers[0];
         notgovernance = signers[1];
         depositor1 = signers[7];
@@ -69,13 +68,13 @@ describe("Macro test", function () {
         },
     };
     it("preset", async function () {
-        tx = await VaultStorage.connect(keeper).setTimeAtLastRebalance(1648646662);
+        tx = await VaultStorage.connect(governance).setTimeAtLastRebalance(1648646662);
         await tx.wait();
 
-        tx = await VaultStorage.connect(keeper).setEthPriceAtLastRebalance("3391393578000000000000");
+        tx = await VaultStorage.connect(governance).setEthPriceAtLastRebalance("3391393578000000000000");
         await tx.wait();
 
-        tx = await VaultStorage.setIvAtLastRebalance("1214682673158336601");
+        tx = await VaultStorage.connect(governance).setIvAtLastRebalance("1214682673158336601");
         await tx.wait();
 
         await getAndApprove2(

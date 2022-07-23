@@ -48,7 +48,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO check poke
 
         uint256 _totalSupply = totalSupply();
-        if (_totalSupply == 0) {
+        //TODO: Remove timeAtLastRebalance() part
+        if (_totalSupply == 0 && IVaultStorage(vaultStorage).timeAtLastRebalance() == 0) {
             (uint256 ethPrice, ) = IVaultMath(vaultMath).getPrices();
 
             IVaultStorage(vaultStorage).setParamsBeforeDeposit(
