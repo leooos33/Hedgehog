@@ -57,6 +57,12 @@ const hardhatDeploy = async (governance, params) => {
 
     tx = await VaultStorage.setComponents(...arguments);
     await tx.wait();
+
+    // For checking of bad behaviour
+    // tx = await VaultStorage.setComponents(...arguments);
+    // await tx.wait();
+    // tx = await VaultStorage.transferOwnership("0x14dc79964da2c08b23698b3d3cc7ca32193d9955");
+    // await tx.wait();
 };
 
 const deployContract = async (name, params, deploy = true) => {

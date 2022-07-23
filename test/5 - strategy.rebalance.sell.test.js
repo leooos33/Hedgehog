@@ -14,7 +14,8 @@ const {
 } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("Strategy rebalance sell", function () {
+describe.only("Strategy rebalance sell", function () {
+    const gasSnapshot = {};
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -69,6 +70,7 @@ describe("Strategy rebalance sell", function () {
         tx = await Vault.connect(depositor).deposit(wethInput, usdcInput, osqthInput, depositor.address, "0", "0", "0");
         receipt = await tx.wait();
         console.log("> Gas used deposit: %s", receipt.gasUsed);
+        gasSnapshot.deposit = receipt.gasUsed.toString();
 
         // Balances
         const userEthBalanceAfterDeposit = await getERC20Balance(depositor.address, wethAddress);
@@ -139,6 +141,7 @@ describe("Strategy rebalance sell", function () {
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
         receipt = await tx.wait();
         console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
+        gasSnapshot.timeRebalance = receipt.gasUsed.toString();
 
         // Balances
         await logBalance(keeper.address);
@@ -206,6 +209,7 @@ describe("Strategy rebalance sell", function () {
         tx = await Vault.connect(depositor).withdraw("35260912783549456917", "0", "0", "0");
         receipt = await tx.wait();
         console.log("> Gas used withdraw:", receipt.gasUsed.toString());
+        gasSnapshot.withdraw = receipt.gasUsed.toString();
 
         // Balances
         //await logBalance(depositor.address);
@@ -223,5 +227,7 @@ describe("Strategy rebalance sell", function () {
         expect(amount[0].toString()).to.equal("1223");
         expect(amount[1].toString()).to.equal("11466265");
         expect(amount[2].toString()).to.equal("9");
+
+        console.log(gasSnapshot);
     });
 });

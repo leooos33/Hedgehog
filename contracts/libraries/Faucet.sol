@@ -32,6 +32,8 @@ contract Faucet is IFaucet, Ownable {
 
     constructor() Ownable() {}
 
+    bool public isInitialized = false;
+
     function setComponents(
         address _uniswapMath,
         address _vault,
@@ -41,6 +43,7 @@ contract Faucet is IFaucet, Ownable {
         address _vaultStorage,
         address _governance
     ) public override onlyOwner {
+        assert(!isInitialized);
         (uniswapMath, vault, auction, vaultMath, vaultTreasury, vaultStorage, governance) = (
             _uniswapMath,
             _vault,
@@ -50,6 +53,7 @@ contract Faucet is IFaucet, Ownable {
             _vaultStorage,
             _governance
         );
+        isInitialized = true;
     }
 
     modifier onlyVault() {
