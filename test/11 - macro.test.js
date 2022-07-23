@@ -128,19 +128,10 @@ describe("Macro test", function () {
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
     });
 
-    it("withdraw1 -> 0.5", async function () {
-        tx = await Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0");
-        await tx.wait();
-
-        // State
-        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
-        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
-        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
-        const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
-        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+    it("withdraw1 -> revert", async function () {
+        await expect(Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0")).to.be.revertedWith(
+            "No liquidity"
+        );
     });
 
     it("deposit2", async function () {

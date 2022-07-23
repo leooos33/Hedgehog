@@ -128,6 +128,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         uint256 amountEth = amountEth0 + amountEth1;
 
+        require(amountEth != 0 && amountUsdc != 0 && amountOsqth != 0, "No liquidity");
+
         require(amountEth >= amountEthMin, "amountEthMin");
         require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
         require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
