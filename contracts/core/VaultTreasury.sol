@@ -170,8 +170,8 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         (uint128 liquidity, , , , ) = position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
-            burn(pool, tickLower, tickUpper, 0);
-            //TODO: poke ist here
+            (uint256 burned0, uint256 burned1) = burn(pool, tickLower, tickUpper, 0);
+            console.log("poke: %s, %s %s", pool, burned0, burned1);
         }
     }
 
