@@ -47,9 +47,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO check poke
         IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO check poke
 
-        IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO check poke
-        IVaultTreasury(vaultTreasury).pokeEthOsqth(); //TODO check poke
-
         uint256 _totalSupply = totalSupply();
         //TODO: Remove timeAtLastRebalance() part
         if (_totalSupply == 0 && IVaultStorage(vaultStorage).timeAtLastRebalance() == 0) {
