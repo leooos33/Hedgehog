@@ -4,7 +4,7 @@ const { BigNumber } = require("ethers");
 
 const governance = "0x14dc79964da2c08b23698b3d3cc7ca32193d9955"; // ACCOUNT #7 in hardhat
 
-const deploymentParams = [
+const testnetDeploymentParams = [
     utils.parseUnits("4000000000000", 18),
     BigNumber.from("10"),
     utils.parseUnits("0.05", 18),
@@ -12,8 +12,16 @@ const deploymentParams = [
     BigNumber.from("950000000000000000"),
     BigNumber.from("1050000000000000000"),
     BigNumber.from("0"),
-    BigNumber.from("1000"),
-    BigNumber.from("1000"),
+];
+
+const mainnetDeploymentParams = [
+    utils.parseUnits("100", 18),
+    BigNumber.from(86400),
+    utils.parseUnits("0.1", 18),
+    BigNumber.from("600"),
+    BigNumber.from("950000000000000000"),
+    BigNumber.from("1050000000000000000"),
+    BigNumber.from("0"),
 ];
 
 const hardhatDeploy = async (governance, params) => {
@@ -76,7 +84,7 @@ const deployContract = async (name, params, deploy = true) => {
 
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-hardhatDeploy(governance, deploymentParams).catch((error) => {
+hardhatDeploy(governance, mainnetDeploymentParams).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

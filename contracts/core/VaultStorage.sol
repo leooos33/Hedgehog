@@ -13,10 +13,10 @@ import "hardhat/console.sol";
 
 contract VaultStorage is IVaultStorage, Faucet {
     //@dev Uniswap pools tick spacing
-    int24 public immutable override tickSpacing;
+    int24 public override tickSpacing = 60;
 
     //@dev twap period to use for rebalance calculations
-    uint32 public override twapPeriod = 420 seconds;
+    uint32 public override twapPeriod = 180 seconds; //TODO: 180 on main 420 on test
 
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public override cap;
@@ -42,11 +42,11 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override rebalancePriceThreshold;
 
     //@dev iv adjustment parameter
-    uint256 public override adjParam = 83000000000000000;
+    uint256 public override adjParam = 100000000000000000; //TODO: 100000000000000000 on main 83000000000000000 on test
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 1440;
+    int24 public override baseThreshold = 1200; //TODO: 1200 on main 1440 on test
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
@@ -90,8 +90,6 @@ contract VaultStorage is IVaultStorage, Faucet {
 
         protocolFee = _protocolFee;
 
-        tickSpacing = IUniswapV3Pool(Constants.poolEthOsqth).tickSpacing();
-        // tickSpacing = 0; //TODO: change me back on robsten or remove on mainnet
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
         rebalancePriceThreshold = _rebalancePriceThreshold;
 
