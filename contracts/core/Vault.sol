@@ -22,6 +22,31 @@ import {VaultAuction} from "./VaultAuction.sol";
 
 import "hardhat/console.sol";
 
+/**
+ * Error
+ * C0: Paused
+ * C1: Amount ETH min
+ * C2: Amount USDC min
+ * C3: Amount oSQTH min
+ * C4: Cap is reached
+ * C5: Shares to withdraw is zero
+ * C6: No liquidity
+ * C7: Amount of ETH is smaller when amountEthMin
+ * C8: Amount of USDC is smaller when amountUsdcMin
+ * C9: Amount of OSQTH is smaller when amountOsqthMin
+ * C10: Time rebalance not allowed
+ * C11: Price rebalance not allowed
+ * C12: Not a vault
+ * C13: Not a vault math
+ * C14: Not a keeper
+ * C15: Not a governance
+ * C16: Zero amount
+ * C17: Wrong address 
+ * C18: Int overflow
+ * C19: Max TWAP Deviation
+ * C20: Wrong pool
+ */
+
 contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
@@ -40,8 +65,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 _amountUsdcMin,
         uint256 _amountOsqthMin
     ) external override nonReentrant notPaused returns (uint256) {
-        require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0)); //Zero amount
-        require(to != address(0) && to != address(this)); //Wrong address
+        require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "C16");
+        require(to != address(0) && to != address(this), "C17");
 
         //Poke positions so vault's current holdings are up to date
         IVaultTreasury(vaultTreasury).pokeEthUsdc(); //TODO check poke
@@ -70,12 +95,9 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             totalSupply()
         );
 
-        console.log(amountEth);
-        console.log(amountUsdc);
-        console.log(amountOsqth);
-        require(amountEth >= _amountEthMin, "Amount ETH min");
-        require(amountUsdc >= _amountUsdcMin, "Amount USDC min");
-        require(amountOsqth >= _amountOsqthMin, "Amount oSQTH min");
+        require(amountEth >= _amountEthMin, "C1");
+        require(amountUsdc >= _amountUsdcMin, "C2");
+        require(amountOsqth >= _amountOsqthMin, "C3");
 
         //Pull in tokens
         if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
@@ -85,7 +107,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Mint shares to user
         _mint(to, _shares);
         //Check deposit cap
-        require(totalSupply() + _shares <= IVaultStorage(vaultStorage).cap(), "Cap is reached");
+        require(totalSupply() + _shares <= IVaultStorage(vaultStorage).cap(), "C4");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
@@ -105,7 +127,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 amountUsdcMin,
         uint256 amountOsqthMin
     ) external override nonReentrant {
-        require(shares > 0, "0");
+        require(shares > 0, "C5");
 
         uint256 totalSupply = totalSupply();
 
@@ -131,11 +153,11 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         uint256 amountEth = amountEth0 + amountEth1;
 
-        require(amountEth != 0 && amountUsdc != 0 && amountOsqth != 0, "No liquidity");
+        require(amountEth != 0 && amountUsdc != 0 && amountOsqth != 0, "C6");
 
-        require(amountEth >= amountEthMin, "amountEthMin");
-        require(amountUsdc >= amountUsdcMin, "amountUsdcMin");
-        require(amountOsqth >= amountOsqthMin, "amountOsqthMin");
+        require(amountEth >= amountEthMin, "C7");
+        require(amountUsdc >= amountUsdcMin, "C8");
+        require(amountOsqth >= amountOsqthMin, "C9");
 
         //send tokens to user
         if (amountEth > 0) IVaultTreasury(vaultTreasury).transfer(Constants.weth, msg.sender, amountEth);

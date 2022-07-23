@@ -53,24 +53,24 @@ contract Faucet is IFaucet, Ownable {
     }
 
     modifier onlyVault() {
-        require(msg.sender == vault || msg.sender == auction, "vault");
+        require(msg.sender == vault || msg.sender == auction, "C12");
         _;
     }
 
     modifier onlyMath() {
-        require(msg.sender == vaultMath, "math");
+        require(msg.sender == vaultMath, "C13");
         _;
     }
 
     modifier onlyKeepers() {
-        require(msg.sender == vault || msg.sender == vaultMath || msg.sender == auction, "keeper");
+        require(msg.sender == vault || msg.sender == vaultMath || msg.sender == auction, "C14");
         _;
     }
 
     address public governance;
 
     modifier onlyGovernance() {
-        require(msg.sender == governance, "governance");
+        require(msg.sender == governance, "C15");
         _;
     }
 

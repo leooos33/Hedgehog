@@ -258,7 +258,7 @@ contract VaultMath is ReentrancyGuard, Faucet {
         require(
             deviation0 <= IVaultStorage(vaultStorage).maxTDEthUsdc() ||
                 deviation1 <= IVaultStorage(vaultStorage).maxTDOsqthEth(),
-            "Max TWAP Deviation"
+            "C19"
         );
 
         ethUsdcPrice = uint256(1e30).div(getPriceFromTick(ethUsdcTick));

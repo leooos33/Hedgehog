@@ -43,7 +43,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
-        require(isTimeRebalanceAllowed, "Time rebalance not allowed");
+        require(isTimeRebalanceAllowed, "C10");
 
         _executeAuction(keeper, auctionTriggerTime);
 
@@ -67,7 +67,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 amountOsqth
     ) external override nonReentrant notPaused {
         //check if rebalancing based on price threshold is allowed
-        require(IVaultMath(vaultMath)._isPriceRebalance(auctionTriggerTime), "Price rebalance not allowed");
+        require(IVaultMath(vaultMath)._isPriceRebalance(auctionTriggerTime), "C11");
 
         _executeAuction(keeper, auctionTriggerTime);
 
@@ -331,7 +331,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
     /// @dev Casts int256 to int24 with overflow check.
     function toInt24(int256 value) internal pure returns (int24) {
-        require(value >= type(int24).min && value <= type(int24).max);
+        require(value >= type(int24).min && value <= type(int24).max, "C18");
         return int24(value);
     }
 

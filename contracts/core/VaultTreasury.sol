@@ -149,7 +149,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     ) external override {
         (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
 
-        require(msg.sender == pool);
+        require(msg.sender == pool, "C20");
         if (amount0Owed > 0) IERC20(token0).safeTransfer(msg.sender, amount0Owed);
         if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
     }
