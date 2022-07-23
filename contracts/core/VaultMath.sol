@@ -255,11 +255,9 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
-        require(
-            deviation0 <= IVaultStorage(vaultStorage).maxTDEthUsdc() ||
-                deviation1 <= IVaultStorage(vaultStorage).maxTDOsqthEth(),
-            "C19"
-        );
+        int24 maxTD = IVaultStorage(vaultStorage).tickSpacing() + IVaultStorage(vaultStorage).tickSpacing();
+
+        require(deviation0 <= maxTD || deviation1 <= maxTD, "C19");
 
         ethUsdcPrice = uint256(1e30).div(getPriceFromTick(ethUsdcTick));
         osqthEthPrice = uint256(1e18).div(getPriceFromTick(osqthEthTick));
