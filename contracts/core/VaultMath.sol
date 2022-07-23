@@ -198,17 +198,20 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         if (_auctionTriggerTime < IVaultStorage(vaultStorage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
 
-        uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
-            Constants.poolEthUsdc,
-            address(Constants.weth),
-            address(Constants.usdc),
-            secondsToTrigger + IVaultStorage(vaultStorage).twapPeriod(),
-            secondsToTrigger
-        ).mul(uint256(1e30));
+        uint256 ethUsdcPriceAtTrigger = Constants
+            .oracle
+            .getHistoricalTwap(
+                Constants.poolEthUsdc,
+                address(Constants.weth),
+                address(Constants.usdc),
+                secondsToTrigger + IVaultStorage(vaultStorage).twapPeriod(),
+                secondsToTrigger
+            )
+            .mul(uint256(1e30));
 
         uint256 cachedRatio = ethUsdcPriceAtTrigger.div(IVaultStorage(vaultStorage).ethPriceAtLastRebalance());
         uint256 priceTreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
-        
+
         return priceTreshold >= IVaultStorage(vaultStorage).rebalancePriceThreshold();
     }
 
@@ -255,8 +258,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
-        int24 maxTD = IVaultStorage(vaultStorage).tickSpacing();
-        maxTD = maxTD + maxTD;
+        int24 maxTD = IVaultStorage(vaultStorage).tickSpacing() * 2;
 
         require(deviation0 <= maxTD || deviation1 <= maxTD, "C19");
 

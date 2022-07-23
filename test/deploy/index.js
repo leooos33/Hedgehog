@@ -9,8 +9,6 @@ const deploymentParams = [
     "950000000000000000",
     "1050000000000000000",
     "0",
-    "1000",
-    "1000",
 ];
 
 const hardhatDeploy = async (governance, params) => {

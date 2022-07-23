@@ -49,10 +49,6 @@ interface IVaultStorage {
 
     function twapPeriod() external view returns (uint32);
 
-    function maxTDOsqthEth() external view returns (int24);
-
-    function maxTDEthUsdc() external view returns (int24);
-
     function baseThreshold() external view returns (int24);
 
     function tickSpacing() external view returns (int24);

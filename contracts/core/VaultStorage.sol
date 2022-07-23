@@ -65,10 +65,6 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
     uint256 public override minPriceMultiplier;
     uint256 public override maxPriceMultiplier;
-    //@dev max TWAP deviation for EthUsdc price in ticks
-    int24 public override maxTDEthUsdc;
-    //@dev max TWAP deviation for oSqthEth price in ticks
-    int24 public override maxTDOsqthEth;
 
     bool public override isSystemPaused = false;
 
@@ -88,9 +84,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 _protocolFee,
-        int24 _maxTDEthUsdc,
-        int24 _maxTDOsqthEth
+        uint256 _protocolFee
     ) Faucet() {
         cap = _cap;
 
@@ -107,8 +101,6 @@ contract VaultStorage is IVaultStorage, Faucet {
 
         timeAtLastRebalance = 0;
         ivAtLastRebalance = 0;
-        maxTDEthUsdc = _maxTDEthUsdc;
-        maxTDOsqthEth = _maxTDOsqthEth;
     }
 
     /**
