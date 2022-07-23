@@ -338,7 +338,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
         view
-        notPaused
         returns (
             uint256 deltaEth,
             uint256 deltaUsdc,

@@ -154,7 +154,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 amountUsdc,
         uint256 amountOsqth,
         address to
-    ) external override nonReentrant notPaused onlyGovernance {
+    ) external override nonReentrant onlyGovernance {
         IVaultStorage(vaultStorage).updateAccruedFees(amountEth, amountUsdc, amountOsqth);
 
         if (amountUsdc > 0) IVaultTreasury(vaultTreasury).transfer(Constants.usdc, to, amountUsdc);
@@ -233,7 +233,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         external
         view
         override
-        notPaused
         returns (uint256 usdcToDeposit, uint256 osqthToDeposit)
     {
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
