@@ -20,5 +20,7 @@ library SharedEvents {
 
     event CollectFees(uint256 feesToVault0, uint256 feesToVault1, uint256 feesToProtocol0, uint256 feesToProtocol1);
 
+    event Paused(bool changedState);
+
     // event Snapshot(int24 tick, uint256 totalAmount0, uint256 totalAmount1, uint256 totalSupply);
 }

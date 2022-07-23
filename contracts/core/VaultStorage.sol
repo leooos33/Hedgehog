@@ -6,7 +6,7 @@ import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
-
+import {SharedEvents} from "../libraries/SharedEvents.sol";
 import "hardhat/console.sol";
 
 contract VaultStorage is Faucet {
@@ -236,6 +236,8 @@ contract VaultStorage is Faucet {
 
     function setPause(bool _pause) external onlyGovernance {
         isSystemPaused = _pause;
+
+        emit SharedEvents.Paused(_pause);
     }
 
     /**
