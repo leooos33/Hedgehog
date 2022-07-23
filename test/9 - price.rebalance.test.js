@@ -4,7 +4,7 @@ const { wethAddress, usdcAddress } = require("./common");
 const { resetFork, logBlock, getUSDC, getERC20Balance, mineSomeBlocks } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("VaultMath", function () {
+describe.only("VaultMath", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -32,7 +32,7 @@ describe("VaultMath", function () {
         tx = await VaultStorage.connect(governance).setTimeAtLastRebalance(1648646662);
         await tx.wait();
 
-        tx = await VaultStorage.connect(governance).setEthPriceAtLastRebalance("3391393578000000000000");
+        tx = await VaultStorage.connect(governance).setEthPriceAtLastRebalance("1791393578000000000000");
         await tx.wait();
 
         tx = await VaultStorage.connect(governance).setIvAtLastRebalance("1214682673158336601");
@@ -48,7 +48,7 @@ describe("VaultMath", function () {
         // await logBlock();
         tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
         await tx.wait();
-        // await logBlock();
+        await logBlock();
 
         console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
         console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
@@ -56,10 +56,10 @@ describe("VaultMath", function () {
     });
 
     it("isPriceRebalance", async function () {
-        let resp = await VaultMath.isPriceRebalance("1658243806");
+        let resp = await VaultMath.isPriceRebalance("15173902");
         console.log("Not valid block:", resp);
 
-        resp = await VaultMath.isPriceRebalance("1658243807");
+        resp = await VaultMath.isPriceRebalance("1658243810");
         console.log("Valid block:", resp);
     });
 });

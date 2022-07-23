@@ -197,16 +197,18 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
     function isPriceRebalance(uint256 _auctionTriggerTime) public view override returns (bool) {
         if (_auctionTriggerTime < IVaultStorage(vaultStorage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
+
         uint256 ethUsdcPriceAtTrigger = Constants.oracle.getHistoricalTwap(
             Constants.poolEthUsdc,
             address(Constants.weth),
             address(Constants.usdc),
             secondsToTrigger + IVaultStorage(vaultStorage).twapPeriod(),
             secondsToTrigger
-        );
+        ).mul(uint256(1e30));
 
         uint256 cachedRatio = ethUsdcPriceAtTrigger.div(IVaultStorage(vaultStorage).ethPriceAtLastRebalance());
         uint256 priceTreshold = cachedRatio > 1e18 ? (cachedRatio).sub(1e18) : uint256(1e18).sub(cachedRatio);
+        
         return priceTreshold >= IVaultStorage(vaultStorage).rebalancePriceThreshold();
     }
 

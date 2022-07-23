@@ -14,7 +14,7 @@ const {
 } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("Strategy rebalance sell", function () {
+describe("Strategy rebalance sell", function () {
     const gasSnapshot = {};
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
