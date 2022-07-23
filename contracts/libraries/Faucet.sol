@@ -6,6 +6,10 @@ pragma abicoder v2;
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface IVaultStorage {
+    function isSystemPaused() external view returns (bool);
+}
+
 interface IFaucet {
     function setComponents(
         address,
@@ -83,5 +87,10 @@ contract Faucet is IFaucet, Ownable {
      */
     function _getBalance(IERC20 token) internal view returns (uint256) {
         return token.balanceOf(vaultTreasury);
+    }
+
+    modifier notPaused() {
+        require(!IVaultStorage(vaultStorage).isSystemPaused(), "C0");
+        _;
     }
 }

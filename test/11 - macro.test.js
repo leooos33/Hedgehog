@@ -65,6 +65,12 @@ describe("Macro test", function () {
         },
     };
     it("preset", async function () {
+        // For pause testing manually
+        // tx = await VaultStorage.connect(governance).setPause(true);
+        // await tx.wait();
+        // tx = await VaultStorage.connect(governance).setPause(false);
+        // await tx.wait();
+
         tx = await VaultStorage.connect(governance).setTimeAtLastRebalance(1648646662);
         await tx.wait();
 

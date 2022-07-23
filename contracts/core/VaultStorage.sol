@@ -68,6 +68,8 @@ contract VaultStorage is Faucet {
     //@dev max TWAP deviation for oSqthEth price in ticks
     int24 public maxTDOsqthEth;
 
+    bool public isSystemPaused = false;
+
     /**
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
@@ -230,6 +232,10 @@ contract VaultStorage is Faucet {
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
+    }
+
+    function setPause(bool _pause) external onlyGovernance {
+        isSystemPaused = _pause;
     }
 
     /**
