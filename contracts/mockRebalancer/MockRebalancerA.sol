@@ -120,41 +120,42 @@ contract MockRebalancerA is Ownable {
             TransferHelper.safeApprove(osqth, address(swapRouter), type(uint256).max);
 
             // buy weth for osqth
-            ISwapRouter.ExactOutputSingleParams memory paramsOsqthWeth = ISwapRouter.ExactOutputSingleParams({
+            ISwapRouter.ExactInputSingleParams memory params1 = ISwapRouter.ExactInputSingleParams({
                 tokenIn: address(osqth),
                 tokenOut: address(weth),
                 fee: 3000,
                 recipient: address(this),
                 deadline: block.timestamp,
-                amountOut: data.amount1,
-                amountInMaximum: osqthAfter,
+                amountIn: IERC20(osqth).balanceOf(address(this)),
+                amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
             });
-            uint256 outOsqthWeth = swapRouter.exactOutputSingle(paramsOsqthWeth);
-            // swapRouter.refundETH();
+            uint256 out1 = swapRouter.exactInputSingle(params1);
 
-            // console.log(">> outOsqthWeth: %s", outOsqthWeth);
+            // console.log(">> out1: %s", out1);
             // console.log(">> data.amount1: %s", data.amount1);
             console.log(">> !");
             console.log(">> balance eth:", IERC20(weth).balanceOf(address(this)));
             console.log(">> balance usdc:", IERC20(usdc).balanceOf(address(this)));
             console.log(">> balance osqth:", IERC20(osqth).balanceOf(address(this)));
 
-            uint256 osqthAfter2 = IERC20(osqth).balanceOf(address(this));
-
-            uint24 poolFee1 = 3000;
-            uint24 poolFee2 = 500;
-            // buy usdc for osqth
-            ISwapRouter.ExactInputParams memory paramsOsqthUsdc = ISwapRouter.ExactInputParams({
-                path: abi.encodePacked(osqth, poolFee1, weth, poolFee2, usdc),
+            TransferHelper.safeApprove(weth, address(swapRouter), type(uint256).max);
+            // buy usdc for weth
+            uint256 ethAfter2 = IERC20(weth).balanceOf(address(this));
+            ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(weth),
+                tokenOut: address(usdc),
+                fee: 3000,
                 recipient: address(this),
                 deadline: block.timestamp,
-                amountIn: osqthAfter2,
-                amountOutMinimum: 0
+                amountOut: data.amount2,
+                amountInMaximum: ethAfter2 - data.amount1,
+                sqrtPriceLimitX96: 0
             });
-            uint256 outOsqthUsdc = swapRouter.exactInput(paramsOsqthUsdc);
 
-            // console.log(">> outOsqthUsdc: %s", outOsqthUsdc);
+            uint256 out2 = swapRouter.exactOutputSingle(params2);
+
+            // console.log(">> out2: %s", out2);
             // console.log(">> data.amount2: %s", data.amount2);
             console.log(">> !");
             console.log(">> balance eth:", IERC20(weth).balanceOf(address(this)));

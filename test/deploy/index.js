@@ -44,7 +44,7 @@ const hardhatDeploy = async (governance, params) => {
         VaultStorage.address,
         governance.address,
     ];
-    console.log(arguments);
+    // console.log(arguments);
 
     await network.provider.request({
         method: "evm_mine",
