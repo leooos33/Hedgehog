@@ -24,7 +24,7 @@ interface IUniswapRouter is ISwapRouter {
     function refundETH() external payable;
 }
 
-contract MockRebalancerA is Ownable {
+contract MockRebalancerB is Ownable {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
@@ -81,6 +81,7 @@ contract MockRebalancerA is Ownable {
             // 2) get osq
             // 3) sellv3  osq to eth & usdc
             // 4) returnn eth & usdc
+            console.log("type_of_arbitrage 1");
 
             MyCallbackData memory data;
             data.type_of_arbitrage = 1;
@@ -88,14 +89,24 @@ contract MockRebalancerA is Ownable {
             data.amount2 = targetUsdc - usdcBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-        } else {
-            revert("NOT arbitage");
+        } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
+            console.log("type_of_arbitrage 2");
+        } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
+            console.log("type_of_arbitrage 3");
+        } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance) {
+            console.log("type_of_arbitrage 4");
+        } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
+            console.log("type_of_arbitrage 5");
+        } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
+            console.log("type_of_arbitrage 6");
         }
     }
 
     function onDeferredLiquidityCheck(bytes memory encodedData) external {
         require(msg.sender == euler, "e/flash-loan/on-deferred-caller");
+
         MyCallbackData memory data = abi.decode(encodedData, (MyCallbackData));
+        console.log(">> data.type_of_arbitrage: %s", data.type_of_arbitrage);
 
         if (data.type_of_arbitrage == 1) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
@@ -117,7 +128,7 @@ contract MockRebalancerA is Ownable {
             console.log(">> balance usdc after:", IERC20(usdc).balanceOf(address(this)));
             console.log(">> balance osqth after:", IERC20(osqth).balanceOf(address(this)));
 
-            TransferHelper.safeApprove(osqth, address(swapRouter), type(uint256).max);
+            TransferHelper.safeApprove(address(osqth), address(swapRouter), type(uint256).max);
 
             // buy weth for osqth
             ISwapRouter.ExactOutputSingleParams memory paramsOsqthWeth = ISwapRouter.ExactOutputSingleParams({
@@ -142,15 +153,14 @@ contract MockRebalancerA is Ownable {
 
             uint256 osqthAfter2 = IERC20(osqth).balanceOf(address(this));
 
-            uint24 poolFee1 = 3000;
-            uint24 poolFee2 = 500;
+            uint24 poolFee = 3000;
             // buy usdc for osqth
             ISwapRouter.ExactInputParams memory paramsOsqthUsdc = ISwapRouter.ExactInputParams({
-                path: abi.encodePacked(osqth, poolFee1, weth, poolFee2, usdc),
+                path: abi.encodePacked(osqth, poolFee, weth, poolFee, usdc),
                 recipient: address(this),
                 deadline: block.timestamp,
                 amountIn: osqthAfter2,
-                amountOutMinimum: 0
+                amountOutMinimum: 1644710
             });
             uint256 outOsqthUsdc = swapRouter.exactInput(paramsOsqthUsdc);
 
@@ -168,5 +178,16 @@ contract MockRebalancerA is Ownable {
             IERC20(usdc).approve(euler, type(uint256).max);
             borrowedDToken2.repay(0, data.amount2);
         } else {}
+    }
+
+    function safeTransferWithApprove(uint256 amountIn, address routerAddress) internal {
+        // TransferHelper.safeTransferFrom(
+        //     osqth,
+        //     msg.sender,
+        //     address(this),
+        //     amountIn
+        // );
+
+        TransferHelper.safeApprove(osqth, routerAddress, amountIn);
     }
 }

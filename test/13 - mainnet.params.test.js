@@ -179,7 +179,7 @@ describe.only("Macro test mainnet", function () {
         mockRebalancer = await MockRebalancerA.deploy();
         await mockRebalancer.deployed();
 
-        await mineSomeBlocks(83069);
+        await mineSomeBlocks(83069 + 10);
 
         // const wethBeforeTest = await getERC20Balance(mockRebalancer.address, wethAddress);
         // console.log("> wethBeforeTest:", wethBeforeTest);

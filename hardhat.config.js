@@ -24,11 +24,11 @@ module.exports = {
             chainId: CHAIN_IDS.hardhat,
             forking: getForkingParams(),
         },
-        ropsten: {
-            //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
-            url: IFURA_ROPSTEN_URL,
-            accounts: [ROPSTEN_DEPLOYMENT_KEY],
-        },
+        // ropsten: {
+        //     //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
+        //     url: IFURA_ROPSTEN_URL,
+        //     accounts: [ROPSTEN_DEPLOYMENT_KEY],
+        // },
     },
     solidity: {
         compilers: [
