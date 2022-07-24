@@ -45,7 +45,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         require(isTimeRebalanceAllowed, "C10");
 
-        _executeAuction(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        _executeAuction(keeper, auctionTriggerTime);
 
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
     }
@@ -54,23 +54,23 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @notice strategy rebalancing based on price threshold
      * @param keeper keeper address
      * @param auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param amountEthMin amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param amountUsdcMin amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param amountOsqthMin amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
+     * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
+     * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function priceRebalance(
         address keeper,
         uint256 auctionTriggerTime,
-        uint256 amountEthMin,
-        uint256 amountUsdcMin,
-        uint256 amountOsqthMin
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth
     ) external override nonReentrant notPaused {
         //check if rebalancing based on price threshold is allowed
         require(IVaultMath(vaultMath).isPriceRebalance(auctionTriggerTime), "C11");
 
-        _executeAuction(keeper, auctionTriggerTime, amountEthMin, amountUsdcMin, amountOsqthMin);
+        _executeAuction(keeper, auctionTriggerTime);
 
-        emit SharedEvents.PriceRebalance(keeper, amountEthMin, amountUsdcMin, amountOsqthMin);
+        emit SharedEvents.PriceRebalance(keeper, amountEth, amountUsdc, amountOsqth);
     }
 
     /**
@@ -80,13 +80,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(
-        address _keeper, 
-        uint256 _auctionTriggerTime,
-        uint256 amountEthMin,
-        uint256 amountUsdcMin,
-        uint256 amountOsqthMin ) 
-        internal {
+    function _executeAuction(address _keeper, uint256 _auctionTriggerTime) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         //Withdraw all the liqudity from the positions
@@ -116,9 +110,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         console.log("targetEth %s, targetUsdc %s, targetOsqth %s", targetEth, targetUsdc, targetOsqth);
 
         //Exchange tokens with keeper
-        _swapWithKeeper(ethBalance, targetEth, amountEthMin, address(Constants.weth), _keeper );
-        _swapWithKeeper(usdcBalance, targetUsdc, amountUsdcMin, address(Constants.usdc), _keeper);
-        _swapWithKeeper(osqthBalance, targetOsqth, amountOsqthMin, address(Constants.osqth), _keeper);
+        _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
+        _swapWithKeeper(usdcBalance, targetUsdc, address(Constants.usdc), _keeper);
+        _swapWithKeeper(osqthBalance, targetOsqth, address(Constants.osqth), _keeper);
 
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -336,22 +330,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function _swapWithKeeper(
         uint256 balance,
         uint256 target,
-        uint256 amountMin,
         address coin,
         address keeper
     ) internal {
         if (target >= balance) {
-
-            uint256 delta = target.sub(balance).add(10);
-            require(delta >= amountMin);
-
-            IERC20(coin).transferFrom(keeper, vaultTreasury, delta);
+            IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
-            
-            uint256 delta = balance.sub(target).sub(10);
-            require(delta >= amountMin);
-
-            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, delta);
+            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
         }
     }
 
