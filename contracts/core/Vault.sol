@@ -126,7 +126,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     ) external override nonReentrant {
         require(shares > 0, "C5");
 
-        uint256 totalSupply = totalSupply();
+        uint256 _totalSupply = totalSupply();
 
         //Burn shares
         _burn(msg.sender, shares);
@@ -137,7 +137,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper(),
             shares,
-            totalSupply
+            _totalSupply
         );
 
         (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
@@ -145,12 +145,12 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             shares,
-            totalSupply
+            _totalSupply
         );
 
         uint256 amountEth = amountEth0 + amountEth1;
 
-        require(amountEth != 0 && amountUsdc != 0 && amountOsqth != 0, "C6");
+        require(amountEth != 0 || amountUsdc != 0 || amountOsqth != 0, "C6");
 
         require(amountEth >= amountEthMin, "C7");
         require(amountUsdc >= amountUsdcMin, "C8");
