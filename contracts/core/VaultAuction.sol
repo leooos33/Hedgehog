@@ -43,7 +43,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
-
         require(isTimeRebalanceAllowed, "C10");
 
         _executeAuction(keeper, auctionTriggerTime);
@@ -83,7 +82,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function _executeAuction(address _keeper, uint256 _auctionTriggerTime) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
-        
+
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
@@ -98,7 +97,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             IVaultStorage(vaultStorage).orderOsqthEthUpper(),
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
-
 
         //Calculate amounts that need to be exchanged with keeper
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
@@ -141,9 +139,16 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.totalValue,
             params.ethUsdcPrice
         );
-                console.log("orderEthUsdcLower %s, orderEthUsdcUpper %s", uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcLower())), uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcUpper())));
-        console.log("orderOsqthEthLower %s, orderOsqthEthUpper %s", uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthLower())), uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthUpper())));
-
+        console.log(
+            "orderEthUsdcLower %s, orderEthUsdcUpper %s",
+            uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcLower())),
+            uint256(int256(IVaultStorage(vaultStorage).orderEthUsdcUpper()))
+        );
+        console.log(
+            "orderOsqthEthLower %s, orderOsqthEthUpper %s",
+            uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthLower())),
+            uint256(int256(IVaultStorage(vaultStorage).orderOsqthEthUpper()))
+        );
     }
 
     /**
@@ -220,7 +225,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e12
         );
         console.log("liquidityEthUsdc %s", liquidityEthUsdc);
-
 
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
             totalValue.mul(uint256(1e18) - vm),
