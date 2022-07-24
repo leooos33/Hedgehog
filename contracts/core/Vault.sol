@@ -57,15 +57,15 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     constructor() ERC20("Hedging DL", "HDL") {}
 
     function deposit(
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth,
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
         address to,
-        uint256 _amountEthMin,
-        uint256 _amountUsdcMin,
-        uint256 _amountOsqthMin
+        uint256 amountEthMin,
+        uint256 amountUsdcMin,
+        uint256 amountOsqthMin
     ) external override nonReentrant notPaused returns (uint256) {
-        require(_amountEth > 0 || (_amountUsdc > 0 || _amountOsqth > 0), "C16");
+        require(amountEth > 0, "C16");
         require(to != address(0) && to != address(this), "C17");
 
         //Poke positions so vault's current holdings are up to date
@@ -85,26 +85,26 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         }
 
         //Calculate shares to mint
-        (uint256 _shares, uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth) = calcSharesAndAmounts(
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
-            totalSupply()
+        (uint256 _shares, uint256 _amountEth, uint256 _amountUsdc, uint256 _amountOsqth) = calcSharesAndAmounts(
+            amountEth,
+            amountUsdc,
+            amountOsqth,
+            _totalSupply
         );
 
-        require(amountEth >= _amountEthMin, "C1");
-        require(amountUsdc >= _amountUsdcMin, "C2");
-        require(amountOsqth >= _amountOsqthMin, "C3");
+        require(_amountEth >= amountEthMin, "C1");
+        require(_amountUsdc >= amountUsdcMin, "C2");
+        require(_amountOsqth >= amountOsqthMin, "C3");
 
         //Pull in tokens
-        if (amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, amountEth);
-        if (amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, amountUsdc);
-        if (amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, vaultTreasury, amountOsqth);
+        if (_amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, _amountEth);
+        if (_amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, _amountUsdc);
+        if (_amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, vaultTreasury, _amountOsqth);
 
         //Mint shares to user
         _mint(to, _shares);
         //Check deposit cap
-        require(totalSupply() + _shares <= IVaultStorage(vaultStorage).cap(), "C4");
+        require(totalSupply() <= IVaultStorage(vaultStorage).cap(), "C4");
 
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
