@@ -365,9 +365,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         view
         override
         returns (
-            uint256 deltaEth,
-            uint256 deltaUsdc,
-            uint256 deltaOsqth
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256,
+            uint256
         )
     {
         Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
@@ -380,8 +383,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
-        deltaEth = targetEth >= ethBalance ? targetEth - ethBalance : ethBalance - targetEth;
-        deltaUsdc = targetUsdc >= usdcBalance ? targetUsdc - usdcBalance : usdcBalance - targetUsdc;
-        deltaOsqth = targetOsqth >= osqthBalance ? targetOsqth - osqthBalance : osqthBalance - targetOsqth;
+        return (targetEth, targetUsdc, targetOsqth, ethBalance, usdcBalance, osqthBalance);
     }
 }
