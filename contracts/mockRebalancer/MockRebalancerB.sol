@@ -77,18 +77,7 @@ contract MockRebalancerB is Ownable {
         console.log(">> osqthBalance: %s", osqthBalance);
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
-            // 1) borrow eth & usdc
-            // 2) get osq
-            // 3) sellv3  osq to eth & usdc
-            // 4) returnn eth & usdc
             console.log("type_of_arbitrage 1");
-
-            MyCallbackData memory data;
-            data.type_of_arbitrage = 1;
-            data.amount1 = targetEth - ethBalance + 10;
-            data.amount2 = targetUsdc - usdcBalance + 10;
-
-            IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             console.log("type_of_arbitrage 2");
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
@@ -100,94 +89,5 @@ contract MockRebalancerB is Ownable {
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 6");
         }
-    }
-
-    function onDeferredLiquidityCheck(bytes memory encodedData) external {
-        require(msg.sender == euler, "e/flash-loan/on-deferred-caller");
-
-        MyCallbackData memory data = abi.decode(encodedData, (MyCallbackData));
-        console.log(">> data.type_of_arbitrage: %s", data.type_of_arbitrage);
-
-        if (data.type_of_arbitrage == 1) {
-            IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
-            borrowedDToken1.borrow(0, data.amount1);
-            IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(usdc));
-            borrowedDToken2.borrow(0, data.amount2);
-
-            IERC20(weth).approve(_addressAuction, type(uint256).max);
-            IERC20(usdc).approve(_addressAuction, type(uint256).max);
-
-            // console.log(">> balance eth before:", IERC20(weth).balanceOf(address(this)));
-            // console.log(">> balance usdc before:", IERC20(usdc).balanceOf(address(this)));
-            // console.log(">> balance osqth before:", IERC20(osqth).balanceOf(address(this)));
-
-            vaultAuction.timeRebalance(address(this), 0, 0, 0);
-            uint256 osqthAfter = IERC20(osqth).balanceOf(address(this));
-
-            console.log(">> balance eth after:", IERC20(weth).balanceOf(address(this)));
-            console.log(">> balance usdc after:", IERC20(usdc).balanceOf(address(this)));
-            console.log(">> balance osqth after:", IERC20(osqth).balanceOf(address(this)));
-
-            TransferHelper.safeApprove(address(osqth), address(swapRouter), type(uint256).max);
-
-            // buy weth for osqth
-            ISwapRouter.ExactOutputSingleParams memory paramsOsqthWeth = ISwapRouter.ExactOutputSingleParams({
-                tokenIn: address(osqth),
-                tokenOut: address(weth),
-                fee: 3000,
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountOut: data.amount1,
-                amountInMaximum: osqthAfter,
-                sqrtPriceLimitX96: 0
-            });
-            uint256 outOsqthWeth = swapRouter.exactOutputSingle(paramsOsqthWeth);
-            // swapRouter.refundETH();
-
-            // console.log(">> outOsqthWeth: %s", outOsqthWeth);
-            // console.log(">> data.amount1: %s", data.amount1);
-            console.log(">> !");
-            console.log(">> balance eth:", IERC20(weth).balanceOf(address(this)));
-            console.log(">> balance usdc:", IERC20(usdc).balanceOf(address(this)));
-            console.log(">> balance osqth:", IERC20(osqth).balanceOf(address(this)));
-
-            uint256 osqthAfter2 = IERC20(osqth).balanceOf(address(this));
-
-            uint24 poolFee = 3000;
-            // buy usdc for osqth
-            ISwapRouter.ExactInputParams memory paramsOsqthUsdc = ISwapRouter.ExactInputParams({
-                path: abi.encodePacked(osqth, poolFee, weth, poolFee, usdc),
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountIn: osqthAfter2,
-                amountOutMinimum: 1644710
-            });
-            uint256 outOsqthUsdc = swapRouter.exactInput(paramsOsqthUsdc);
-
-            // console.log(">> outOsqthUsdc: %s", outOsqthUsdc);
-            // console.log(">> data.amount2: %s", data.amount2);
-            console.log(">> !");
-            console.log(">> balance eth:", IERC20(weth).balanceOf(address(this)));
-            console.log(">> balance usdc:", IERC20(usdc).balanceOf(address(this)));
-            console.log(">> balance osqth:", IERC20(osqth).balanceOf(address(this)));
-
-            console.log(">> data.amount1: %s", data.amount1);
-            console.log(">> data.amount2: %s", data.amount2);
-            IERC20(weth).approve(euler, type(uint256).max);
-            borrowedDToken1.repay(0, data.amount1);
-            IERC20(usdc).approve(euler, type(uint256).max);
-            borrowedDToken2.repay(0, data.amount2);
-        } else {}
-    }
-
-    function safeTransferWithApprove(uint256 amountIn, address routerAddress) internal {
-        // TransferHelper.safeTransferFrom(
-        //     osqth,
-        //     msg.sender,
-        //     address(this),
-        //     amountIn
-        // );
-
-        TransferHelper.safeApprove(osqth, routerAddress, amountIn);
     }
 }

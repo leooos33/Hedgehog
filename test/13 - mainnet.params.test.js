@@ -174,24 +174,30 @@ describe.only("Macro test mainnet", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance ", async () => {
+    it("rebalance with flash loan", async () => {
         const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
         mockRebalancer = await MockRebalancerA.deploy();
         await mockRebalancer.deployed();
 
         await mineSomeBlocks(83069 + 10);
 
-        // const wethBeforeTest = await getERC20Balance(mockRebalancer.address, wethAddress);
-        // console.log("> wethBeforeTest:", wethBeforeTest);
-
         const arbTx = await mockRebalancer.rebalance();
         await arbTx.wait();
-
-        // const deltaWeth = await getERC20Balance(mockRebalancer.address, wethAddress) - wethBeforeTest;
-        // expect(deltaWeth).to.equal(0);
-        // expect(await getERC20Balance(mockRebalancer.address, osqthAddress)).to.equal("0");
-        // expect(parseFixed(await getERC20Balance(mockRebalancer.address, usdcAddress))).to.be.above(0);
     });
+
+    // it("rebalance iterative", async () => {
+    //     const MockRebalancerB = await ethers.getContractFactory("MockRebalancerB");
+    //     mockRebalancer = await MockRebalancerB.deploy();
+    //     await mockRebalancer.deployed();
+
+    //     await mineSomeBlocks(83069);
+
+    //     for (let i = 0; i < 60; i++) {
+    //         const arbTx = await mockRebalancer.rebalance();
+    //         await arbTx.wait();
+    //         await mineSomeBlocks(10);
+    //     }
+    // });
 
     // it("rebalance", async function () {
     //     const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
