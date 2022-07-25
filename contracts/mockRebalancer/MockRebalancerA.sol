@@ -385,9 +385,6 @@ contract MockRebalancerA is Ownable {
             console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
             console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
-
-
-
         } else {}
     }
 }

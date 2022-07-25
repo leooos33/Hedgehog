@@ -174,19 +174,21 @@ describe.only("Macro test mainnet", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance iterative with real rebalance", async (done) => {
+    it("rebalance iterative with real rebalance", async () => {
         const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
         mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
         await mineSomeBlocks(83069);
 
-        for (let i = 0; i < 1; i++) {
+        let succeded = false;
+        for (let i = 0; i < 60; i++) {
             console.log(">", i);
             try {
                 const arbTx = await mockRebalancer.rebalance();
                 await arbTx.wait();
-                return done();
+                succeded = true;
+                break;
             } catch (err) {
                 if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
                     console.error("STF");
@@ -194,22 +196,21 @@ describe.only("Macro test mainnet", function () {
                     console.error(err.message);
                 }
             }
-
             await mineSomeBlocks(10);
         }
-        assert("No test succeded");
-    }).timeout(10000);
+        assert(succeded, "No successful test found");
+    }).timeout(100000);
 
-    //  it("rebalance with flash loan", async () => {
-    //      const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
-    //      mockRebalancer = await MockRebalancerA.deploy();
-    //      await mockRebalancer.deployed();
+    // it("rebalance with flash loan", async () => {
+    //     const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
+    //     mockRebalancer = await MockRebalancerA.deploy();
+    //     await mockRebalancer.deployed();
 
-    //      await mineSomeBlocks(83069 + 10);
+    //     await mineSomeBlocks(83069);
 
-    //      const arbTx = await mockRebalancer.rebalance();
-    //      await arbTx.wait();
-    //  });
+    //     const arbTx = await mockRebalancer.rebalance();
+    //     await arbTx.wait();
+    // });
 
     // it("rebalance iterative", async () => {
     //     const testHolder = {};
