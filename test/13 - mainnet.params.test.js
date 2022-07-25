@@ -174,18 +174,45 @@ describe.only("Macro test mainnet", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance with flash loan", async () => {
-        const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
-        mockRebalancer = await MockRebalancerA.deploy();
+    it("rebalance iterative with real rebalance", async (done) => {
+        const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
+        mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
-        await mineSomeBlocks(83069 + 10);
+        await mineSomeBlocks(83069);
 
-        const arbTx = await mockRebalancer.rebalance();
-        await arbTx.wait();
-    });
+        for (let i = 0; i < 60; i++) {
+            console.log(">", i);
+            try {
+                const arbTx = await mockRebalancer.rebalance();
+                await arbTx.wait();
+                done();
+            } catch (err) {
+                if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
+                    console.error("STF");
+                } else {
+                    console.error(err.message);
+                }
+            }
+
+            await mineSomeBlocks(10);
+        }
+        assert("No test succeded");
+    }).timeout(1000000);
+
+    // it("rebalance with flash loan", async () => {
+    //     const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
+    //     mockRebalancer = await MockRebalancerA.deploy();
+    //     await mockRebalancer.deployed();
+
+    //     await mineSomeBlocks(83069 + 10);
+
+    //     const arbTx = await mockRebalancer.rebalance();
+    //     await arbTx.wait();
+    // });
 
     // it("rebalance iterative", async () => {
+    //     const testHolder = {};
     //     const MockRebalancerB = await ethers.getContractFactory("MockRebalancerB");
     //     mockRebalancer = await MockRebalancerB.deploy();
     //     await mockRebalancer.deployed();
@@ -193,11 +220,15 @@ describe.only("Macro test mainnet", function () {
     //     await mineSomeBlocks(83069);
 
     //     for (let i = 0; i < 60; i++) {
-    //         const arbTx = await mockRebalancer.rebalance();
-    //         await arbTx.wait();
+    //         // const arbTx = await mockRebalancer.rebalance();
+    //         // await arbTx.wait();
+    //         const res = (await mockRebalancer.rebalance()).toString();
+    //         if (!testHolder[res]) testHolder[res] = 0;
+    //         testHolder[res]++;
     //         await mineSomeBlocks(10);
     //     }
-    // });
+    //     console.log(testHolder);
+    // }).timeout(1000000);
 
     // it("rebalance", async function () {
     //     const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);

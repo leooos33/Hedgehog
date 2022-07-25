@@ -24,7 +24,7 @@ interface IUniswapRouter is ISwapRouter {
     function refundETH() external payable;
 }
 
-contract MockRebalancerB is Ownable {
+contract MockRebalancerAll is Ownable {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
@@ -51,7 +51,7 @@ contract MockRebalancerB is Ownable {
 
     constructor() Ownable() {}
 
-    function rebalance() public onlyOwner {
+    function rebalance() public view onlyOwner returns (uint256) {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = vaultMath.isTimeRebalance();
         console.log(">> isTimeRebalance: %s", isTimeRebalance);
         console.log(">> auctionTriggerTime: %s", auctionTriggerTime);
@@ -78,16 +78,22 @@ contract MockRebalancerB is Ownable {
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 1");
+            return 1;
         } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             console.log("type_of_arbitrage 2");
+            return 2;
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
             console.log("type_of_arbitrage 3");
+            return 3;
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 4");
+            return 4;
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             console.log("type_of_arbitrage 5");
+            return 5;
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 6");
+            return 6;
         }
     }
 }
