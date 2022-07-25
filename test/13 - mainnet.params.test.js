@@ -195,7 +195,9 @@ describe.only("Macro test mainnet", function () {
                 } else {
                     console.error(err.message);
                 }
+                break;
             }
+            
             await mineSomeBlocks(10);
         }
         assert(succeded, "No successful test found");
