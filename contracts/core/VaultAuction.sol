@@ -214,6 +214,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 osqthEthPrice
             );
         }
+
+        totalValue = totalValue.mul(995e15);
+
         console.log("totalValue %s", totalValue);
 
         //Calculate liquidities
