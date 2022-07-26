@@ -171,7 +171,7 @@ describe.only("Macro test mainnet", function () {
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
 
-        await mineSomeBlocks(554);
+        await mineSomeBlocks(83622);
     });
 
     it("rebalance iterative with real rebalance", async () => {
@@ -179,7 +179,7 @@ describe.only("Macro test mainnet", function () {
         mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
-        await mineSomeBlocks(83069);
+        await mineSomeBlocks(600);
 
         let succeded = false;
         for (let i = 0; i < 60; i++) {
@@ -188,6 +188,8 @@ describe.only("Macro test mainnet", function () {
                 const arbTx = await mockRebalancer.rebalance();
                 await arbTx.wait();
                 succeded = true;
+                const prices = await VaultMath.getPrices();
+                console.log("> Prices:", prices);
                 break;
             } catch (err) {
                 if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
