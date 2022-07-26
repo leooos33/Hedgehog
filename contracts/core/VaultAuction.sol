@@ -160,12 +160,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
         console.log("ethUsdcPrice %s, osqthEthPrice %s", ethUsdcPrice, osqthEthPrice);
 
-        uint256 priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
-        console.log("priceMultiplier %s", priceMultiplier);
+
 
         uint256 expIVbump;
         uint256 vm;
         bool isPosIVbump;
+        uint256 priceMultiplier;
         {
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
@@ -177,6 +177,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
             isPosIVbump = cIV < pIV;
             console.log("isPosIVbump %s", isPosIVbump);
+
+            priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime, isPosIVbump);
+            console.log("priceMultiplier %s", priceMultiplier);
 
             if (isPosIVbump) {
                 expIVbump = pIV.div(cIV);
