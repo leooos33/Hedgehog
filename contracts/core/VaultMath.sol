@@ -238,7 +238,8 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime) external view override returns (uint256) {
+    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump) external view override returns (uint256) {
+
         uint256 maxPriceMultiplier = IVaultStorage(vaultStorage).maxPriceMultiplier();
         uint256 minPriceMultiplier = IVaultStorage(vaultStorage).minPriceMultiplier();
         uint256 auctionTime = IVaultStorage(vaultStorage).auctionTime();
@@ -248,7 +249,11 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
         //console.log("auctionCompletionRatio %s", auctionCompletionRatio);
 
-        return minPriceMultiplier.add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
+        if (_isPosIVbump) {
+            return uint256(1e18).add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(1e18)));
+        } else {
+            return uint256(1e18).sub(auctionCompletionRatio.mul(uint256(1e18).sub(minPriceMultiplier)));
+        }
     }
 
     function getPrices() public view override returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
