@@ -175,6 +175,7 @@ describe.only("Macro test mainnet", function () {
     });
 
     it("rebalance iterative with real rebalance", async () => {
+        const log = {};
         const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
         mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
@@ -187,23 +188,29 @@ describe.only("Macro test mainnet", function () {
             try {
                 const arbTx = await mockRebalancer.rebalance();
                 await arbTx.wait();
-                succeded = true;
-                const prices = await VaultMath.getPrices();
-                console.log("> Prices:", prices);
-                break;
+                // succeded = true;
+                // const prices = await VaultMath.getPrices();
+                // console.log("> Prices:", prices);
             } catch (err) {
                 if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
+                    log[i] = "STF";
                     console.error("STF");
+                }
+                if (err.message == `VM Exception while processing transaction: reverted with reason string 'Success'`) {
+                    console.error("Success");
+                    succeded = true;
+                    log[i] = "Success";
                 } else {
                     console.error(err.message);
+                    log[i] = err.message;
                 }
-                break;
             }
-            
+
             await mineSomeBlocks(10);
         }
         assert(succeded, "No successful test found");
-    }).timeout(100000);
+        console.log(log);
+    }).timeout(1000000);
 
     // it("rebalance with flash loan", async () => {
     //     const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");

@@ -192,12 +192,12 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             console.log("vm %s", vm);
             console.log("isPosIVbump %s", isPosIVbump);
 
-           //boundaries for auction prices (current price * multiplier)
+            //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
-            ethUsdcPrice.mul(priceMultiplier),
-            osqthEthPrice.mul(priceMultiplier),
-            isPosIVbump,
-            expIVbump
+                ethUsdcPrice.mul(priceMultiplier),
+                osqthEthPrice.mul(priceMultiplier),
+                isPosIVbump,
+                expIVbump
             );
         }
 
@@ -216,50 +216,52 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
             console.log("totalValue %s", totalValue);
         }
-        
+
         //Calculate liquidities
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;
         {
-        liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(ethUsdcPrice).mul(vm),
-            ethUsdcPrice,
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-            1e12
-        );
-        console.log("liquidityEthUsdc %s", liquidityEthUsdc);
+            liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
+                totalValue.mul(ethUsdcPrice).mul(vm),
+                ethUsdcPrice,
+                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
+                1e12
+            );
+            console.log("liquidityEthUsdc %s", liquidityEthUsdc);
 
-        liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(uint256(1e18) - vm),
-            osqthEthPrice,
-            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
-            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-            1e18
-        );
+            liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
+                totalValue.mul(uint256(1e18) - vm),
+                osqthEthPrice,
+                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
+                1e18
+            );
 
-        uint256 value0 = IVaultMath(vaultMath).getValueForLiquidity(
-            liquidityEthUsdc,
-            ethUsdcPrice.mul(priceMultiplier),
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)), 
-            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-            1e12);
+            uint256 value0 = IVaultMath(vaultMath).getValueForLiquidity(
+                liquidityEthUsdc,
+                ethUsdcPrice.mul(priceMultiplier),
+                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
+                1e12
+            );
 
-        uint256 value1 = IVaultMath(vaultMath).getValueForLiquidity(
-            liquidityOsqthEth,
-            osqthEthPrice.mul(priceMultiplier),
-            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)), 
-            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-            1e18);
+            uint256 value1 = IVaultMath(vaultMath).getValueForLiquidity(
+                liquidityOsqthEth,
+                osqthEthPrice.mul(priceMultiplier),
+                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
+                1e18
+            );
 
-        uint256 k = (totalValue).div(value0 + value1);
-        console.log("k %s", k);
-        liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
-        liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
+            uint256 k = (totalValue).div(value0 + value1);
+            console.log("k %s", k);
+            liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
+            liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
 
-        console.log("liquidityEthUsdc %s", liquidityEthUsdc);
-        console.log("liquidityOsqthEth %s", liquidityOsqthEth);
-        }        
+            console.log("liquidityEthUsdc %s", liquidityEthUsdc);
+            console.log("liquidityOsqthEth %s", liquidityOsqthEth);
+        }
 
         return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth, totalValue, ethUsdcPrice);
     }
@@ -324,15 +326,15 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //iv adj parameter
         int24 tickAdj;
         {
-        int24 baseAdj = toInt24(
-            int256(
-                (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
-                    uint256(int256(tickSpacing))).div(1e36)
-            )
-        );
-        console.log("baseAdj %s", uint256(int256(baseAdj)));
-        tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
-        console.log("tickAdj %s", uint256(int256(tickAdj)));
+            int24 baseAdj = toInt24(
+                int256(
+                    (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
+                        uint256(int256(tickSpacing))).div(1e36)
+                )
+            );
+            console.log("baseAdj %s", uint256(int256(baseAdj)));
+            tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
+            console.log("tickAdj %s", uint256(int256(tickAdj)));
         }
 
         if (isPosIVbump) {

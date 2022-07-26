@@ -206,7 +206,7 @@ contract MockRebalancerA is Ownable {
             console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
             console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
-
+            revert("Success");
         } else if (data.type_of_arbitrage == 2) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(osqth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -270,8 +270,7 @@ contract MockRebalancerA is Ownable {
             console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
             console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
-
-            
+            revert("Success");
         } else if (data.type_of_arbitrage == 5) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -326,7 +325,6 @@ contract MockRebalancerA is Ownable {
             });
             swapRouter.exactOutputSingle(params2);
 
-
             console.log(">> !");
             console.log(">> balance eth after osqth->eth swap: %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> balance usdc after osqth->eth swap: %s", IERC20(usdc).balanceOf(address(this)));
@@ -342,7 +340,7 @@ contract MockRebalancerA is Ownable {
             console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
             console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
-
+            revert("Success");
         } else if (data.type_of_arbitrage == 6) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(usdc));
             borrowedDToken1.borrow(0, data.amount1);
@@ -405,6 +403,7 @@ contract MockRebalancerA is Ownable {
             console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
             console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
+            revert("Success");
         } else {}
     }
 }

@@ -238,8 +238,12 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump) external view override returns (uint256) {
-
+    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump)
+        external
+        view
+        override
+        returns (uint256)
+    {
         uint256 maxPriceMultiplier = IVaultStorage(vaultStorage).maxPriceMultiplier();
         uint256 minPriceMultiplier = IVaultStorage(vaultStorage).minPriceMultiplier();
         uint256 auctionTime = IVaultStorage(vaultStorage).auctionTime();
@@ -321,14 +325,18 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
-    function getValueForLiquidity(uint128 liquidity, uint256 aP, uint256 pL, uint256 pH, uint256 digits) external pure override returns (uint256) {
-
+    function getValueForLiquidity(
+        uint128 liquidity,
+        uint256 aP,
+        uint256 pL,
+        uint256 pH,
+        uint256 digits
+    ) external pure override returns (uint256) {
         if (digits == 1e12) {
-        return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).div(aP).mul(1e24);
+            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).div(aP).mul(1e24);
         } else {
-        return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).mul(digits);
+            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).mul(digits);
         }
-
     }
 
     /**
