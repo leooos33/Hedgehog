@@ -321,6 +321,16 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
+    function getValueForLiquidity(uint128 liquidity, uint256 aP, uint256 pL, uint256 pH, uint256 digits) external pure override returns (uint256) {
+
+        if (digits == 1e12) {
+        return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).div(aP).mul(1e24);
+        } else {
+        return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).mul(digits);
+        }
+
+    }
+
     /**
      * @notice calculate value in ETH terms
      */
