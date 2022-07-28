@@ -20,23 +20,28 @@ const toWEI = (value, num = 18) => {
     return utils.parseUnits(Number(value).toFixed(num), num);
 };
 
-//console.log(assertWP("33111111", "33111111", 6, 6)); // true
-//console.log(assertWP("33111111", "33111112", 6, 6)); // false
-//console.log(assertWP("33111111", "33111112", 5, 6)); // true
 const assertWP = (a, b, pres = 4, num = 18) => {
+    if (pres < 0 || num < 0) throw Error("Params are not good");
+    a = a.toString();
+    b = b.toString();
     const getTail = (value, pres, num) => {
-        const decimals = value.slice(-num);
+        let decimals;
+        if (value.length > num) decimals = value.slice(-num);
+        else decimals = "0".repeat(num - value.length) + value;
 
-        const _pres = Math.max(0, decimals.length - pres);
-        const tail = Math.round(Number(decimals) / 10 ** _pres);
-
+        const tail = decimals.slice(0, pres);
         // console.debug("debug:", decimals);
         // console.debug("debug:", tail);
-
         return tail;
     };
 
-    if (getTail(a, pres, num) == getTail(b, pres, num)) return true;
+    const getFront = (value, num) => {
+        let front = "";
+        if (value.length > num) front = value.slice(0, -num);
+        return front;
+    };
+
+    if (getTail(a, pres, num) == getTail(b, pres, num) && getFront(a, num) == getFront(b, num)) return true;
 
     console.log("current  >>>", utils.formatUnits(a, num));
     console.log("current  >>>", a);
@@ -45,6 +50,12 @@ const assertWP = (a, b, pres = 4, num = 18) => {
 
     return false;
 };
+// console.log(assertWP("33111111", "33111111", 6, 6)); // true
+// console.log(assertWP("33111111", "33111112", 6, 6)); // false
+// console.log(assertWP("33111111", "33111112", 5, 6)); // true
+// console.log(assertWP("0", "113828607665", 5, 18)); // true
+// console.log(assertWP("33011111", "33111112", 0, 6)); // true
+// console.log(assertWP("33011111", "34111112", 0, 6)); // false
 
 const resetFork = async (blockNumber = 14487787) => {
     await network.provider.request({

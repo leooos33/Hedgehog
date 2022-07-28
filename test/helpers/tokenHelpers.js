@@ -1,9 +1,11 @@
+const { BigNumber } = require("ethers");
 const { ethers, network } = require("hardhat");
 const { wethAddress, usdcAddress, osqthAddress } = require("../common");
 
 const gasToSend = 100812679875357878208;
 
 async function getToken(amount, account, tokenAddress, accountHolder) {
+    if (!BigNumber.from(amount).gt(BigNumber.from(0))) return;
     await hre.network.provider.request({
         method: "hardhat_impersonateAccount",
         params: [accountHolder],

@@ -3,7 +3,16 @@ const { BigNumber } = require("ethers");
 const { ethers } = require("hardhat");
 const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const { utils } = ethers;
-const { resetFork, getUSDC, getERC20Balance, getAndApprove, assertWP, logBlock, logBalance } = require("./helpers");
+const {
+    resetFork,
+    getUSDC,
+    getERC20Balance,
+    getAndApprove,
+    assertWP,
+    logBlock,
+    logBalance,
+    mineSomeBlocks,
+} = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
 describe("Story about several swaps id 1", function () {
@@ -30,19 +39,10 @@ describe("Story about several swaps id 1", function () {
         await contractHelper.deployed();
     });
 
-    const wethInputR = "334436074311042669";
-    const usdcInputR = "12870285759";
-    const osqthInputR = "12740475182198285927";
+    const wethInputR = "505689744633020169";
+    const usdcInputR = "0";
+    const osqthInputR = "15810574605168484799";
     it("Should preset all values here", async function () {
-        tx = await VaultStorage.connect(governance).setTimeAtLastRebalance(1648646662);
-        await tx.wait();
-
-        tx = await VaultStorage.connect(governance).setEthPriceAtLastRebalance("3391393578000000000000");
-        await tx.wait();
-
-        tx = await VaultStorage.setIvAtLastRebalance("1214682673158336601");
-        await tx.wait();
-
         await getAndApprove(keeper, VaultAuction.address, wethInputR, usdcInputR, osqthInputR);
     });
 
@@ -88,17 +88,20 @@ describe("Story about several swaps id 1", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+        await mineSomeBlocks(83622);
+
         expect(await getERC20Balance(keeper.address, wethAddress)).to.equal(wethInputR);
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal(usdcInputR);
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInputR);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInputR, usdcInputR, osqthInputR);
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         await tx.wait();
 
         await logBalance(keeper.address);
-        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal("0");
-        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal("25740571518");
-        expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal("0");
+        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "113828607665", 4, 18), "1!");
+        assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "17293480111", 1, 6), "2!");
+        assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "10099454434740346", 3, 18), "3!");
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
@@ -126,9 +129,9 @@ describe("Story about several swaps id 1", function () {
         await tx.wait();
 
         await logBalance(depositor.address);
-        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "19320365491946918409", 16), "test");
-        assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "16371885782", 4, 6), "test");
-        assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "47277930775888521810", 16), "test");
+        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "19608980744776366750", 4), "test");
+        assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "11545515732", 2, 6), "test");
+        assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "50337930744423980336", 4), "test");
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");

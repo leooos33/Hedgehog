@@ -71,15 +71,6 @@ describe("Macro test", function () {
         // tx = await VaultStorage.connect(governance).setPause(false);
         // await tx.wait();
 
-        tx = await VaultStorage.connect(governance).setTimeAtLastRebalance(1648646662);
-        await tx.wait();
-
-        tx = await VaultStorage.connect(governance).setEthPriceAtLastRebalance("3391393578000000000000");
-        await tx.wait();
-
-        tx = await VaultStorage.connect(governance).setIvAtLastRebalance("1214682673158336601");
-        await tx.wait();
-
         await getAndApprove2(
             keeper,
             VaultAuction.address,
