@@ -16,7 +16,7 @@ contract VaultStorage is IVaultStorage, Faucet {
     int24 public override tickSpacing = 60;
 
     //@dev twap period to use for rebalance calculations
-    uint32 public override twapPeriod = 180 seconds; //TODO: 180 on main 420 on test
+    uint32 public override twapPeriod = 180 seconds;
 
     //@dev max amount of wETH that strategy accept for deposit
     uint256 public override cap;
@@ -42,11 +42,11 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override rebalancePriceThreshold;
 
     //@dev iv adjustment parameter
-    uint256 public override adjParam = 100000000000000000; //TODO: 100000000000000000 on main 83000000000000000 on test
+    uint256 public override adjParam = 100000000000000000;
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 1200; //TODO: 1200 on main 1440 on test
+    int24 public override baseThreshold = 1200;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;

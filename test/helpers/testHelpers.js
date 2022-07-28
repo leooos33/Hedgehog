@@ -20,6 +20,9 @@ const toWEI = (value, num = 18) => {
     return utils.parseUnits(Number(value).toFixed(num), num);
 };
 
+//console.log(assertWP("33111111", "33111111", 6, 6)); // true
+//console.log(assertWP("33111111", "33111112", 6, 6)); // false
+//console.log(assertWP("33111111", "33111112", 5, 6)); // true
 const assertWP = (a, b, pres = 4, num = 18) => {
     const getTail = (value, pres, num) => {
         const decimals = value.slice(-num);

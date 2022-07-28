@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe.only("Macro test mainnet", function () {
+describe("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -174,236 +174,71 @@ describe.only("Macro test mainnet", function () {
         await mineSomeBlocks(83622);
     });
 
-    it("rebalance iterative with real rebalance", async () => {
-        const log = {};
-        const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
-        mockRebalancer = await MockRebalancer.deploy();
-        await mockRebalancer.deployed();
-
-        await mineSomeBlocks(600);
-
-        let succeded = false;
-        for (let i = 0; i < 60; i++) {
-            console.log(">", i);
-            try {
-                const arbTx = await mockRebalancer.rebalance();
-                await arbTx.wait();
-                // succeded = true;
-                // const prices = await VaultMath.getPrices();
-                // console.log("> Prices:", prices);
-            } catch (err) {
-                if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
-                    log[i] = "STF";
-                    console.error("STF");
-                }
-                if (err.message == `VM Exception while processing transaction: reverted with reason string 'Success'`) {
-                    console.error("Success");
-                    succeded = true;
-                    log[i] = "Success";
-                } else {
-                    console.error(err.message);
-                    log[i] = err.message;
-                }
-            }
-
-            await mineSomeBlocks(10);
-        }
-        assert(succeded, "No successful test found");
-        console.log(log);
-    }).timeout(1000000);
-
-    // it("rebalance with flash loan", async () => {
-    //     const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
-    //     mockRebalancer = await MockRebalancerA.deploy();
+    // it("rebalance iterative with real rebalance", async () => {
+    //     const log = {};
+    //     const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
+    //     mockRebalancer = await MockRebalancer.deploy();
     //     await mockRebalancer.deployed();
 
-    //     await mineSomeBlocks(83069);
+    //     // await mineSomeBlocks(600);
 
-    //     const arbTx = await mockRebalancer.rebalance();
-    //     await arbTx.wait();
-    // });
-
-    // it("rebalance iterative", async () => {
-    //     const testHolder = {};
-    //     const MockRebalancerB = await ethers.getContractFactory("MockRebalancerB");
-    //     mockRebalancer = await MockRebalancerB.deploy();
-    //     await mockRebalancer.deployed();
-
-    //     await mineSomeBlocks(83069);
-
+    //     let succeded = false;
     //     for (let i = 0; i < 60; i++) {
-    //         // const arbTx = await mockRebalancer.rebalance();
-    //         // await arbTx.wait();
-    //         const res = (await mockRebalancer.rebalance()).toString();
-    //         if (!testHolder[res]) testHolder[res] = 0;
-    //         testHolder[res]++;
+    //         console.log(">", i);
+    //         try {
+    //             const arbTx = await mockRebalancer.rebalance();
+    //             await arbTx.wait();
+    //             // succeded = true;
+    //             // const prices = await VaultMath.getPrices();
+    //             // console.log("> Prices:", prices);
+    //         } catch (err) {
+    //             if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
+    //                 log[i] = "STF";
+    //                 console.error("STF");
+    //             }
+    //             if (err.message == `VM Exception while processing transaction: reverted with reason string 'Success'`) {
+    //                 console.error("Success");
+    //                 succeded = true;
+    //                 log[i] = "Success";
+    //             } else {
+    //                 console.error(err.message);
+    //                 log[i] = err.message;
+    //             }
+    //         }
+
     //         await mineSomeBlocks(10);
     //     }
-    //     console.log(testHolder);
+    //     assert(succeded, "No successful test found");
+    //     console.log(log);
     // }).timeout(1000000);
 
-    // it("rebalance", async function () {
-    //     const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-    //     const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-    //     const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-    //     console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-    //     console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-    //     console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+    it("rebalance with flash loan", async function () {
+        this.skip();
+        const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
+        mockRebalancer = await MockRebalancerA.deploy();
+        await mockRebalancer.deployed();
 
-    //     tx = await VaultAuction.connect(keeper).timeRebalance(
-    //         keeper.address,
-    //         "525269035909074323",
-    //         "20549790205",
-    //         "22598046098622284218"
-    //     );
-    //     await tx.wait();
+        await mineSomeBlocks(83069);
 
-    //     const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
-    //     const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
-    //     const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-    //     console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
-    //     console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
-    //     console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
+        const arbTx = await mockRebalancer.rebalance();
+        await arbTx.wait();
+    });
 
-    //     const amount = await VaultMath.getTotalAmounts();
-    //     console.log("> Total amounts:", amount);
-    // });
+    it("rebalance iterative", async function () {
+        this.skip();
+        const testHolder = {};
+        const MockRebalancerB = await ethers.getContractFactory("MockRebalancerB");
+        mockRebalancer = await MockRebalancerB.deploy();
+        await mockRebalancer.deployed();
 
-    // it("deposit3", async function () {
-    //     tx = await Vault.connect(depositor3).deposit(
-    //         "27630456391863397407",
-    //         "29892919002",
-    //         "33072912443025954753",
-    //         depositor3.address,
-    //         "0",
-    //         "0",
-    //         "0"
-    //     );
-    //     await tx.wait();
+        await mineSomeBlocks(83069);
 
-    //     // State
-    //     const userEthBalanceAfterDeposit = await getERC20Balance(depositor3.address, wethAddress);
-    //     const userUsdcBalanceAfterDeposit = await getERC20Balance(depositor3.address, usdcAddress);
-    //     const userOsqthBalanceAfterDeposit = await getERC20Balance(depositor3.address, osqthAddress);
-    //     const userShareAfterDeposit = await getERC20Balance(depositor3.address, Vault.address);
-
-    //     console.log("> userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
-    //     console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
-    //     console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
-    //     console.log("> userShareAfterDeposit", userShareAfterDeposit);
-    // });
-
-    // it("withdraw2", async function () {
-    //     tx = await Vault.connect(depositor2).withdraw(
-    //         await getERC20Balance(depositor2.address, Vault.address),
-    //         "0",
-    //         "0",
-    //         "0"
-    //     );
-    //     await tx.wait();
-
-    //     // State
-    //     const userEthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, wethAddress);
-    //     const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor2.address, usdcAddress);
-    //     const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor2.address, osqthAddress);
-    //     const userShareAfterWithdraw = await getERC20Balance(depositor2.address, Vault.address);
-    //     console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-    //     console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-    //     console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-    //     console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
-    // });
-
-    // it("swap", async function () {
-    //     await mineSomeBlocks(2216);
-
-    //     swapAmount = utils.parseUnits("1000000", 6).toString();
-    //     await getUSDC(swapAmount, contractHelper.address);
-    //     console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-    //     console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-    //     tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
-    //     await tx.wait();
-    //     console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
-    //     console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-
-    //     await mineSomeBlocks(554);
-
-    //     swapAmount = utils.parseUnits("100", 18).toString();
-    //     await getWETH(swapAmount, contractHelper.address);
-    //     console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-    //     console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-    //     tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
-    //     await tx.wait();
-    //     console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-    //     console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-
-    //     await mineSomeBlocks(554);
-    // });
-
-    // it("rebalance", async function () {
-    //     const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-    //     const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-    //     const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-    //     console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-    //     console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-    //     console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
-
-    //     const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
-    //     console.log("AuctionParamsBefore %s", AuctionParamsBefore);
-
-    //     tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, "0", "0", "0");
-    //     await tx.wait();
-
-    //     const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
-    //     const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
-    //     const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-    //     console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
-    //     console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
-    //     console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
-
-    //     const amount = await VaultMath.getTotalAmounts();
-    //     console.log("> Total amounts:", amount);
-
-    //     const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
-    //     console.log("AuctionParamsAfter %s", AuctionParamsAfter);
-    // });
-
-    // it("withdraw1", async function () {
-    //     tx = await Vault.connect(depositor1).withdraw(
-    //         await getERC20Balance(depositor1.address, Vault.address),
-    //         "0",
-    //         "0",
-    //         "0"
-    //     );
-    //     await tx.wait();
-
-    //     // State
-    //     const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
-    //     const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
-    //     const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
-    //     const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
-    //     console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-    //     console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-    //     console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-    //     console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
-    // });
-
-    // it("withdraw3", async function () {
-    //     tx = await Vault.connect(depositor3).withdraw(
-    //         await getERC20Balance(depositor3.address, Vault.address),
-    //         "0",
-    //         "0",
-    //         "0"
-    //     );
-    //     await tx.wait();
-
-    //     // State
-    //     const userEthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, wethAddress);
-    //     const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor3.address, usdcAddress);
-    //     const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, osqthAddress);
-    //     const userShareAfterWithdraw = await getERC20Balance(depositor3.address, Vault.address);
-    //     console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-    //     console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-    //     console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-    //     console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
-    // });
+        for (let i = 0; i < 60; i++) {
+            const res = (await mockRebalancer.rebalance()).toString();
+            if (!testHolder[res]) testHolder[res] = 0;
+            testHolder[res]++;
+            await mineSomeBlocks(10);
+        }
+        console.log(testHolder);
+    }).timeout(1000000);
 });

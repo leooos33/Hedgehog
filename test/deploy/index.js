@@ -1,16 +1,6 @@
 const { ethers } = require("hardhat");
 const { utils, BigNumber } = ethers;
 
-const testnetDeploymentParams = [
-    utils.parseUnits("4000000000000", 18),
-    10,
-    utils.parseUnits("0.05", 18),
-    "10",
-    "950000000000000000",
-    "1050000000000000000",
-    "0",
-];
-
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),
     BigNumber.from(86400),
@@ -22,7 +12,6 @@ const mainnetDeploymentParams = [
 ];
 
 const deploymentParams = mainnetDeploymentParams;
-// const deploymentParams = testnetDeploymentParams;
 
 const hardhatDeploy = async (governance, params) => {
     await network.provider.send("evm_setAutomine", [false]);
