@@ -56,9 +56,9 @@ describe("Macro test", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "25052265118289021574",
-            usdcInput: "14993292352",
-            osqthInput: "160272479011744457983",
+            wethInput: "26418885994532528989",
+            usdcInput: "12506405330",
+            osqthInput: "204482223867910110089",
         },
         keeper: {
             // Added here amounts for 2 reabalances
@@ -133,9 +133,9 @@ describe("Macro test", function () {
 
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
-            "37630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor2.address,
             "0",
             "0",
@@ -182,6 +182,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
@@ -210,9 +212,9 @@ describe("Macro test", function () {
 
     it("deposit3", async function () {
         tx = await Vault.connect(depositor3).deposit(
-            "27630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor3.address,
             "0",
             "0",
@@ -292,6 +294,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
@@ -391,6 +395,8 @@ describe("Macro test", function () {
         const fee0 = await VaultStorage.connect(governance).accruedFeesEth();
         const fee1 = await VaultStorage.connect(governance).accruedFeesUsdc();
         const fee2 = await VaultStorage.connect(governance).accruedFeesOsqth();
+
+        let errored = false;
         try {
             tx = await Vault.connect(governance).collectProtocol(
                 fee0.add(BigNumber.from(2)).toString(),
@@ -400,14 +406,23 @@ describe("Macro test", function () {
             );
             await tx.wait();
         } catch (err) {
-            console.log("> I'm error due to input too big");
+            if (
+                err.message ==
+                `VM Exception while processing transaction: reverted with panic code 0x11 (Arithmetic operation underflowed or overflowed outside of an unchecked block)`
+            ) {
+                errored = true;
+            } else console.error(err.message);
         }
+
+        assert(errored, "No error due to input too big");
     });
 
     it("feees time! 😝 but not governance", async function () {
         const fee0 = await VaultStorage.connect(governance).accruedFeesEth();
         const fee1 = await VaultStorage.connect(governance).accruedFeesUsdc();
         const fee2 = await VaultStorage.connect(governance).accruedFeesOsqth();
+
+        let errored = false;
         try {
             tx = await Vault.connect(notgovernance).collectProtocol(
                 fee0.toString(),
@@ -417,8 +432,12 @@ describe("Macro test", function () {
             );
             await tx.wait();
         } catch (err) {
-            console.log("> I'm error due to notgovernance");
+            if (err.message == `VM Exception while processing transaction: reverted with reason string 'C15'`) {
+                errored = true;
+            } else console.error(err.message);
         }
+
+        assert(errored, "No error due to input too big");
     });
 
     it("feees time! 😝 - all", async function () {

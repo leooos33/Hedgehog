@@ -53,9 +53,9 @@ describe("Macro test", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "25367382046859398051",
-            usdcInput: "12971874974",
-            osqthInput: "184211012138250972923",
+            wethInput: "26418885994532528989",
+            usdcInput: "12506405330",
+            osqthInput: "204482223867910110089",
         },
         keeper: {
             wethInput: BigNumber.from("46420453093069060030").add(BigNumber.from("7611641957027153635")).toString(),
@@ -126,9 +126,9 @@ describe("Macro test", function () {
 
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
-            "37630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor2.address,
             "0",
             "0",
@@ -175,6 +175,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
@@ -201,11 +203,31 @@ describe("Macro test", function () {
         console.log("> Total amounts:", amount);
     });
 
+    it("deposit3 -> cap limit", async function () {
+        let succeded = false;
+        try {
+            tx = await Vault.connect(depositor3).deposit(
+                "27630456391863397407",
+                "29892919002",
+                "33072912443025954753",
+                depositor3.address,
+                "0",
+                "0",
+                "0"
+            );
+            await tx.wait();
+        } catch (err) {
+            if (err.message == `VM Exception while processing transaction: reverted with reason string 'C4'`)
+                succeded = true;
+        }
+        assert(succeded, "Cap was not reached");
+    });
+
     it("deposit3", async function () {
         tx = await Vault.connect(depositor3).deposit(
-            "27630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor3.address,
             "0",
             "0",
@@ -272,6 +294,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);

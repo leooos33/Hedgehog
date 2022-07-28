@@ -174,46 +174,47 @@ describe("Macro test mainnet", function () {
         await mineSomeBlocks(83622);
     });
 
-    // it("rebalance iterative with real rebalance", async () => {
-    //     const log = {};
-    //     const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
-    //     mockRebalancer = await MockRebalancer.deploy();
-    //     await mockRebalancer.deployed();
+    it("rebalance iterative with real rebalance", async function () {
+        this.skip();
 
-    //     // await mineSomeBlocks(600);
+        const log = {};
+        const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
+        mockRebalancer = await MockRebalancer.deploy();
+        await mockRebalancer.deployed();
 
-    //     let succeded = false;
-    //     for (let i = 0; i < 60; i++) {
-    //         console.log(">", i);
-    //         try {
-    //             const arbTx = await mockRebalancer.rebalance();
-    //             await arbTx.wait();
-    //             // succeded = true;
-    //             // const prices = await VaultMath.getPrices();
-    //             // console.log("> Prices:", prices);
-    //         } catch (err) {
-    //             if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
-    //                 log[i] = "STF";
-    //                 console.error("STF");
-    //             }
-    //             if (err.message == `VM Exception while processing transaction: reverted with reason string 'Success'`) {
-    //                 console.error("Success");
-    //                 succeded = true;
-    //                 log[i] = "Success";
-    //             } else {
-    //                 console.error(err.message);
-    //                 log[i] = err.message;
-    //             }
-    //         }
+        // await mineSomeBlocks(600);
 
-    //         await mineSomeBlocks(10);
-    //     }
-    //     assert(succeded, "No successful test found");
-    //     console.log(log);
-    // }).timeout(1000000);
+        let succeded = false;
+        for (let i = 0; i < 60; i++) {
+            console.log(">", i);
+            try {
+                const arbTx = await mockRebalancer.rebalance();
+                await arbTx.wait();
+                succeded = true;
+                // const prices = await VaultMath.getPrices();
+                // console.log("> Prices:", prices);
+            } catch (err) {
+                if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
+                    log[i] = "STF";
+                    console.error("STF");
+                }
+                if (err.message == `VM Exception while processing transaction: reverted with reason string 'Success'`) {
+                    console.error("Success");
+                    succeded = true;
+                    log[i] = "Success";
+                } else {
+                    console.error(err.message);
+                    log[i] = err.message;
+                }
+            }
+
+            await mineSomeBlocks(10);
+        }
+        assert(succeded, "No successful test found");
+        console.log(log);
+    }).timeout(1000000);
 
     it("rebalance with flash loan", async function () {
-        this.skip();
         const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
         mockRebalancer = await MockRebalancerA.deploy();
         await mockRebalancer.deployed();

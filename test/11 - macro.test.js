@@ -53,9 +53,9 @@ describe("Macro test", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "25411036631599709206",
-            usdcInput: "12170566676",
-            osqthInput: "189650821850195897376",
+            wethInput: "26418462796965737682",
+            usdcInput: "12505965340",
+            osqthInput: "204490303934538045713",
         },
         keeper: {
             // Added here amounts for 2 reabalances
@@ -142,9 +142,9 @@ describe("Macro test", function () {
 
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
-            "37630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor2.address,
             "0",
             "0",
@@ -191,6 +191,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
@@ -219,9 +221,9 @@ describe("Macro test", function () {
 
     it("deposit3", async function () {
         tx = await Vault.connect(depositor3).deposit(
-            "27630456391863397407",
-            "29892919002",
-            "33072912443025954753",
+            "7630456391863397407",
+            "9892919002",
+            "3072912443025954753",
             depositor3.address,
             "0",
             "0",
@@ -288,6 +290,8 @@ describe("Macro test", function () {
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+
         const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
         const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
         const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
