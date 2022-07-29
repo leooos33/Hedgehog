@@ -30,47 +30,55 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     /**
      * @notice strategy rebalancing based on time threshold
      * @param keeper keeper address
-     * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param minAmountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
+     * @param minAmountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
+     * @param minAmountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function timeRebalance(
         address keeper,
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
+        uint256 minAmountEth,
+        uint256 minAmountUsdc,
+        uint256 minAmountOsqth
     ) external override nonReentrant notPaused {
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
         require(isTimeRebalanceAllowed, "C10");
 
-        _executeAuction(keeper, auctionTriggerTime);
+        _executeAuction(
+            keeper,
+            auctionTriggerTime,
+            Constants.AuctionMinReturns(minAmountEth, minAmountUsdc, minAmountOsqth)
+        );
 
-        emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, amountEth, amountUsdc, amountOsqth);
+        emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
     }
 
     /**
      * @notice strategy rebalancing based on price threshold
      * @param keeper keeper address
      * @param auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param amountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param amountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param amountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param minAmountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
+     * @param minAmountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
+     * @param minAmountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
      */
     function priceRebalance(
         address keeper,
         uint256 auctionTriggerTime,
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth
+        uint256 minAmountEth,
+        uint256 minAmountUsdc,
+        uint256 minAmountOsqth
     ) external override nonReentrant notPaused {
         //check if rebalancing based on price threshold is allowed
         require(IVaultMath(vaultMath).isPriceRebalance(auctionTriggerTime), "C11");
 
-        _executeAuction(keeper, auctionTriggerTime);
+        _executeAuction(
+            keeper,
+            auctionTriggerTime,
+            Constants.AuctionMinReturns(minAmountEth, minAmountUsdc, minAmountOsqth)
+        );
 
-        emit SharedEvents.PriceRebalance(keeper, amountEth, amountUsdc, amountOsqth);
+        emit SharedEvents.PriceRebalance(keeper, minAmountEth, minAmountUsdc, minAmountOsqth);
     }
 
     /**
@@ -80,7 +88,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @dev sell excess tokens to sender
      * @dev place new positions in eth:usdc and osqth:eth pool
      */
-    function _executeAuction(address _keeper, uint256 _auctionTriggerTime) internal {
+    function _executeAuction(
+        address _keeper,
+        uint256 _auctionTriggerTime,
+        Constants.AuctionMinReturns memory minReturns
+    ) internal {
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         //Withdraw all the liqudity from the positions
@@ -98,21 +110,23 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
-        //Calculate amounts that need to be exchanged with keeper
-        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-        console.log("ethBalance %s, usdcBalance %s, osqthBalance %s", ethBalance, usdcBalance, osqthBalance);
+        {
+            //Calculate amounts that need to be exchanged with keeper
+            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+            console.log("ethBalance %s, usdcBalance %s, osqthBalance %s", ethBalance, usdcBalance, osqthBalance);
 
-        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
-            params.boundaries,
-            params.liquidityEthUsdc,
-            params.liquidityOsqthEth
-        );
-        console.log("targetEth %s, targetUsdc %s, targetOsqth %s", targetEth, targetUsdc, targetOsqth);
+            (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+                params.boundaries,
+                params.liquidityEthUsdc,
+                params.liquidityOsqthEth
+            );
+            console.log("targetEth %s, targetUsdc %s, targetOsqth %s", targetEth, targetUsdc, targetOsqth);
 
-        //Exchange tokens with keeper
-        _swapWithKeeper(ethBalance, targetEth, address(Constants.weth), _keeper);
-        _swapWithKeeper(usdcBalance, targetUsdc, address(Constants.usdc), _keeper);
-        _swapWithKeeper(osqthBalance, targetOsqth, address(Constants.osqth), _keeper);
+            //Exchange tokens with keeper
+            _swapWithKeeper(ethBalance, targetEth, minReturns.minAmountEth, address(Constants.weth), _keeper);
+            _swapWithKeeper(usdcBalance, targetUsdc, minReturns.minAmountUsdc, address(Constants.usdc), _keeper);
+            _swapWithKeeper(osqthBalance, targetOsqth, minReturns.minAmountOsqth, address(Constants.osqth), _keeper);
+        }
 
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -359,13 +373,17 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     function _swapWithKeeper(
         uint256 balance,
         uint256 target,
+        uint256 minAmount,
         address coin,
         address keeper
     ) internal {
         if (target >= balance) {
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
-            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, balance.sub(target).sub(10));
+            uint256 transfered = balance.sub(target).sub(10);
+            require(transfered >= minAmount, "C21");
+
+            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, transfered);
         }
     }
 

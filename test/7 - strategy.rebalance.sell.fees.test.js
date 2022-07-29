@@ -132,7 +132,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         receipt = await tx.wait();
         console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
 

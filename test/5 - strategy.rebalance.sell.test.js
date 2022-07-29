@@ -114,9 +114,23 @@ describe("Strategy rebalance sell", function () {
         await mineSomeBlocks(83622);
     });
 
-    it("rebalance", async function () {
+    it("rebalance with C21", async function () {
         await mineSomeBlocks(83622);
 
+        let errored = false;
+        try {
+            tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, "23539257397739234184");
+            receipt = await tx.wait();
+        } catch (err) {
+            if (err.message == `VM Exception while processing transaction: reverted with reason string 'C21'`) {
+                errored = true;
+            } else console.error(err.message);
+        }
+
+        assert(errored, "No error due to C21");
+    });
+
+    it("rebalance", async function () {
         const wethInput = wethInputR;
         const usdcInput = usdcInputR;
         const osqthInput = osqthInputR;
@@ -134,7 +148,7 @@ describe("Strategy rebalance sell", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, wethInput, usdcInput, osqthInput);
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         receipt = await tx.wait();
         console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
         gasSnapshot.timeRebalance = receipt.gasUsed.toString();

@@ -45,6 +45,7 @@ import "hardhat/console.sol";
  * C18: Int overflow
  * C19: Max TWAP Deviation
  * C20: Wrong pool
+ * C21: Less than the minimum in rebalancing
  */
 
 contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {

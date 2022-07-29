@@ -184,12 +184,7 @@ describe("Macro test", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(
-            keeper.address,
-            "525269035909074323",
-            "20549790205",
-            "22598046098622284218"
-        );
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         await tx.wait();
 
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
@@ -306,7 +301,7 @@ describe("Macro test", function () {
         const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
         console.log("AuctionParamsBefore %s", AuctionParamsBefore);
 
-        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, "0", "0", "0");
+        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         await tx.wait();
 
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
