@@ -53,12 +53,6 @@ contract MockRebalancerA is Ownable {
 
     function rebalance() public onlyOwner {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = vaultMath.isTimeRebalance();
-        console.log(">> isTimeRebalance: %s", isTimeRebalance);
-        console.log(">> auctionTriggerTime: %s", auctionTriggerTime);
-
-        console.log(">> balance eth start:", IERC20(weth).balanceOf(address(this)));
-        console.log(">> balance usdc start:", IERC20(usdc).balanceOf(address(this)));
-        console.log(">> balance osqth start:", IERC20(osqth).balanceOf(address(this)));
 
         (
             uint256 targetEth,
@@ -68,13 +62,6 @@ contract MockRebalancerA is Ownable {
             uint256 usdcBalance,
             uint256 osqthBalance
         ) = vaultAuction.getAuctionParams(auctionTriggerTime);
-
-        console.log(">> targetEth: %s", targetEth);
-        console.log(">> targetUsdc: %s", targetUsdc);
-        console.log(">> targetOsqth: %s", targetOsqth);
-        console.log(">> ethBalance: %s", ethBalance);
-        console.log(">> usdcBalance: %s", usdcBalance);
-        console.log(">> osqthBalance: %s", osqthBalance);
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow eth & usdc
@@ -142,10 +129,6 @@ contract MockRebalancerA is Ownable {
             IERC20(weth).approve(_addressAuction, type(uint256).max);
             IERC20(usdc).approve(_addressAuction, type(uint256).max);
 
-            // console.log(">> balance eth before:", IERC20(weth).balanceOf(address(this)));
-            // console.log(">> balance usdc before:", IERC20(usdc).balanceOf(address(this)));
-            // console.log(">> balance osqth before:", IERC20(osqth).balanceOf(address(this)));
-
             vaultAuction.timeRebalance(address(this), 0, 0, 0);
             uint256 osqthAfter = IERC20(osqth).balanceOf(address(this));
 
@@ -189,8 +172,6 @@ contract MockRebalancerA is Ownable {
 
             swapRouter.exactOutputSingle(params2);
 
-            // console.log(">> out2: %s", out2);
-            // console.log(">> data.amount2: %s", data.amount2);
             console.log(">> !");
             console.log(">> final balance eth after usdc->weth swap %s", IERC20(weth).balanceOf(address(this)));
             console.log(">> final balance usdc after usdc->weth swap %s", IERC20(usdc).balanceOf(address(this)));

@@ -56,10 +56,6 @@ contract MockRebalancerAll is Ownable {
         console.log(">> isTimeRebalance: %s", isTimeRebalance);
         console.log(">> auctionTriggerTime: %s", auctionTriggerTime);
 
-        console.log(">> balance eth start:", IERC20(weth).balanceOf(address(this)));
-        console.log(">> balance usdc start:", IERC20(usdc).balanceOf(address(this)));
-        console.log(">> balance osqth start:", IERC20(osqth).balanceOf(address(this)));
-
         (
             uint256 targetEth,
             uint256 targetUsdc,
@@ -68,13 +64,6 @@ contract MockRebalancerAll is Ownable {
             uint256 usdcBalance,
             uint256 osqthBalance
         ) = vaultAuction.getAuctionParams(auctionTriggerTime);
-
-        console.log(">> targetEth: %s", targetEth);
-        console.log(">> targetUsdc: %s", targetUsdc);
-        console.log(">> targetOsqth: %s", targetOsqth);
-        console.log(">> ethBalance: %s", ethBalance);
-        console.log(">> usdcBalance: %s", usdcBalance);
-        console.log(">> osqthBalance: %s", osqthBalance);
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 1");

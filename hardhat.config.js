@@ -34,11 +34,11 @@ module.exports = {
         compilers: [
             {
                 version: "0.7.6",
-                optimizer: { enabled: process.env.DEBUG ? false : true },
+                optimizer: { enabled: true, runs: 100000 },
             },
             {
                 version: "0.8.4",
-                optimizer: { enabled: process.env.DEBUG ? false : true },
+                optimizer: { enabled: true, runs: 100000 },
             },
         ],
     },

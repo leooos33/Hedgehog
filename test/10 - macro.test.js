@@ -301,7 +301,7 @@ describe("Macro test", function () {
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
-    });
+    }).timeout(1000000);
 
     it("withdraw1", async function () {
         tx = await Vault.connect(depositor1).withdraw(

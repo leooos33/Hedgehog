@@ -182,13 +182,9 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @return auction trigger timestamp
      */
     function isTimeRebalance() public view override returns (bool, uint256) {
-        console.log("Time at last rebalance %s", IVaultStorage(vaultStorage).timeAtLastRebalance());
-
         uint256 auctionTriggerTime = IVaultStorage(vaultStorage).timeAtLastRebalance().add(
             IVaultStorage(vaultStorage).rebalanceTimeThreshold()
         );
-        console.log("rebalanceTimeThreshold %s", IVaultStorage(vaultStorage).rebalanceTimeThreshold());
-        console.log("auctionTriggerTime %s", auctionTriggerTime);
 
         return (block.timestamp >= auctionTriggerTime, auctionTriggerTime);
     }
@@ -251,7 +247,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         uint256 auctionCompletionRatio = block.timestamp.sub(_auctionTriggerTime) >= auctionTime
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
-        //console.log("auctionCompletionRatio %s", auctionCompletionRatio);
 
         if (_isPosIVbump) {
             return uint256(1e18).add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(1e18)));
