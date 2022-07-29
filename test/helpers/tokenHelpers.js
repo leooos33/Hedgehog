@@ -12,15 +12,11 @@ async function getToken(amount, account, tokenAddress, accountHolder) {
     });
 
     const signer = await ethers.getSigner(accountHolder);
-
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
-
-    // console.log((await ERC20.balanceOf(signer.address)).toString());
 
     await network.provider.send("hardhat_setBalance", [signer.address, toHexdigital(gasToSend)]);
 
     await ERC20.connect(signer).transfer(account, amount);
-    // console.log((await ERC20.balanceOf(account)).toString());
 
     await network.provider.request({
         method: "hardhat_stopImpersonatingAccount",

@@ -72,7 +72,7 @@ const logBlock = async () => {
     const blockNumBefore = await ethers.provider.getBlockNumber();
     const blockBefore = await ethers.provider.getBlock(blockNumBefore);
     const timestampBefore = blockBefore.timestamp;
-    console.log("blockNumber:", blockNumBefore, "timestamp:", timestampBefore);
+    console.log("> blockNumber:", blockNumBefore, "timestamp:", timestampBefore);
 };
 
 const logBalance = async (address) => {

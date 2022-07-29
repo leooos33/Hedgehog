@@ -129,7 +129,7 @@ describe("Story about several swaps id 1", function () {
         await tx.wait();
 
         await logBalance(depositor.address);
-        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "19608980744776366750", 4), "test");
+        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "19608980744776366750", 1), "test");
         assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "11545515732", 2, 6), "test");
         assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "50337930744423980336", 4), "test");
 
