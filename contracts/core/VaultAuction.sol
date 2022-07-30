@@ -30,9 +30,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     /**
      * @notice strategy rebalancing based on time threshold
      * @param keeper keeper address
-     * @param minAmountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param minAmountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param minAmountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param minAmountEth min amount of wETH to receive
+     * @param minAmountUsdc min amount of USDC to receive
+     * @param minAmountOsqth miin amount of oSQTH to receive
      */
     function timeRebalance(
         address keeper,
@@ -48,7 +48,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         _executeAuction(
             keeper,
             auctionTriggerTime,
-            Constants.AuctionMinReturns(minAmountEth, minAmountUsdc, minAmountOsqth)
+            Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
         );
 
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
@@ -58,9 +58,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @notice strategy rebalancing based on price threshold
      * @param keeper keeper address
      * @param auctionTriggerTime the time when the price deviation threshold was exceeded and when the auction started
-     * @param minAmountEth amount of wETH to buy (strategy sell wETH both in sell and buy auction)
-     * @param minAmountUsdc amount of USDC to buy or sell (depending if price increased or decreased)
-     * @param minAmountOsqth amount of oSQTH to buy or sell (depending if price increased or decreased)
+     * @param minAmountEth min amount of wETH to receive
+     * @param minAmountUsdc min amount of USDC to receive
+     * @param minAmountOsqth miin amount of oSQTH to receive
      */
     function priceRebalance(
         address keeper,
@@ -75,7 +75,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         _executeAuction(
             keeper,
             auctionTriggerTime,
-            Constants.AuctionMinReturns(minAmountEth, minAmountUsdc, minAmountOsqth)
+            Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
         );
 
         emit SharedEvents.PriceRebalance(keeper, minAmountEth, minAmountUsdc, minAmountOsqth);
@@ -86,13 +86,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @dev withdraw all liquidity from the positions
      * @dev pull in tokens from keeper
      * @dev sell excess tokens to sender
-     * @dev place new positions in eth:usdc and osqth:eth pool
+     * @dev place new positions in ETH-USDC pool and oSQTH-ETH pool
      */
     function _executeAuction(
         address _keeper,
         uint256 _auctionTriggerTime,
-        Constants.AuctionMinReturns memory minReturns
+        Constants.AuctionMinAmounts memory minAmounts
     ) internal {
+        //Calculate auction params
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         //Withdraw all the liqudity from the positions
@@ -121,9 +122,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
 
             //Exchange tokens with keeper
-            _swapWithKeeper(ethBalance, targetEth, minReturns.minAmountEth, address(Constants.weth), _keeper);
-            _swapWithKeeper(usdcBalance, targetUsdc, minReturns.minAmountUsdc, address(Constants.usdc), _keeper);
-            _swapWithKeeper(osqthBalance, targetOsqth, minReturns.minAmountOsqth, address(Constants.osqth), _keeper);
+            _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
+            _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
+            _swapWithKeeper(osqthBalance, targetOsqth, minAmounts.minAmountOsqth, address(Constants.osqth), _keeper);
         }
 
         //Place new positions
@@ -161,30 +162,32 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        uint256 vm;
+        uint256 valueMultiplier; 
         uint256 priceMultiplier;
         Constants.Boundaries memory boundaries;
-        {
+        {//scope to avoid stack too deep error
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
 
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
+            //is positive IV bump
             bool isPosIVbump = cIV < pIV;
 
             priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime, isPosIVbump);
 
+            //expected IV bump
             uint256 expIVbump;
             if (isPosIVbump) {
                 expIVbump = pIV.div(cIV);
-                vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
+                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
             } else {
                 expIVbump = cIV.div(pIV);
-                vm = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
+                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
-            //IV bump > 3 leads to a negative values of one of the lower or upper boundary
-            expIVbump = expIVbump > uint256(3e18) ? uint256(3e18) : expIVbump;
+            //IV bump > 2.5 leads to a negative values of one of the lower or upper boundary
+            expIVbump = expIVbump > uint256(25e17) ? uint256(25e17) : expIVbump;
 
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
@@ -195,11 +198,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
         }
 
+        //total ETH value of the strategy holdings at the current prices
         uint256 totalValue;
-        {
+        {//scope to avoid stack too deep error
+
+            //current balances
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
-            //Current value
             totalValue = IVaultMath(vaultMath).getValue(
                 ethBalance,
                 usdcBalance,
@@ -212,9 +217,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Calculate liquidities
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;
-        {
+        { //scope to avoid stack too deep error
             liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(ethUsdcPrice).mul(vm),
+                totalValue.mul(ethUsdcPrice).mul(valueMultiplier),
                 ethUsdcPrice,
                 uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
                 uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
@@ -222,13 +227,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
 
             liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(uint256(1e18) - vm),
+                totalValue.mul(uint256(1e18) - valueMultiplier),
                 osqthEthPrice,
                 uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
                 uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
                 1e18
             );
 
+            //Strategy values at the auction prices
             uint256 value0 = IVaultMath(vaultMath).getValueForLiquidity(
                 liquidityEthUsdc,
                 ethUsdcPrice.mul(priceMultiplier),
@@ -244,7 +250,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
                 1e18
             );
-
+            //Coefficient for auction adjustment
             uint256 k = (totalValue).div(value0 + value1);
             liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
             liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
@@ -290,7 +296,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 expIVbump
     ) internal view returns (Constants.Boundaries memory) {
         int24 tickSpacing = IVaultStorage(vaultStorage).tickSpacing();
-
+        //const = 2^96
         int24 tickFloorEthUsdc = _floor(
             IUniswapMath(uniswapMath).getTickAtSqrtRatio(
                 _toUint160(((uint256(1e30).div(aEthUsdcPrice)).sqrt()).mul(79228162514264337593543950336))
@@ -317,7 +323,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                         uint256(int256(tickSpacing))).div(1e36)
                 )
             );
-            tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
+            tickAdj = baseAdj < int24(120) ? int24(120) : baseAdj;
         }
 
         if (isPosIVbump) {
@@ -338,7 +344,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 );
         }
     }
-
+    /// @dev exchange tokens with keeper
     function _swapWithKeeper(
         uint256 balance,
         uint256 target,
@@ -349,33 +355,23 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         if (target >= balance) {
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
-            uint256 transfered = balance.sub(target).sub(10);
-            require(transfered >= minAmount, "C21");
+            uint256 amount = balance.sub(target).sub(10);
+            require(amount >= minAmount, "C21");
 
-            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, transfered);
+            IVaultTreasury(vaultTreasury).transfer(IERC20(coin), keeper, amount);
         }
     }
 
-    /// @dev Rounds tick down towards negative infinity so that it's a multiple
-    /// of `tickSpacing`.
-    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
-        int24 compressed = tick / tickSpacing;
-        if (tick < 0 && tick % tickSpacing != 0) compressed--;
-        return compressed * tickSpacing;
-    }
-
-    /// @dev Casts uint256 to uint160 with overflow check.
-    function _toUint160(uint256 x) internal pure returns (uint160) {
-        assert(x <= type(uint160).max);
-        return uint160(x);
-    }
-
-    /// @dev Casts int256 to int24 with overflow check.
-    function toInt24(int256 value) internal pure returns (int24) {
-        require(value >= type(int24).min && value <= type(int24).max, "C18");
-        return int24(value);
-    }
-
+    /**
+     * @notice external function to get all auction parameters
+     * @param _auctionTriggerTime timestamp when auction started
+     * @return targetEth target amount of ETH
+     * @return targetUsdc target amount of USDC
+     * @return targetOsqth target amount of Osqth
+     * @return ethBalance current ETH balance
+     * @return usdcBalance current USDC balance
+     * @return osqthBalance current Osqth balance
+     */
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
         view
@@ -400,5 +396,25 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
         return (targetEth, targetUsdc, targetOsqth, ethBalance, usdcBalance, osqthBalance);
+    }
+
+    /// @dev Rounds tick down towards negative infinity so that it's a multiple
+    /// of `tickSpacing`.
+    function _floor(int24 tick, int24 tickSpacing) internal pure returns (int24) {
+        int24 compressed = tick / tickSpacing;
+        if (tick < 0 && tick % tickSpacing != 0) compressed--;
+        return compressed * tickSpacing;
+    }
+
+    /// @dev Casts uint256 to uint160 with overflow check.
+    function _toUint160(uint256 x) internal pure returns (uint160) {
+        assert(x <= type(uint160).max);
+        return uint160(x);
+    }
+
+    /// @dev Casts int256 to int24 with overflow check.
+    function toInt24(int256 value) internal pure returns (int24) {
+        require(value >= type(int24).min && value <= type(int24).max, "C18");
+        return int24(value);
     }
 }

@@ -57,6 +57,17 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
      */
     constructor() ERC20("Hedging DL", "HDL") {}
 
+    /**
+    @notice deposit tokens in proportion to the vault's holding
+    @param amountEth ETH amount to deposit
+    @param amountUsdc USDC amount to deposit
+    @param amountOsqth oSQTH amount to deposit 
+    @param to receiver address
+    @param amountEthMin revert if resulting amount of ETH is smaller than this
+    @param amountUsdcMin revert if resulting amount of USDC is smaller than this
+    @param amountOsqthMin revert if resulting amount of oSQTH is smaller than this
+    @return shares minted shares
+    */
     function deposit(
         uint256 amountEth,
         uint256 amountUsdc,
@@ -251,7 +262,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             );
         }
     }
-
+    /// @dev calculate required amount of USDC and oSQTH based on amount of ETH to deposit
     function getAmountsToDeposit(uint256 ethToDeposit)
         external
         view

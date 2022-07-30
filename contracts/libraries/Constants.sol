@@ -40,7 +40,7 @@ library Constants {
         uint256 ethUsdcPrice;
     }
 
-    struct AuctionMinReturns {
+    struct AuctionMinAmounts {
         uint256 minAmountEth;
         uint256 minAmountUsdc;
         uint256 minAmountOsqth;

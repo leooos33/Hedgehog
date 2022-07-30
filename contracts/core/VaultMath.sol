@@ -65,6 +65,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         );
     }
 
+    /// @dev amount of tokens in a single position
     function _getPositionAmounts(
         address pool,
         int24 tickLower,
@@ -249,12 +250,15 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
         if (_isPosIVbump) {
+            //Start at 1 and moving to 1.05
             return uint256(1e18).add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(1e18)));
         } else {
+            //Start at 1 and moving to 0.95
             return uint256(1e18).sub(auctionCompletionRatio.mul(uint256(1e18).sub(minPriceMultiplier)));
         }
     }
 
+    /// @dev Fetches time-weighted average prices 
     function getPrices() public view override returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         (, int24 ethUsdcTick, , , , , ) = IUniswapV3Pool(Constants.poolEthUsdc).slot0();
@@ -267,6 +271,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         int24 deviation0 = ethUsdcTick > twapEthUsdc ? ethUsdcTick - twapEthUsdc : twapEthUsdc - ethUsdcTick;
         int24 deviation1 = osqthEthTick > twapOsqthEth ? osqthEthTick - twapOsqthEth : twapOsqthEth - osqthEthTick;
 
+        //max twap deviation = tick spacing * 2 (~1.5%)
         int24 maxTD = IVaultStorage(vaultStorage).tickSpacing() * 2;
 
         require(deviation0 <= maxTD || deviation1 <= maxTD, "C19");
@@ -310,6 +315,15 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         );
     }
 
+    /**
+     * @notice calculate liquidity based on ETH value
+     * @param v value in ETH terms
+     * @param p current price
+     * @param pH upper price
+     * @param pL lower price
+     * @param digits decimals based multiplier
+     * @return liquidity
+     */
     function getLiquidityForValue(
         uint256 v,
         uint256 p,
@@ -320,6 +334,15 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
     }
 
+    /**
+     * @notice calculate value at the auction price based on liquidity
+     * @param liquidity liquidity of the position
+     * @param aP auction price
+     * @param pL lower price
+     * @param pH upper price
+     * @param digits decimals based multiplier
+     * @return value in ETH terms
+     */
     function getValueForLiquidity(
         uint128 liquidity,
         uint256 aP,
@@ -347,9 +370,10 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         return (amountEth + amountOsqth.mul(osqthEthPrice) + amountUsdc.mul(1e30).div(ethUsdcPrice));
     }
 
+    /// @dev Fetches squeeth IV
     function getIV() external view override returns (uint256) {
         uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
-
+        //const = 365/17.5
         return
             (
                 (
