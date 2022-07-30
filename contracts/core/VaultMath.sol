@@ -258,7 +258,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         }
     }
 
-    /// @dev Fetches time-weighted average prices 
+    /// @dev Fetches time-weighted average prices
     function getPrices() public view override returns (uint256 ethUsdcPrice, uint256 osqthEthPrice) {
         //Get current prices in ticks
         (, int24 ethUsdcTick, , , , , ) = IUniswapV3Pool(Constants.poolEthUsdc).slot0();

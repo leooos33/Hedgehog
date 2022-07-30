@@ -4,19 +4,9 @@ const { BigNumber } = require("ethers");
 
 const governance = "0x14dc79964da2c08b23698b3d3cc7ca32193d9955"; // ACCOUNT #7 in hardhat
 
-const testnetDeploymentParams = [
-    utils.parseUnits("4000000000000", 18),
-    BigNumber.from("10"),
-    utils.parseUnits("0.05", 18),
-    BigNumber.from("10"),
-    BigNumber.from("950000000000000000"),
-    BigNumber.from("1050000000000000000"),
-    BigNumber.from("0"),
-];
-
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),
-    BigNumber.from(86400),
+    BigNumber.from(43200),
     utils.parseUnits("0.1", 18),
     BigNumber.from("600"),
     BigNumber.from("950000000000000000"),

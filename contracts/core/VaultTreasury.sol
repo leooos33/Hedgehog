@@ -31,7 +31,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public view override onlyKeepers returns (uint256, uint256) {
+    ) public view override onlyContracts returns (uint256, uint256) {
         (uint160 sqrtRatioX96, , , , , , ) = IUniswapV3Pool(pool).slot0();
         return
             IUniswapMath(uniswapMath).getAmountsForLiquidity(
@@ -51,7 +51,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         public
         view
         override
-        onlyKeepers
+        onlyContracts
         returns (
             uint128,
             uint256,
@@ -73,7 +73,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         external
         view
         override
-        onlyKeepers
+        onlyContracts
         returns (
             uint256,
             uint256,
@@ -102,7 +102,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public override onlyKeepers returns (uint256, uint256) {
+    ) public override onlyContracts returns (uint256, uint256) {
         return IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
     }
 
@@ -111,7 +111,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         address pool,
         int24 tickLower,
         int24 tickUpper
-    ) external override onlyKeepers returns (uint256 collect0, uint256 collect1) {
+    ) external override onlyContracts returns (uint256 collect0, uint256 collect1) {
         address recipient = address(this);
 
         (collect0, collect1) = IUniswapV3Pool(pool).collect(
@@ -129,7 +129,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) external override onlyKeepers {
+    ) external override onlyContracts {
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
@@ -144,7 +144,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         IERC20 token,
         address recipient,
         uint256 amount
-    ) external override onlyKeepers {
+    ) external override onlyContracts {
         token.transfer(recipient, amount);
     }
 
@@ -189,6 +189,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
     }
+
     /// @dev poke for ETH-oSQTH pool
     function pokeEthOsqth() external override onlyVault {
         poke(
@@ -208,6 +209,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
 
         return liquidityEthUsdc;
     }
+
     /// @dev liquidity of the position in the ETH-oSQTH pool
     function positionLiquidityEthOsqth() external view override onlyVault returns (uint128) {
         (uint128 liquidityEthOsqth, , , , ) = position(

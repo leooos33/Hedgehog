@@ -66,7 +66,7 @@ contract Faucet is IFaucet, Ownable {
         _;
     }
 
-    modifier onlyKeepers() {
+    modifier onlyContracts() {
         require(msg.sender == vault || msg.sender == vaultMath || msg.sender == auction, "C14");
         _;
     }

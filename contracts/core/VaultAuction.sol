@@ -162,10 +162,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        uint256 valueMultiplier; 
+        uint256 valueMultiplier;
         uint256 priceMultiplier;
         Constants.Boundaries memory boundaries;
-        {//scope to avoid stack too deep error
+        {
+            //scope to avoid stack too deep error
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
 
@@ -200,7 +201,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //total ETH value of the strategy holdings at the current prices
         uint256 totalValue;
-        {//scope to avoid stack too deep error
+        {
+            //scope to avoid stack too deep error
 
             //current balances
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
@@ -217,7 +219,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //Calculate liquidities
         uint128 liquidityEthUsdc;
         uint128 liquidityOsqthEth;
-        { //scope to avoid stack too deep error
+        {
+            //scope to avoid stack too deep error
             liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
                 totalValue.mul(ethUsdcPrice).mul(valueMultiplier),
                 ethUsdcPrice,
@@ -344,6 +347,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 );
         }
     }
+
     /// @dev exchange tokens with keeper
     function _swapWithKeeper(
         uint256 balance,

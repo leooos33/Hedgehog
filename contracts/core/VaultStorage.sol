@@ -46,7 +46,7 @@ contract VaultStorage is IVaultStorage, Faucet {
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 1200;
+    int24 public override baseThreshold = 1200; //TODO: change to 900 on deploy
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
@@ -220,7 +220,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
         uint256 _ethPriceAtLastRebalance
-    ) public override onlyVault {
+    ) external override onlyVault {
         timeAtLastRebalance = _timeAtLastRebalance;
         ivAtLastRebalance = _ivAtLastRebalance;
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
