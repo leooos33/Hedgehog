@@ -34,11 +34,13 @@ module.exports = {
             //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
             url: IFURA_ROPSTEN_URL,
             accounts: [ROPSTEN_DEPLOYMENT_KEY],
+            gasPrice: 5000000000,
         },
         mainnet: {
             //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
             url: IFURA_MAINNET_URL,
             accounts: [MAINNET_DEPLOYMENT_KEY],
+            gasPrice: 5000000000,
         },
     },
     solidity: {

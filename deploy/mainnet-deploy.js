@@ -72,3 +72,4 @@ hardhatDeploy(governance, mainnetDeploymentParams).catch((error) => {
 });
 
 //Link https://www.google.com/search?q=deploy+harhat+on+mainnet&oq=deploy+harhat+on+mainnet&aqs=chrome..69i57j33i10i160.4040j0j7&sourceid=chrome&ie=UTF-8#kpvalbx=_pfvXYtSVEqiF9u8Pj-ax0Ag14
+// npx harhat verify 0xd83083740c024445f1BEe2Dad6c86E909491b401 --network ropsten
