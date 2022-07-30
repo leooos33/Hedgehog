@@ -3,7 +3,13 @@ require("hardhat-contract-sizer");
 require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 
-const { ETHERSCAN_KEY, ROPSTEN_DEPLOYMENT_KEY, IFURA_ROPSTEN_URL } = require("./shared/config");
+const {
+    ETHERSCAN_KEY,
+    ROPSTEN_DEPLOYMENT_KEY,
+    IFURA_ROPSTEN_URL,
+    MAINNET_DEPLOYMENT_KEY,
+    IFURA_MAINNET_URL,
+} = require("./shared/config");
 const { getForkingParams } = require("./hardhat.helpers");
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -28,6 +34,11 @@ module.exports = {
             //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
             url: IFURA_ROPSTEN_URL,
             accounts: [ROPSTEN_DEPLOYMENT_KEY],
+        },
+        mainnet: {
+            //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a
+            url: IFURA_MAINNET_URL,
+            accounts: [MAINNET_DEPLOYMENT_KEY],
         },
     },
     solidity: {

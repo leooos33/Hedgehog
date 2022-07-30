@@ -2,7 +2,7 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
 
-const governance = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
+const governance = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
 
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),
@@ -40,6 +40,7 @@ const hardhatDeploy = async (governance, params) => {
     console.log("VaultMath:", arguments[3]);
     console.log("VaultTreasury:", arguments[4]);
     console.log("VaultStorage:", arguments[5]);
+
     let tx;
     tx = await Vault.setComponents(...arguments);
     await tx.wait();
