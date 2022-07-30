@@ -188,6 +188,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         maxPriceMultiplier = _maxPriceMultiplier;
     }
 
+    // @dev snapshot after each rebalance
     function setSnapshot(
         int24 _orderEthUsdcLower,
         int24 _orderEthUsdcUpper,
@@ -208,18 +209,22 @@ contract VaultStorage is IVaultStorage, Faucet {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
+    /// @dev accrude fees in eth
     function setAccruedFeesEth(uint256 _accruedFeesEth) external override onlyMath {
         accruedFeesEth = _accruedFeesEth;
     }
 
+    /// @dev accrude fees in usdc
     function setAccruedFeesUsdc(uint256 _accruedFeesUsdc) external override onlyMath {
         accruedFeesUsdc = _accruedFeesUsdc;
     }
 
+    /// @dev accrude fees in osqth
     function setAccruedFeesOsqth(uint256 _accruedFeesOsqth) external override onlyMath {
         accruedFeesOsqth = _accruedFeesOsqth;
     }
 
+    /// @dev function to update accrude fees on withdrawals
     function updateAccruedFees(
         uint256 amountEth,
         uint256 amountUsdc,
@@ -230,6 +235,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
+    /// @dev function to set Time, IV, and ethPrice during the first deposit 
     function setParamsBeforeDeposit(
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
@@ -240,6 +246,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 
+    /// @dev governance can pause the contract
     function setPause(bool _pause) external onlyGovernance {
         isSystemPaused = _pause;
 
