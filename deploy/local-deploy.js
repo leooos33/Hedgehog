@@ -21,6 +21,8 @@ const hardhatDeploy = async (governance, params) => {
     const VaultAuction = await deployContract("VaultAuction", []);
     const VaultMath = await deployContract("VaultMath", []);
     const VaultTreasury = await deployContract("VaultTreasury", []);
+
+    params.push(governance);
     const VaultStorage = await deployContract("VaultStorage", params);
 
     const arguments = [
@@ -30,7 +32,6 @@ const hardhatDeploy = async (governance, params) => {
         VaultMath.address,
         VaultTreasury.address,
         VaultStorage.address,
-        governance,
     ];
     console.log("UniswapMath:", arguments[0]);
     console.log("Vault:", arguments[1]);
@@ -60,6 +61,8 @@ const hardhatDeploy = async (governance, params) => {
     // tx = await VaultStorage.setComponents(...arguments);
     // await tx.wait();
     // tx = await VaultStorage.transferOwnership("0x14dc79964da2c08b23698b3d3cc7ca32193d9955");
+    // await tx.wait();
+    // tx = await VaultStorage.setGovernance("0x14dc79964da2c08b23698b3d3cc7ca32193d9956");
     // await tx.wait();
 };
 

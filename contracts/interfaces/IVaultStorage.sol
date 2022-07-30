@@ -79,4 +79,8 @@ interface IVaultStorage {
     ) external;
 
     function isSystemPaused() external view returns (bool);
+
+    function governance() external view returns (address);
+
+    function setGovernance(address _governance) external;
 }

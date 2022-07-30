@@ -22,6 +22,8 @@ const hardhatDeploy = async (governance, params) => {
     const VaultAuction = await deployContract("VaultAuction", [], false);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
+
+    params.push(governance.address);
     const VaultStorage = await deployContract("VaultStorage", params, false);
 
     const arguments = [
@@ -31,9 +33,14 @@ const hardhatDeploy = async (governance, params) => {
         VaultMath.address,
         VaultTreasury.address,
         VaultStorage.address,
-        governance.address,
     ];
-    // console.log(arguments);
+
+    console.log("> UniswapMath:", arguments[0]);
+    console.log("> Vault:", arguments[1]);
+    console.log("> VaultAuction:", arguments[2]);
+    console.log("> VaultMath:", arguments[3]);
+    console.log("> VaultTreasury:", arguments[4]);
+    console.log("> VaultStorage:", arguments[5]);
 
     await network.provider.request({
         method: "evm_mine",

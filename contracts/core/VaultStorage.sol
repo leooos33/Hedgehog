@@ -12,6 +12,8 @@ import {SharedEvents} from "../libraries/SharedEvents.sol";
 import "hardhat/console.sol";
 
 contract VaultStorage is IVaultStorage, Faucet {
+    address public override governance;
+
     //@dev Uniswap pools tick spacing
     int24 public override tickSpacing = 60;
 
@@ -76,6 +78,7 @@ contract VaultStorage is IVaultStorage, Faucet {
        @param _auctionTime auction duration (seconds)
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
+       @param _governance governance address
      */
     constructor(
         uint256 _cap,
@@ -84,7 +87,8 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _auctionTime,
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
-        uint256 _protocolFee
+        uint256 _protocolFee,
+        address _governance
     ) Faucet() {
         cap = _cap;
 
@@ -99,6 +103,16 @@ contract VaultStorage is IVaultStorage, Faucet {
 
         timeAtLastRebalance = 0;
         ivAtLastRebalance = 0;
+
+        governance = _governance;
+    }
+
+    /**
+     * @notice owner can transfer his admin power to another address
+     * @param _governance new governance address
+     */
+    function setGovernance(address _governance) external override onlyGovernance {
+        governance = _governance;
     }
 
     /**

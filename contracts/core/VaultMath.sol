@@ -182,7 +182,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @return true if time hedging is allowed
      * @return auction trigger timestamp
      */
-    function isTimeRebalance() public view override returns (bool, uint256) {
+    function isTimeRebalance() external view override returns (bool, uint256) {
         uint256 auctionTriggerTime = IVaultStorage(vaultStorage).timeAtLastRebalance().add(
             IVaultStorage(vaultStorage).rebalanceTimeThreshold()
         );
@@ -195,7 +195,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return true if hedging is allowed
      */
-    function isPriceRebalance(uint256 _auctionTriggerTime) public view override returns (bool) {
+    function isPriceRebalance(uint256 _auctionTriggerTime) external view override returns (bool) {
         if (_auctionTriggerTime < IVaultStorage(vaultStorage).timeAtLastRebalance()) return false;
         uint32 secondsToTrigger = uint32(block.timestamp - _auctionTriggerTime);
 

@@ -4,18 +4,18 @@ pragma solidity =0.8.4;
 
 interface IAuction {
     function timeRebalance(
-        address,
-        uint256,
-        uint256,
-        uint256
+        address keeper,
+        uint256 minAmountEth,
+        uint256 minAmountUsdc,
+        uint256 minAmountOsqth
     ) external;
 
     function priceRebalance(
         address keeper,
-        uint256 _auctionTriggerTime,
-        uint256 _amountEth,
-        uint256 _amountUsdc,
-        uint256 _amountOsqth
+        uint256 auctionTriggerTime,
+        uint256 minAmountEth,
+        uint256 minAmountUsdc,
+        uint256 minAmountOsqth
     ) external;
 
     function getAuctionParams(uint256 _auctionTriggerTime)
