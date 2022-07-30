@@ -48,7 +48,7 @@ contract VaultStorage is IVaultStorage, Faucet {
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 1200; //TODO: change to 900 on deploy
+    int24 public override baseThreshold = 900;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
@@ -244,29 +244,5 @@ contract VaultStorage is IVaultStorage, Faucet {
         isSystemPaused = _pause;
 
         emit SharedEvents.Paused(_pause);
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
-        timeAtLastRebalance = _timeAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public onlyGovernance {
-        ivAtLastRebalance = _ivAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
-        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }
