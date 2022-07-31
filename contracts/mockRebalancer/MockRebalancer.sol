@@ -6,42 +6,18 @@
 pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-
 import {IAuction} from "../interfaces/IAuction.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
-import {IEulerDToken, IEulerMarkets, IExec} from "./FLStuff.sol";
-
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 import "hardhat/console.sol";
 
-interface IUniswapRouter is ISwapRouter {
-    function refundETH() external payable;
-}
-
 contract MockRebalancer is Ownable {
-    using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
     address public constant _addressAuction = 0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D;
     IAuction public constant vaultAuction = IAuction(_addressAuction);
     IVaultMath public constant vaultMath = IVaultMath(0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E);
-
-    ISwapRouter immutable swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
-
-    address exec = 0x59828FdF7ee634AaaD3f58B19fDBa3b03E2D9d80;
-    address euler = 0x27182842E098f60e3D576794A5bFFb0777E025d3;
-    address eulerMarket = 0x3520d5a913427E6F0D6A83E07ccD4A4da316e4d3;
-    IEulerMarkets markets = IEulerMarkets(eulerMarket);
-
-    address weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address osqth = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
 
     struct MyCallbackData {
         uint256 type_of_arbitrage;
