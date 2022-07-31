@@ -24,7 +24,7 @@ interface IUniswapRouter is ISwapRouter {
     function refundETH() external payable;
 }
 
-contract MockRebalancerA is Ownable {
+contract Rebalancer is Ownable {
     using SafeERC20 for ERC20;
     using SafeMath for uint256;
 
