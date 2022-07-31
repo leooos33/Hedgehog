@@ -5,10 +5,15 @@ pragma abicoder v2;
 
 interface IFaucetHelper {
     function uniswapMath() external view returns (address);
+
     function vault() external view returns (address);
+
     function auction() external view returns (address);
+
     function vaultMath() external view returns (address);
+
     function vaultTreasury() external view returns (address);
+
     function vaultStorage() external view returns (address);
 
     function setComponents(
