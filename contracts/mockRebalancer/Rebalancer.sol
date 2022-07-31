@@ -16,6 +16,8 @@ import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
+//TODO: add threshold
+//TODO: Test withdraw
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
@@ -115,7 +117,7 @@ contract Rebalancer is Ownable {
             // 4) return weth
 
             FlCallbackData memory data;
-            data.type_of_arbitrage = 3;
+            data.type_of_arbitrage = 4;
             data.amount1 = targetEth - ethBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
@@ -126,7 +128,7 @@ contract Rebalancer is Ownable {
             // 4) return osqth & weth
 
             FlCallbackData memory data;
-            data.type_of_arbitrage = 4;
+            data.type_of_arbitrage = 5;
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
 
@@ -197,7 +199,6 @@ contract Rebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
             IERC20(usdc).approve(euler, type(uint256).max);
             borrowedDToken2.repay(0, data.amount2);
-            //revert("Success");
         } else if (data.type_of_arbitrage == 2) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(osqth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -241,8 +242,6 @@ contract Rebalancer is Ownable {
 
             IERC20(osqth).approve(euler, type(uint256).max);
             borrowedDToken1.repay(0, data.amount1);
-
-            //revert("Success");
         } else if (data.type_of_arbitrage == 3) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(usdc));
             borrowedDToken1.borrow(0, data.amount1);
@@ -289,8 +288,6 @@ contract Rebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
             IERC20(osqth).approve(euler, type(uint256).max);
             borrowedDToken2.repay(0, data.amount2);
-
-            //revert("Success");
         } else if (data.type_of_arbitrage == 4) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -333,8 +330,6 @@ contract Rebalancer is Ownable {
 
             IERC20(weth).approve(euler, type(uint256).max);
             borrowedDToken1.repay(0, data.amount1);
-
-            //revert("Success");
         } else if (data.type_of_arbitrage == 5) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -383,7 +378,6 @@ contract Rebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
             IERC20(osqth).approve(euler, type(uint256).max);
             borrowedDToken2.repay(0, data.amount2);
-            //revert("Success");
         } else if (data.type_of_arbitrage == 6) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(usdc));
             borrowedDToken1.borrow(0, data.amount1);
@@ -426,7 +420,7 @@ contract Rebalancer is Ownable {
 
             IERC20(usdc).approve(euler, type(uint256).max);
             borrowedDToken1.repay(0, data.amount1);
-            //revert("Success");
-        } else {}
+        }
+        revert("Success");
     }
 }

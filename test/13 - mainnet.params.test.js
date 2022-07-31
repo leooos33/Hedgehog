@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe.only("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -175,8 +175,9 @@ describe("Macro test mainnet", function () {
     });
 
     it("rebalance iterative with real rebalance", async function () {
+        // this.skip();
         const log = {};
-        const MockRebalancer = await ethers.getContractFactory("MockRebalancerA");
+        const MockRebalancer = await ethers.getContractFactory("Rebalancer");
         mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
@@ -189,8 +190,6 @@ describe("Macro test mainnet", function () {
                 const arbTx = await mockRebalancer.rebalance();
                 await arbTx.wait();
                 succeded = true;
-                // const prices = await VaultMath.getPrices();
-                // console.log("> Prices:", prices);
             } catch (err) {
                 if (err.message == `VM Exception while processing transaction: reverted with reason string 'STF'`) {
                     log[i] = "STF";
@@ -214,7 +213,7 @@ describe("Macro test mainnet", function () {
 
     it("rebalance with flash loan", async function () {
         this.skip();
-        const MockRebalancerA = await ethers.getContractFactory("MockRebalancerA");
+        const MockRebalancerA = await ethers.getContractFactory("Rebalancer");
         mockRebalancer = await MockRebalancerA.deploy();
         await mockRebalancer.deployed();
 
@@ -225,10 +224,10 @@ describe("Macro test mainnet", function () {
     });
 
     it("rebalance iterative", async function () {
-        this.skip();
+        // this.skip();
         const testHolder = {};
-        const MockRebalancerB = await ethers.getContractFactory("MockRebalancerB");
-        mockRebalancer = await MockRebalancerB.deploy();
+        const MockRebalancer = await ethers.getContractFactory("MockRebalancer");
+        mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
         await mineSomeBlocks(83069);
