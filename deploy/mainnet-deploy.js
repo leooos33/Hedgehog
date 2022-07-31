@@ -1,3 +1,5 @@
+//Link https://www.google.com/search?q=deploy+harhat+on+mainnet&oq=deploy+harhat+on+mainnet&aqs=chrome..69i57j33i10i160.4040j0j7&sourceid=chrome&ie=UTF-8#kpvalbx=_pfvXYtSVEqiF9u8Pj-ax0Ag14
+
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
@@ -14,14 +16,12 @@ const mainnetDeploymentParams = [
     BigNumber.from("0"),
 ];
 
-mainnetDeploymentParams.map((i) => console.log(i.toString()));
-
-const hardhatDeploy = async (governance, params) => {
-    const UniswapMath = await deployContract("UniswapMath", []);
-    const Vault = await deployContract("Vault", []);
-    const VaultAuction = await deployContract("VaultAuction", []);
-    const VaultMath = await deployContract("VaultMath", []);
-    const VaultTreasury = await deployContract("VaultTreasury", []);
+const hardhatDeployContractsInParallel = async (governance, params) => {
+    const UniswapMath = await deployContract("UniswapMath", [], false);
+    const Vault = await deployContract("Vault", [], true);
+    const VaultAuction = await deployContract("VaultAuction", [], true);
+    const VaultMath = await deployContract("VaultMath", [], false);
+    const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
     params.push(governance);
     const VaultStorage = await deployContract("VaultStorage", params);
@@ -40,18 +40,41 @@ const hardhatDeploy = async (governance, params) => {
     console.log("VaultMath:", arguments[3]);
     console.log("VaultTreasury:", arguments[4]);
     console.log("VaultStorage:", arguments[5]);
+};
+
+const hardhatInitializeContracts = async () => {
+    const Vault = await ethers.getContractAt("IFaucetHelper", "0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac");
+    const VaultAuction = await ethers.getContractAt("IFaucetHelper", "0xA9a68eA2746793F43af0f827EC3DbBb049359067");
+    const VaultMath = await ethers.getContractAt("IFaucetHelper", "0xfbcf638ea33a5f87d1e39509e7def653958fa9c4");
+    const VaultTreasury = await ethers.getContractAt("IFaucetHelper", "0xf403970040e27613a45699c3a32d6be3751f0184");
+    const VaultStorage = await ethers.getContractAt("IFaucetHelper", "0x60554f5064c4bb6cba563ad4066b22ab6a43c806");
+
+    const arguments = [
+        "0x61d3312e32f3f6f69ae5629d717f318bc4656abd", // UniswapMath Address
+        Vault.address,
+        VaultAuction.address,
+        VaultMath.address,
+        VaultTreasury.address,
+        VaultStorage.address,
+    ];
+    console.log("UniswapMath:", arguments[0]);
+    console.log("Vault:", arguments[1]);
+    console.log("VaultAuction:", arguments[2]);
+    console.log("VaultMath:", arguments[3]);
+    console.log("VaultTreasury:", arguments[4]);
+    console.log("VaultStorage:", arguments[5]);
 
     let tx;
     tx = await Vault.setComponents(...arguments);
-    await tx.wait();
+    // await tx.wait();
     tx = await VaultAuction.setComponents(...arguments);
-    await tx.wait();
+    // await tx.wait();
     tx = await VaultMath.setComponents(...arguments);
-    await tx.wait();
+    // await tx.wait();
     tx = await VaultTreasury.setComponents(...arguments);
-    await tx.wait();
+    // await tx.wait();
     tx = await VaultStorage.setComponents(...arguments);
-    await tx.wait();
+    // await tx.wait();
 };
 
 const deployContract = async (name, params, deploy = true) => {
@@ -64,12 +87,8 @@ const deployContract = async (name, params, deploy = true) => {
     return contract;
 };
 
-// We recommend this pattern to be able to use async/await everywhere
-// and properly handle errors.
-hardhatDeploy(governance, mainnetDeploymentParams).catch((error) => {
+// hardhatInitializeContracts(governance, mainnetDeploymentParams).catch((error) => {
+hardhatDeployContractsInParallel(governance, mainnetDeploymentParams).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
-
-//Link https://www.google.com/search?q=deploy+harhat+on+mainnet&oq=deploy+harhat+on+mainnet&aqs=chrome..69i57j33i10i160.4040j0j7&sourceid=chrome&ie=UTF-8#kpvalbx=_pfvXYtSVEqiF9u8Pj-ax0Ag14
-// npx harhat verify 0xd83083740c024445f1BEe2Dad6c86E909491b401 --network ropsten

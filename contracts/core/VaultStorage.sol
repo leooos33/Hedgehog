@@ -235,7 +235,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         accruedFeesOsqth = accruedFeesOsqth - amountOsqth;
     }
 
-    /// @dev function to set Time, IV, and ethPrice during the first deposit 
+    /// @dev function to set Time, IV, and ethPrice during the first deposit
     function setParamsBeforeDeposit(
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
