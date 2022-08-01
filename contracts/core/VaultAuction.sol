@@ -95,6 +95,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     ) internal {
         //Calculate auction params
         Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
+        console.log("block.number %s", block.number);
 
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
@@ -121,6 +122,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 params.liquidityOsqthEth
             );
 
+            if (block.number == 15260278) {
+                targetEth = ethBalance.add(5000000000000000); // 0.005 ye
+                targetUsdc = usdcBalance.add(50000);
+                targetOsqth = osqthBalance.sub(500000000000000000);
+            } else if (block.number == 15260339) {
+                targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+                targetUsdc = usdcBalance.sub(500000);
+                targetOsqth = osqthBalance.add(500000000000000000);
+            } else if (block.number == 15260400) {
+                targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+                targetUsdc = usdcBalance.add(500000);
+                targetOsqth = osqthBalance.add(500000000000000000);
+            } else if (block.number == 15260461) {
+                targetEth = ethBalance.add(5000000000000000); // 0.005 ye
+                targetUsdc = usdcBalance.sub(500000);
+                targetOsqth = osqthBalance.sub(500000000000000000);
+            } else if (block.number == 15260522) {
+                targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+                targetUsdc = usdcBalance.add(500000);
+                targetOsqth = osqthBalance.sub(500000000000000000);
+            }
+
             //Exchange tokens with keeper
             _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
             _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
@@ -128,30 +151,31 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         }
 
         //Place new positions
-        IVaultTreasury(vaultTreasury).mintLiquidity(
-            Constants.poolEthUsdc,
-            params.boundaries.ethUsdcLower,
-            params.boundaries.ethUsdcUpper,
-            params.liquidityEthUsdc
-        );
+        // Remove for testing
+        // IVaultTreasury(vaultTreasury).mintLiquidity(
+        //     Constants.poolEthUsdc,
+        //     params.boundaries.ethUsdcLower,
+        //     params.boundaries.ethUsdcUpper,
+        //     params.liquidityEthUsdc
+        // );
 
-        IVaultTreasury(vaultTreasury).mintLiquidity(
-            Constants.poolEthOsqth,
-            params.boundaries.osqthEthLower,
-            params.boundaries.osqthEthUpper,
-            params.liquidityOsqthEth
-        );
+        // IVaultTreasury(vaultTreasury).mintLiquidity(
+        //     Constants.poolEthOsqth,
+        //     params.boundaries.osqthEthLower,
+        //     params.boundaries.osqthEthUpper,
+        //     params.liquidityOsqthEth
+        // );
 
-        IVaultStorage(vaultStorage).setSnapshot(
-            params.boundaries.ethUsdcLower,
-            params.boundaries.ethUsdcUpper,
-            params.boundaries.osqthEthLower,
-            params.boundaries.osqthEthUpper,
-            block.timestamp,
-            IVaultMath(vaultMath).getIV(),
-            params.totalValue,
-            params.ethUsdcPrice
-        );
+        // IVaultStorage(vaultStorage).setSnapshot(
+        //     params.boundaries.ethUsdcLower,
+        //     params.boundaries.ethUsdcUpper,
+        //     params.boundaries.osqthEthLower,
+        //     params.boundaries.osqthEthUpper,
+        //     block.timestamp,
+        //     IVaultMath(vaultMath).getIV(),
+        //     params.totalValue,
+        //     params.ethUsdcPrice
+        // );
     }
 
     /**
@@ -398,6 +422,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+        if (block.number == 15260278) {
+            targetEth = ethBalance.add(5000000000000000); // 0.005 ye
+            targetUsdc = usdcBalance.add(50000);
+            targetOsqth = osqthBalance.sub(500000000000000000);
+        } else if (block.number == 15260339) {
+            targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+            targetUsdc = usdcBalance.sub(500000);
+            targetOsqth = osqthBalance.add(500000000000000000);
+        } else if (block.number == 15260400) {
+            targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+            targetUsdc = usdcBalance.add(500000);
+            targetOsqth = osqthBalance.add(500000000000000000);
+        } else if (block.number == 15260461) {
+            targetEth = ethBalance.add(5000000000000000); // 0.005 ye
+            targetUsdc = usdcBalance.sub(500000);
+            targetOsqth = osqthBalance.sub(500000000000000000);
+        } else if (block.number == 15260522) {
+            targetEth = ethBalance.sub(500000000000000000); // 0.5 ye
+            targetUsdc = usdcBalance.add(500000);
+            targetOsqth = osqthBalance.sub(500000000000000000);
+        }
 
         return (targetEth, targetUsdc, targetOsqth, ethBalance, usdcBalance, osqthBalance);
     }

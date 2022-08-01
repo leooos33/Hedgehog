@@ -376,15 +376,14 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
 
         uint256 markIndex;
         {
-        uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
+            uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
 
-        uint256 mark = Constants.osqthController.getDenormalizedMark(_twapPeriod);
-        uint256 index = Constants.osqthController.getIndex(_twapPeriod);
+            uint256 mark = Constants.osqthController.getDenormalizedMark(_twapPeriod);
+            uint256 index = Constants.osqthController.getIndex(_twapPeriod);
 
-        markIndex = mark > index ? mark.div(index) : index.div(mark);
+            markIndex = mark > index ? mark.div(index) : index.div(mark);
         }
-        return
-            ((markIndex.ln()).mul(20857142857142857142)).sqrt();
+        return ((markIndex.ln()).mul(20857142857142857142)).sqrt();
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.

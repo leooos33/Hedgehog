@@ -184,8 +184,8 @@ describe.only("Macro test mainnet", function () {
         // await mineSomeBlocks(600);
 
         let succeded = false;
-        for (let i = 0; i < 10; i++) {
-            console.log(">", i);
+        for (let i = 0; i < 7; i++) {
+            console.log("Iteration:", i);
             try {
                 const arbTx = await mockRebalancer.rebalance();
                 await arbTx.wait();
@@ -213,10 +213,11 @@ describe.only("Macro test mainnet", function () {
 
     it("rebalance with flash loan", async function () {
         this.skip();
-        const MockRebalancerA = await ethers.getContractFactory("Rebalancer");
-        mockRebalancer = await MockRebalancerA.deploy();
+        const MockRebalancer = await ethers.getContractFactory("Rebalancer");
+        mockRebalancer = await MockRebalancer.deploy();
         await mockRebalancer.deployed();
 
+        await mineSomeBlocks(60 * 2);
         await mineSomeBlocks(83069);
 
         const arbTx = await mockRebalancer.rebalance();
