@@ -334,7 +334,7 @@ contract Rebalancer is Ownable {
             ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
                 tokenIn: address(weth),
                 tokenOut: address(usdc),
-                fee: 3000,
+                fee: 500,
                 recipient: address(this),
                 deadline: block.timestamp,
                 amountOut: data.amount1,
@@ -390,7 +390,7 @@ contract Rebalancer is Ownable {
             ISwapRouter.ExactInputSingleParams memory params2 = ISwapRouter.ExactInputSingleParams({
                 tokenIn: address(usdc),
                 tokenOut: address(weth),
-                fee: 3000,
+                fee: 500,
                 recipient: address(this),
                 deadline: block.timestamp,
                 amountIn: usdcAfter,
