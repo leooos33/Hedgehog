@@ -372,18 +372,19 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
 
     /// @dev Fetches squeeth IV
     function getIV() external view override returns (uint256) {
-        uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
         //const = 365/17.5
+
+        uint256 markIndex;
+        {
+        uint32 _twapPeriod = IVaultStorage(vaultStorage).twapPeriod();
+
+        uint256 mark = Constants.osqthController.getDenormalizedMark(_twapPeriod);
+        uint256 index = Constants.osqthController.getIndex(_twapPeriod);
+
+        markIndex = mark > index ? mark.div(index) : index.div(mark);
+        }
         return
-            (
-                (
-                    (
-                        (Constants.osqthController.getDenormalizedMark(_twapPeriod)).div(
-                            Constants.osqthController.getIndex(_twapPeriod)
-                        )
-                    ).ln()
-                ).mul(20857142857142857142)
-            ).sqrt();
+            ((markIndex.ln()).mul(20857142857142857142)).sqrt();
     }
 
     /// @dev Casts uint256 to uint128 with overflow check.
