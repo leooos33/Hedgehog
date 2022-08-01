@@ -184,7 +184,7 @@ describe.only("Macro test mainnet", function () {
         // await mineSomeBlocks(600);
 
         let succeded = false;
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i < 10; i++) {
             console.log(">", i);
             try {
                 const arbTx = await mockRebalancer.rebalance();
@@ -205,7 +205,7 @@ describe.only("Macro test mainnet", function () {
                 }
             }
 
-            await mineSomeBlocks(10);
+            await mineSomeBlocks(60);
         }
         assert(succeded, "No successful test found");
         console.log(log);
@@ -224,7 +224,7 @@ describe.only("Macro test mainnet", function () {
     });
 
     it("rebalance iterative", async function () {
-        // this.skip();
+        this.skip();
         const testHolder = {};
         const MockRebalancer = await ethers.getContractFactory("MockRebalancer");
         mockRebalancer = await MockRebalancer.deploy();
