@@ -13,14 +13,11 @@ import {IAuction} from "../interfaces/IAuction.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
-import "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
-import "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
+import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
+import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
 import "hardhat/console.sol";
 
-//TODO: add threshold
-//TODO: Test withdraw
-//TODO: set fee to 500
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
@@ -44,6 +41,7 @@ contract Rebalancer is Ownable {
         uint256 type_of_arbitrage;
         uint256 amount1;
         uint256 amount2;
+        uint256 threshold;
     }
 
     constructor() Ownable() {}
@@ -65,7 +63,7 @@ contract Rebalancer is Ownable {
     }
 
     //uint256 threshold
-    function rebalance() public onlyOwner {
+    function rebalance(uint256 threshold) public onlyOwner {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
         require(isTimeRebalance, "Not time");
@@ -86,13 +84,15 @@ contract Rebalancer is Ownable {
         console.log("usdcBalance %s", usdcBalance);
         console.log("osqthBalance %s", osqthBalance);
 
+        FlCallbackData memory data;
+        data.threshold = threshold;
+
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow weth & usdc
             // 2) get osqth
             // 3) sellv3 osqth
             // 4) return eth & usdc
 
-            FlCallbackData memory data;
             data.type_of_arbitrage = 1;
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetUsdc - usdcBalance + 10;
@@ -106,7 +106,7 @@ contract Rebalancer is Ownable {
             // 2) get usdc & weth
             // 3) sellv3 usdc & weth
             // 4) return osqth
-            FlCallbackData memory data;
+
             data.type_of_arbitrage = 2;
             data.amount1 = targetOsqth - osqthBalance + 10;
 
@@ -119,7 +119,6 @@ contract Rebalancer is Ownable {
             // 3) sellv3 weth
             // 4) return usdc & osqth
 
-            FlCallbackData memory data;
             data.type_of_arbitrage = 3;
             data.amount1 = targetUsdc - usdcBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
@@ -134,7 +133,6 @@ contract Rebalancer is Ownable {
             // 3) sellv3 usdc & osqth
             // 4) return weth
 
-            FlCallbackData memory data;
             data.type_of_arbitrage = 4;
             data.amount1 = targetEth - ethBalance + 10;
 
@@ -147,7 +145,6 @@ contract Rebalancer is Ownable {
             // 3) sellv3 usdc
             // 4) return osqth & weth
 
-            FlCallbackData memory data;
             data.type_of_arbitrage = 5;
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
@@ -161,7 +158,7 @@ contract Rebalancer is Ownable {
             // 2) get osqth & weth
             // 3) sellv3 osqth & weth
             // 4) return usdc
-            FlCallbackData memory data;
+
             data.type_of_arbitrage = 6;
             data.amount1 = targetUsdc - usdcBalance + 10;
 
@@ -176,6 +173,8 @@ contract Rebalancer is Ownable {
     function onDeferredLiquidityCheck(bytes memory encodedData) external {
         require(msg.sender == euler, "e/flash-loan/on-deferred-caller");
         FlCallbackData memory data = abi.decode(encodedData, (FlCallbackData));
+
+        uint256 ethBefore = IERC20(weth).balanceOf(address(this));
 
         if (data.type_of_arbitrage == 1) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
@@ -525,6 +524,7 @@ contract Rebalancer is Ownable {
         console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
         console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
         console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
+        require(IERC20(weth).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
         revert("Success");
     }
 }

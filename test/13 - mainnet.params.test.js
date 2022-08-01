@@ -187,7 +187,7 @@ describe.only("Macro test mainnet", function () {
         for (let i = 0; i < 7; i++) {
             console.log("Iteration:", i);
             try {
-                const arbTx = await mockRebalancer.rebalance();
+                const arbTx = await mockRebalancer.rebalance("443446670232293251");
                 await arbTx.wait();
                 succeded = true;
             } catch (err) {
@@ -220,8 +220,23 @@ describe.only("Macro test mainnet", function () {
         await mineSomeBlocks(60 * 2);
         await mineSomeBlocks(83069);
 
-        const arbTx = await mockRebalancer.rebalance();
+        console.log("> mockRebalancer ETH %s", await getERC20Balance(mockRebalancer.address, wethAddress));
+        console.log("> mockRebalancer USDC %s", await getERC20Balance(mockRebalancer.address, usdcAddress));
+        console.log("> mockRebalancer oSQTH %s", await getERC20Balance(mockRebalancer.address, osqthAddress));
+
+        const arbTx = await mockRebalancer.rebalance(0);
         await arbTx.wait();
+
+        console.log("> mockRebalancer ETH %s", await getERC20Balance(mockRebalancer.address, wethAddress));
+        console.log("> mockRebalancer USDC %s", await getERC20Balance(mockRebalancer.address, usdcAddress));
+        console.log("> mockRebalancer oSQTH %s", await getERC20Balance(mockRebalancer.address, osqthAddress));
+
+        await mockRebalancer.collectProtocol("700000000000000000", 0, 0, governance.address);
+        await arbTx.wait();
+
+        console.log("> mockRebalancer ETH %s", await getERC20Balance(mockRebalancer.address, wethAddress));
+        console.log("> mockRebalancer USDC %s", await getERC20Balance(mockRebalancer.address, usdcAddress));
+        console.log("> mockRebalancer oSQTH %s", await getERC20Balance(mockRebalancer.address, osqthAddress));
     });
 
     it("rebalance iterative", async function () {
