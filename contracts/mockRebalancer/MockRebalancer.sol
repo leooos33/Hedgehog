@@ -60,5 +60,6 @@ contract MockRebalancer is Ownable {
             console.log("type_of_arbitrage 6");
             return 6;
         }
+        return 0;
     }
 }

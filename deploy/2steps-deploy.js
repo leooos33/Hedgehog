@@ -47,7 +47,7 @@ const hardhatDeployContractsInParallel = async (governance, params) => {
 const hardhatInitializeContracts = async () => {
     const Vault = await ethers.getContractAt("IFaucetHelper", "0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac");
     const VaultAuction = await ethers.getContractAt("IFaucetHelper", "0xA9a68eA2746793F43af0f827EC3DbBb049359067");
-    const VaultMath = await ethers.getContractAt("IFaucetHelper", "0xfbcf638ea33a5f87d1e39509e7def653958fa9c4");
+    const VaultMath = await ethers.getContractAt("IFaucetHelper", "0xfbcF638ea33A5F87D1e39509E7deF653958FA9C4");
     const VaultTreasury = await ethers.getContractAt("IFaucetHelper", "0xf403970040e27613a45699c3a32d6be3751f0184");
     const VaultStorage = await ethers.getContractAt("IFaucetHelper", "0x60554f5064c4bb6cba563ad4066b22ab6a43c806");
 

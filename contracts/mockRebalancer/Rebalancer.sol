@@ -16,13 +16,13 @@ import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
+// import "hardhat/console.sol";
 
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
-    address public addressAuction = 0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D;
-    address public addressMath = 0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E;
+    address public addressAuction = 0xA9a68eA2746793F43af0f827EC3DbBb049359067;
+    address public addressMath = 0xfbcF638ea33A5F87D1e39509E7deF653958FA9C4;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -59,6 +59,9 @@ contract Rebalancer is Ownable {
     function setContracts(address _addressAuction, address _addressMath) external onlyOwner {
         addressAuction = _addressAuction;
         addressMath = _addressMath;
+        IERC20(usdc).approve(addressAuction, type(uint256).max);
+        IERC20(osqth).approve(addressAuction, type(uint256).max);
+        IERC20(weth).approve(addressAuction, type(uint256).max);
     }
 
     function collectProtocol(

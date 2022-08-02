@@ -17,7 +17,7 @@ const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 
-describe.only("Test with real mainnet contracts", function () {
+describe("Test with real mainnet contracts", function () {
     let governance;
     it("Should set actors", async function () {
         await hre.network.provider.request({
