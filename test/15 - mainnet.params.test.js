@@ -152,7 +152,8 @@ describe("Test with real mainnet contracts", function () {
             "0xA9a68eA2746793F43af0f827EC3DbBb049359067",
             "0xfbcf638ea33a5f87d1e39509e7def653958fa9c4"
         );
-        await tx.wait();
+        let receipt = await tx.wait();
+        console.log("> Gas used:", receipt.gasUsed.toString());
 
         const arbTx = await rebalancer.rebalance();
         await arbTx.wait();
