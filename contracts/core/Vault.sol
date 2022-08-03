@@ -55,8 +55,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     /**
      * @notice strategy constructor
      */
-    // unicode"🦔"
-    constructor() ERC20("Hedging DL", "HDL") {}
+    // unicode"🦔" TODO 
+    constructor() ERC20("Liqui Hedgehog ", "Hedgehog") {}
 
     /**
     @notice deposit tokens in proportion to the vault's holding

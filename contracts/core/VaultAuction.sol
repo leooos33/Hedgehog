@@ -187,8 +187,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 expIVbump = cIV.div(pIV);
                 valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
-            //IV bump > 2.5 leads to a negative values of one of the lower or upper boundary
-            expIVbump = expIVbump > uint256(25e17) ? uint256(25e17) : expIVbump;
+            //IV bump > 2 leads to a negative values of one of the lower or upper boundary
+            expIVbump = expIVbump > uint256(2e18) ? uint256(2e18) : (expIVbump.mul(2e18)).sub(2e18);
 
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
@@ -322,11 +322,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         {
             int24 baseAdj = toInt24(
                 int256(
-                    (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
+                    ((expIVbump.div(IVaultStorage(vaultStorage).adjParam())).floor() *
                         uint256(int256(tickSpacing))).div(1e36)
                 )
             );
-            tickAdj = baseAdj < int24(120) ? int24(120) : baseAdj;
+            tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
         }
 
         if (isPosIVbump) {
