@@ -11,9 +11,9 @@ const deposit = async () => {
 
     let tS = (await Vault.totalSupply()).toString();
 
-    let eth = utils.parseUnits("0.03", 18); //50
-    let usdc = utils.parseUnits("25", 6);
-    let sqth = utils.parseUnits("0.16", 18);
+    let eth = utils.parseUnits("0.015", 18); //25
+    let usdc = utils.parseUnits("12", 6);
+    let sqth = utils.parseUnits("0.08", 18);
 
     let data = await Vault.calcSharesAndAmounts(eth, usdc, sqth, tS);
     console.log(data);
@@ -39,11 +39,10 @@ const deposit = async () => {
     // tx = await OSQTH.approve("0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac", maxApproval);
 
     let to = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
-
     tx = await Vault.deposit(eth, usdc, sqth, to, 0, 0, 0, {
         gasPrice: 8000000000,
         gasLimit: 900000,
-        nonce: 24,
+        // nonce: 24,
     });
     await tx.wait();
 };
