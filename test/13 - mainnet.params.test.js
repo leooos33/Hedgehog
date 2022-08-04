@@ -210,7 +210,7 @@ describe.only("Macro test mainnet", function () {
                 }
             }
 
-            await mineSomeBlocks(60);
+            await mineSomeBlocks(120);
         }
         assert(succeded, "No successful test found");
         console.log(log);

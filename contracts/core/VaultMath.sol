@@ -329,29 +329,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
     }
 
     /**
-     * @notice calculate value at the auction price based on liquidity
-     * @param liquidity liquidity of the position
-     * @param aP auction price
-     * @param pL lower price
-     * @param pH upper price
-     * @param digits decimals based multiplier
-     * @return value in ETH terms
-     */
-    function getValueForLiquidity(
-        uint128 liquidity,
-        uint256 aP,
-        uint256 pL,
-        uint256 pH,
-        uint256 digits
-    ) external pure override returns (uint256) {
-        if (digits == 1e12) {
-            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).div(aP).mul(1e24);
-        } else {
-            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).mul(digits);
-        }
-    }
-
-    /**
      * @notice calculate value in ETH terms
      */
     function getValue(

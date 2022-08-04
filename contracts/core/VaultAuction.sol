@@ -237,24 +237,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 1e18
             );
 
-            //Strategy values at the auction prices
-            uint256 value0 = IVaultMath(vaultMath).getValueForLiquidity(
-                liquidityEthUsdc,
-                ethUsdcPrice.mul(priceMultiplier),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-                1e12
-            );
-
-            uint256 value1 = IVaultMath(vaultMath).getValueForLiquidity(
-                liquidityOsqthEth,
-                osqthEthPrice.mul(priceMultiplier),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-                1e18
-            );
             //Coefficient for auction adjustment
-            uint256 k = priceMultiplier > 1e18 ? 1e18 : (totalValue).div(value0 + value1);
+            uint256 k = priceMultiplier.sqrt();
             liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
             liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
         }
