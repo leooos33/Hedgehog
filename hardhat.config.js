@@ -30,8 +30,8 @@ module.exports = {
             allowUnlimitedContractSize: process.env.DEBUG ? true : false,
             chainId: CHAIN_IDS.hardhat,
             forking: getForkingParams(),
-            gasLimit: 2100000,
-            gasPrice: 8000000000,
+            // gasLimit: 2100000,
+            // gasPrice: 8000000000,
         },
         ropsten: {
             //0x42B1299fCcA091A83C08C24915Be6E6d63906b1a

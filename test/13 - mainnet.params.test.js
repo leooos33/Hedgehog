@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe.only("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -231,7 +231,8 @@ describe("Macro test mainnet", function () {
         console.log("> rebalancer oSQTH %s", await getERC20Balance(rebalancer.address, osqthAddress));
 
         const arbTx = await rebalancer.rebalance(0);
-        await arbTx.wait();
+        receipt = await arbTx.wait();
+        console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);
 
         console.log("> rebalancer ETH %s", await getERC20Balance(rebalancer.address, wethAddress));
         console.log("> rebalancer USDC %s", await getERC20Balance(rebalancer.address, usdcAddress));

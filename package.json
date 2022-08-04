@@ -12,6 +12,7 @@
     "deploy:local": "npx hardhat run deploy/local-deploy.js --network localhost",
     "deploy:ropsten": "npx hardhat run deploy/ropsten-deploy.js --network ropsten",
     "deploy:mainnet": "npx hardhat run deploy/mainnet-deploy.js --network mainnet",
+    "rebalance": "npx hardhat run deploy/rebalance.js --network mainnet",
     "verify": "npx hardhat verify <contract address> --network ropsten --constructor-args deploy/arguments.js",
     "node": "npx hardhat node"
   },
