@@ -235,7 +235,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump)
+    function getPriceMultiplier(uint256 _auctionTriggerTime)
         external
         view
         override
@@ -249,13 +249,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
-        if (_isPosIVbump) {
-            //Start at 1 and moving to 1.05
-            return uint256(1e18).add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(1e18)));
-        } else {
-            //Start at 1 and moving to 0.95
-            return uint256(1e18).sub(auctionCompletionRatio.mul(uint256(1e18).sub(minPriceMultiplier)));
-        }
+        return maxPriceMultiplier.sub(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
 
     /// @dev Fetches time-weighted average prices

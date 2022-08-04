@@ -176,7 +176,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //is positive IV bump
             bool isPosIVbump = cIV < pIV;
 
-            priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime, isPosIVbump);
+            priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
 
             //expected IV bump
             uint256 expIVbump;
@@ -254,7 +254,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 1e18
             );
             //Coefficient for auction adjustment
-            uint256 k = (totalValue).div(value0 + value1);
+            uint256 k = priceMultiplier > 1e18 ? 1e18 : (totalValue).div(value0 + value1);
             liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
             liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
         }

@@ -53,7 +53,7 @@ interface IVaultMath {
         uint256 osqthEthPrice
     ) external pure returns (uint256);
 
-    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump) external view returns (uint256);
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external view returns (uint256);
 
     function getLiquidityForValue(
         uint256 v,
