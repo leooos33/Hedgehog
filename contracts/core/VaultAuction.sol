@@ -162,6 +162,23 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
+        //total ETH value of the strategy holdings at the current prices
+        uint256 totalValue;
+        {
+            //scope to avoid stack too deep error
+
+            //current balances
+            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+
+            totalValue = IVaultMath(vaultMath).getValue(
+                ethBalance,
+                usdcBalance,
+                osqthBalance,
+                ethUsdcPrice,
+                osqthEthPrice
+            );
+        }
+
         uint256 valueMultiplier;
         uint256 priceMultiplier;
         Constants.Boundaries memory boundaries;
@@ -199,49 +216,22 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
         }
 
-        //total ETH value of the strategy holdings at the current prices
-        uint256 totalValue;
-        {
-            //scope to avoid stack too deep error
-
-            //current balances
-            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-
-            totalValue = IVaultMath(vaultMath).getValue(
-                ethBalance,
-                usdcBalance,
-                osqthBalance,
-                ethUsdcPrice,
-                osqthEthPrice
-            );
-        }
-
         //Calculate liquidities
-        uint128 liquidityEthUsdc;
-        uint128 liquidityOsqthEth;
-        {
-            //scope to avoid stack too deep error
-            liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(ethUsdcPrice).mul(valueMultiplier),
-                ethUsdcPrice,
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-                1e12
-            );
+        uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(ethUsdcPrice).mul(valueMultiplier).mul(priceMultiplier),
+            ethUsdcPrice,
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
+            1e12
+        );
 
-            liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(uint256(1e18) - valueMultiplier),
-                osqthEthPrice,
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-                1e18
-            );
-
-            //Coefficient for auction adjustment
-            uint256 k = priceMultiplier.sqrt();
-            liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
-            liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
-        }
+        uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(uint256(1e18) - valueMultiplier).mul(priceMultiplier),
+            osqthEthPrice,
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
+            1e18
+        );
 
         return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth, totalValue, ethUsdcPrice);
     }
