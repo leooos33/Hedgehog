@@ -162,43 +162,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        uint256 valueMultiplier;
-        uint256 priceMultiplier;
-        Constants.Boundaries memory boundaries;
-        {
-            //scope to avoid stack too deep error
-            //current implied volatility
-            uint256 cIV = IVaultMath(vaultMath).getIV();
-
-            //previous implied volatility
-            uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
-
-            //is positive IV bump
-            bool isPosIVbump = cIV < pIV;
-
-            priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime, isPosIVbump);
-
-            //expected IV bump
-            uint256 expIVbump;
-            if (isPosIVbump) {
-                expIVbump = pIV.div(cIV);
-                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
-            } else {
-                expIVbump = cIV.div(pIV);
-                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
-            }
-            //IV bump > 2.5 leads to a negative values of one of the lower or upper boundary
-            expIVbump = expIVbump > uint256(25e17) ? uint256(25e17) : expIVbump;
-
-            //boundaries for auction prices (current price * multiplier)
-            boundaries = _getBoundaries(
-                ethUsdcPrice.mul(priceMultiplier),
-                osqthEthPrice.mul(priceMultiplier),
-                isPosIVbump,
-                expIVbump
-            );
-        }
-
         //total ETH value of the strategy holdings at the current prices
         uint256 totalValue;
         {
@@ -216,48 +179,59 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
         }
 
-        //Calculate liquidities
-        uint128 liquidityEthUsdc;
-        uint128 liquidityOsqthEth;
+        uint256 valueMultiplier;
+        uint256 priceMultiplier;
+        Constants.Boundaries memory boundaries;
         {
             //scope to avoid stack too deep error
-            liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(ethUsdcPrice).mul(valueMultiplier),
-                ethUsdcPrice,
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-                1e12
-            );
+            //current implied volatility
+            uint256 cIV = IVaultMath(vaultMath).getIV();
 
-            liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-                totalValue.mul(uint256(1e18) - valueMultiplier),
-                osqthEthPrice,
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-                1e18
-            );
+            //previous implied volatility
+            uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
-            //Strategy values at the auction prices
-            uint256 value0 = IVaultMath(vaultMath).getValueForLiquidity(
-                liquidityEthUsdc,
+            //is positive IV bump
+            bool isPosIVbump = cIV < pIV;
+
+            priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
+
+            //expected IV bump
+            uint256 expIVbump;
+            if (isPosIVbump) {
+                expIVbump = pIV.div(cIV);
+                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
+            } else {
+                expIVbump = cIV.div(pIV);
+                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
+            }
+            //IV bump > 2 leads to a negative values of one of the lower or upper boundary
+            expIVbump = expIVbump > uint256(2e18) ? uint256(2e18) : (expIVbump.mul(2e18)).sub(2e18);
+
+            //boundaries for auction prices (current price * multiplier)
+            boundaries = _getBoundaries(
                 ethUsdcPrice.mul(priceMultiplier),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
-                uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
-                1e12
-            );
-
-            uint256 value1 = IVaultMath(vaultMath).getValueForLiquidity(
-                liquidityOsqthEth,
                 osqthEthPrice.mul(priceMultiplier),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
-                uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
-                1e18
+                isPosIVbump,
+                expIVbump
             );
-            //Coefficient for auction adjustment
-            uint256 k = (totalValue).div(value0 + value1);
-            liquidityEthUsdc = uint128(k.mul(uint256(liquidityEthUsdc)));
-            liquidityOsqthEth = uint128(k.mul(uint256(liquidityOsqthEth)));
         }
+
+        //Calculate liquidities
+        uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(ethUsdcPrice).mul(valueMultiplier).mul(priceMultiplier),
+            ethUsdcPrice,
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
+            uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
+            1e12
+        );
+
+        uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
+            totalValue.mul(uint256(1e18) - valueMultiplier).mul(priceMultiplier),
+            osqthEthPrice,
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
+            uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
+            1e18
+        );
 
         return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth, totalValue, ethUsdcPrice);
     }
@@ -322,11 +296,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         {
             int24 baseAdj = toInt24(
                 int256(
-                    (((expIVbump - uint256(1e18)).div(IVaultStorage(vaultStorage).adjParam())).floor() *
+                    ((expIVbump.div(IVaultStorage(vaultStorage).adjParam())).floor() *
                         uint256(int256(tickSpacing))).div(1e36)
                 )
             );
-            tickAdj = baseAdj < int24(120) ? int24(120) : baseAdj;
+            tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;
         }
 
         if (isPosIVbump) {

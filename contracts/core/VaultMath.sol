@@ -235,7 +235,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime, bool _isPosIVbump)
+    function getPriceMultiplier(uint256 _auctionTriggerTime)
         external
         view
         override
@@ -249,13 +249,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             ? 1e18
             : (block.timestamp.sub(_auctionTriggerTime)).div(auctionTime);
 
-        if (_isPosIVbump) {
-            //Start at 1 and moving to 1.05
-            return uint256(1e18).add(auctionCompletionRatio.mul(maxPriceMultiplier.sub(1e18)));
-        } else {
-            //Start at 1 and moving to 0.95
-            return uint256(1e18).sub(auctionCompletionRatio.mul(uint256(1e18).sub(minPriceMultiplier)));
-        }
+        return maxPriceMultiplier.sub(auctionCompletionRatio.mul(maxPriceMultiplier.sub(minPriceMultiplier)));
     }
 
     /// @dev Fetches time-weighted average prices
@@ -332,29 +326,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         uint256 digits
     ) external pure override returns (uint128) {
         return _toUint128(v.div((p.sqrt()).mul(2e18) - pL.sqrt() - p.div(pH.sqrt())).mul(digits));
-    }
-
-    /**
-     * @notice calculate value at the auction price based on liquidity
-     * @param liquidity liquidity of the position
-     * @param aP auction price
-     * @param pL lower price
-     * @param pH upper price
-     * @param digits decimals based multiplier
-     * @return value in ETH terms
-     */
-    function getValueForLiquidity(
-        uint128 liquidity,
-        uint256 aP,
-        uint256 pL,
-        uint256 pH,
-        uint256 digits
-    ) external pure override returns (uint256) {
-        if (digits == 1e12) {
-            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).div(aP).mul(1e24);
-        } else {
-            return uint256(liquidity).mul((aP.sqrt()).mul(2e18) - pH.sqrt() - aP.div(pL.sqrt())).mul(digits);
-        }
     }
 
     /**

@@ -171,23 +171,28 @@ describe("Macro test mainnet", function () {
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
 
-        await mineSomeBlocks(83622);
+        await mineSomeBlocks(40420);
     });
 
     it("rebalance iterative with real rebalance", async function () {
-        this.skip();
+        //this.skip();
         const log = {};
         const Rebalancer = await ethers.getContractFactory("Rebalancer");
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
 
+        tx = await rebalancer.setContracts(
+            "0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D",
+            "0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E"
+        );
+
         // await mineSomeBlocks(600);
 
         let succeded = false;
-        for (let i = 0; i < 7; i++) {
+        for (let i = 0; i <= 10; i++) {
             console.log("Iteration:", i);
             try {
-                const arbTx = await rebalancer.rebalance("443446670232293251");
+                const arbTx = await rebalancer.rebalance("0");
                 await arbTx.wait();
                 succeded = true;
             } catch (err) {
@@ -205,14 +210,14 @@ describe("Macro test mainnet", function () {
                 }
             }
 
-            await mineSomeBlocks(60);
+            await mineSomeBlocks(120);
         }
         assert(succeded, "No successful test found");
         console.log(log);
     }).timeout(1000000);
 
     it("rebalance with flash loan", async function () {
-        // this.skip();
+        this.skip();
         const Rebalancer = await ethers.getContractFactory("Rebalancer");
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
