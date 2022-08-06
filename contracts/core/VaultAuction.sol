@@ -204,7 +204,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 expIVbump = cIV.div(pIV);
                 valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
-            expIVbump = expIVbump > uint256(2e18) ? uint256(0) : uint256(3e18).sub((expIVbump.mul(2e18)));
+            expIVbump = expIVbump > uint256(2e18) ? uint256(2e18) : (expIVbump.mul(2e18)).sub(2e18);
 
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
