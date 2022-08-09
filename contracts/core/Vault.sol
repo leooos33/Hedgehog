@@ -143,7 +143,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Burn shares
         _burn(msg.sender, shares);
 
-        //withdraw user share of tokens from the lp positions in current proportion
+        //withdraw user share of tokens from lp positions in the current proportion
         (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcLower(),

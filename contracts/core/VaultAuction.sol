@@ -93,8 +93,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 _auctionTriggerTime,
         Constants.AuctionMinAmounts memory minAmounts
     ) internal {
-        //Calculate auction params
-        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
@@ -111,21 +109,22 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             IVaultTreasury(vaultTreasury).positionLiquidityEthOsqth()
         );
 
-        {
-            //Calculate amounts that need to be exchanged with keeper
-            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+        //Calculate auction params
+        Constants.AuctionParams memory params = _getAuctionParams(_auctionTriggerTime);
 
-            (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
-                params.boundaries,
-                params.liquidityEthUsdc,
-                params.liquidityOsqthEth
-            );
+        //Calculate amounts that need to be exchanged with keeper
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
-            //Exchange tokens with keeper
-            _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
-            _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
-            _swapWithKeeper(osqthBalance, targetOsqth, minAmounts.minAmountOsqth, address(Constants.osqth), _keeper);
-        }
+        (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
+            params.boundaries,
+            params.liquidityEthUsdc,
+            params.liquidityOsqthEth
+        );
+
+        //Exchange tokens with keeper
+        _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
+        _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
+        _swapWithKeeper(osqthBalance, targetOsqth, minAmounts.minAmountOsqth, address(Constants.osqth), _keeper);
 
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -179,8 +178,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             );
         }
 
-        uint256 valueMultiplier;
         uint256 priceMultiplier;
+        uint256 weight;
         Constants.Boundaries memory boundaries;
         {
             //scope to avoid stack too deep error
@@ -190,7 +189,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
-            //is positive IV bump
+            //is a positive IV bump
             bool isPosIVbump = cIV < pIV;
 
             priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
@@ -199,10 +198,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256 expIVbump;
             if (isPosIVbump) {
                 expIVbump = pIV.div(cIV);
-                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
+                weight = priceMultiplier.div(priceMultiplier + uint256(1e18)) + uint256(1e16).div(cIV);
             } else {
                 expIVbump = cIV.div(pIV);
-                valueMultiplier = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
+                weight = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
             expIVbump = expIVbump > uint256(2e18) ? uint256(2e18) : (expIVbump.mul(2e18)).sub(2e18);
 
@@ -217,7 +216,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Calculate liquidities
         uint128 liquidityEthUsdc = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(ethUsdcPrice).mul(valueMultiplier).mul(priceMultiplier),
+            totalValue.mul(ethUsdcPrice).mul(weight).mul(priceMultiplier),
             ethUsdcPrice,
             uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcLower)),
             uint256(1e30).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.ethUsdcUpper)),
@@ -225,7 +224,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         uint128 liquidityOsqthEth = IVaultMath(vaultMath).getLiquidityForValue(
-            totalValue.mul(uint256(1e18) - valueMultiplier).mul(priceMultiplier),
+            totalValue.mul(uint256(1e18) - weight).mul(priceMultiplier),
             osqthEthPrice,
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthLower)),
             uint256(1e18).div(IVaultMath(vaultMath).getPriceFromTick(boundaries.osqthEthUpper)),
