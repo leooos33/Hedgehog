@@ -48,9 +48,9 @@ describe.only("Macro test mainnet", function () {
             osqthInput: "113434930214010428403",
         },
         depositor2: {
-            wethInput: "29987318809025550479",
-            usdcInput: "23067111297",
-            osqthInput: "170188380388050211866",
+            wethInput: "29987318809025550465",
+            usdcInput: "23067111298",
+            osqthInput: "170188380388050211783",
         },
         depositor3: {
             wethInput: "25443723573225622250",
@@ -125,6 +125,10 @@ describe.only("Macro test mainnet", function () {
     });
 
     it("deposit2", async function () {
+        const amountDeposit = await Vault.getAmountsToDeposit("59974637618044338084");
+
+        console.log("> ETH to deposit %s,USDC to deposit %s, oSQTH to deposit %s", amountDeposit[0], amountDeposit[1], amountDeposit[2]);
+
         tx = await Vault.connect(depositor2).deposit(
             "37630456391863397407",
             "29892919002",
@@ -136,6 +140,8 @@ describe.only("Macro test mainnet", function () {
         );
         await tx.wait();
 
+
+
         // State
         const userEthBalanceAfterDeposit = await getERC20Balance(depositor2.address, wethAddress);
         const userUsdcBalanceAfterDeposit = await getERC20Balance(depositor2.address, usdcAddress);
@@ -146,6 +152,8 @@ describe.only("Macro test mainnet", function () {
         console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
         console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
+
+
     });
 
     it("swap", async function () {

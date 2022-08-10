@@ -22,10 +22,10 @@ interface IVault is IFaucet {
         uint256
     ) external;
 
-    function getAmountsToDeposit(uint256 ethToDeposit)
+    function getAmountsToDeposit(uint256 totalEth)
         external
         view
-        returns (uint256 usdcToDeposit, uint256 osqthToDeposit);
+        returns (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit);
 
     function calcSharesAndAmounts(
         uint256 _amountEth,
