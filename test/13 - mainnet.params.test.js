@@ -140,8 +140,6 @@ describe.only("Macro test mainnet", function () {
         );
         await tx.wait();
 
-
-
         // State
         const userEthBalanceAfterDeposit = await getERC20Balance(depositor2.address, wethAddress);
         const userUsdcBalanceAfterDeposit = await getERC20Balance(depositor2.address, usdcAddress);

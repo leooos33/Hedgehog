@@ -243,43 +243,26 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 depositorValue.mul(250000000000000000).div(osqthEthPrice)
             );
         } else {
-            //Get total amounts of token balances
-            (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
-            
-            uint256 ratio;
-            {
-            //Calculate total strategy value
-            uint256 totalValue = IVaultMath(vaultMath).getValue(
-                ethAmount,
-                usdcAmount,
-                osqthAmount,
-                ethUsdcPrice,
-                osqthEthPrice
-            );
-
-            ratio = depositorValue.div(totalValue);
-            }
-           
-            return (
+            (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio) = getAmountsToDeposit(depositorValue);
+            return(
                 _totalSupply.mul(ratio),
-                ethAmount.mul(ratio),
-                usdcAmount.mul(ratio),
-                osqthAmount.mul(ratio)
+                ethToDeposit,
+                usdcToDeposit,
+                osqthToDeposit
             );
         }
     }
 
     /// @dev calculate required amount of ETH, USDC, and oSQTH based on the total amount of ETH to deposit
     function getAmountsToDeposit(uint256 totalEth)
-        external
+        public
         view
         override
-        returns (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit)
+        returns (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio)
     {
         //Get total amounts of token balances
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
-        uint256 ratio;
         {
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
