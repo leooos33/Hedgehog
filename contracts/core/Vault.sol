@@ -269,7 +269,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         }
     }
 
-    /// @dev calculate required amount of USDC and oSQTH based on amount of ETH to deposit
+    /// @dev calculate required amount of ETH, USDC, and oSQTH based on the total amount of ETH to deposit
     function getAmountsToDeposit(uint256 totalEth)
         external
         view
