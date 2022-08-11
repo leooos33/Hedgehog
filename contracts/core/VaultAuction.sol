@@ -93,7 +93,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 _auctionTriggerTime,
         Constants.AuctionMinAmounts memory minAmounts
     ) internal {
-
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
@@ -294,8 +293,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         {
             int24 baseAdj = toInt24(
                 int256(
-                    ((expIVbump.div(IVaultStorage(vaultStorage).adjParam())).floor() *
-                        uint256(int256(tickSpacing))).div(1e36)
+                    ((expIVbump.div(IVaultStorage(vaultStorage).adjParam())).floor() * uint256(int256(tickSpacing)))
+                        .div(1e36)
                 )
             );
             tickAdj = baseAdj < int24(120) ? int24(60) : baseAdj;

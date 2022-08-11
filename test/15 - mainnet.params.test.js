@@ -1,7 +1,5 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
-const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("./common");
 const {
     mineSomeBlocks,
     resetFork,
@@ -12,8 +10,6 @@ const {
     getOSQTH,
     getUSDC,
 } = require("./helpers");
-const { hardhatInitializeDeploed } = require("./deploy");
-const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 

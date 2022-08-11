@@ -16,7 +16,7 @@ import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
- import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
@@ -495,10 +495,10 @@ contract Rebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
         }
 
-         console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
-         console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
-         console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
+        console.log(">> profit ETH %s", IERC20(weth).balanceOf(address(this)));
+        console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
+        console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
         require(IERC20(weth).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
-         revert("Success");
+        revert("Success");
     }
 }

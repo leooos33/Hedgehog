@@ -55,7 +55,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     /**
      * @notice strategy constructor
      */
-    // unicode"🦔" TODO 
+    // unicode"🦔" TODO
     constructor() ERC20("Liqui Hedgehog ", "Hedgehog") {}
 
     /**
@@ -243,13 +243,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 depositorValue.mul(250000000000000000).div(osqthEthPrice)
             );
         } else {
-            (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio) = getAmountsToDeposit(depositorValue);
-            return(
-                _totalSupply.mul(ratio),
-                ethToDeposit,
-                usdcToDeposit,
-                osqthToDeposit
+            (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio) = getAmountsToDeposit(
+                depositorValue
             );
+            return (_totalSupply.mul(ratio), ethToDeposit, usdcToDeposit, osqthToDeposit);
         }
     }
 
@@ -258,15 +255,20 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         public
         view
         override
-        returns (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio)
+        returns (
+            uint256 ethToDeposit,
+            uint256 usdcToDeposit,
+            uint256 osqthToDeposit,
+            uint256 ratio
+        )
     {
         //Get total amounts of token balances
         (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
         {
-        (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
+            (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        uint256 totalValue = IVaultMath(vaultMath).getValue(
+            uint256 totalValue = IVaultMath(vaultMath).getValue(
                 ethAmount,
                 usdcAmount,
                 osqthAmount,
@@ -274,10 +276,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 osqthEthPrice
             );
 
-        ratio = totalEth.div(totalValue);
+            ratio = totalEth.div(totalValue);
         }
 
-        ethToDeposit =  ethAmount.mul(ratio);
+        ethToDeposit = ethAmount.mul(ratio);
         usdcToDeposit = uint256(usdcAmount).mul(ratio);
         osqthToDeposit = osqthAmount.mul(ratio);
     }

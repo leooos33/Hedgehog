@@ -235,12 +235,7 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
      * @param _auctionTriggerTime timestamp when auction started
      * @return priceMultiplier
      */
-    function getPriceMultiplier(uint256 _auctionTriggerTime)
-        external
-        view
-        override
-        returns (uint256)
-    {
+    function getPriceMultiplier(uint256 _auctionTriggerTime) external view override returns (uint256) {
         uint256 maxPriceMultiplier = IVaultStorage(vaultStorage).maxPriceMultiplier();
         uint256 minPriceMultiplier = IVaultStorage(vaultStorage).minPriceMultiplier();
         uint256 auctionTime = IVaultStorage(vaultStorage).auctionTime();
