@@ -1,7 +1,14 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("./common");
+const {
+    wethAddress,
+    osqthAddress,
+    usdcAddress,
+    _biggestOSqthHolder,
+    _vaultAuctionAddressHardhat,
+    _vaultMathAddressHardhat,
+} = require("./common");
 const {
     mineSomeBlocks,
     resetFork,
@@ -172,7 +179,7 @@ describe("Macro test mainnet", function () {
         await mineSomeBlocks(554);
 
         swapAmount = utils.parseUnits("40", 18).toString();
-        await getOSQTH(swapAmount, contractHelper.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
+        await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
         tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
@@ -190,10 +197,7 @@ describe("Macro test mainnet", function () {
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
 
-        tx = await rebalancer.setContracts(
-            "0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D",
-            "0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E"
-        );
+        tx = await rebalancer.setContracts(_vaultAuctionAddressHardhat, _vaultMathAddressHardhat);
 
         // await mineSomeBlocks(600);
 

@@ -24,7 +24,7 @@ describe.skip("Mainnet Infrustructure Test", function () {
         await resetFork(15278550);
 
         let MyContract = await ethers.getContractFactory("Rebalancer");
-        const rebalancer = await MyContract.attach("0x09b1937D89646b7745377f0fcc8604c179c06aF5");
+        const rebalancer = await MyContract.attach(_rebalancerAddress);
 
         console.log("> userEth %s", await getERC20Balance(rebalancer.address, wethAddress));
         console.log("> userUsdc %s", await getERC20Balance(rebalancer.address, usdcAddress));
@@ -47,14 +47,7 @@ describe.skip("Mainnet Infrustructure Test", function () {
         const signers = await ethers.getSigners();
         unuthorized = signers[12];
 
-        const arr = abi.encode(
-            ["address", "address", "address"],
-            [
-                unuthorized.address,
-                "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-                "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-            ]
-        );
+        const arr = abi.encode(["address", "address", "address"], [unuthorized.address, wethAddress, usdcAddress]);
         tx = await VaultTreasury.connect(unuthorized).uniswapV3MintCallback(1, 1, arr);
         await tx.wait();
 
@@ -79,10 +72,7 @@ describe.skip("Mainnet Infrustructure Test", function () {
     it("Should deploy contract", async function () {
         // this.skip();
         console.log(unuthorized.address);
-        const arr = abi.encode(
-            ["address", "address"],
-            ["0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"]
-        );
+        const arr = abi.encode(["address", "address"], [wethAddress, usdcAddress]);
         tx = await VaultTreasury.connect(unuthorized).uniswapV3MintCallback(1, 1, arr);
         await tx.wait();
     });

@@ -1,7 +1,7 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { wethAddress, osqthAddress, usdcAddress, _biggestOSqthHolder } = require("./common");
 const {
     mineSomeBlocks,
     resetFork,
@@ -170,7 +170,7 @@ describe("Macro test", function () {
         await mineSomeBlocks(554);
 
         swapAmount = utils.parseUnits("40", 18).toString();
-        await getOSQTH(swapAmount, contractHelper.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
+        await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
         tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);

@@ -3,11 +3,12 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
+const { _governanceAddress, _vaultAddress } = require("../test/common/index");
 
 const withdraw = async () => {
-    const user = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
+    const user = _governanceAddress;
     let MyContract = await ethers.getContractFactory("Vault");
-    const Vault = await MyContract.attach("0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac");
+    const Vault = await MyContract.attach(_vaultAddress);
     let tx;
 
     console.log((await Vault.totalSupply()).toString());

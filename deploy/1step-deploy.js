@@ -3,9 +3,11 @@ process.exit(0); // Block file in order to not accidentally deploy
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
+const { _governanceAddress, _harhatAccount1, _harhatAccount7 } = require("../test/common/index");
 
-const governance = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; // ACCOUNT #1 in hardhat
-// const governance = "0x14dc79964da2c08b23698b3d3cc7ca32193d9955"; // ACCOUNT #7 in hardhat
+const governance = _governanceAddress;
+// const governance = _harhatAccount1;
+// const governance = _harhatAccount7;
 
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),

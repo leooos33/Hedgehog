@@ -1,6 +1,6 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, usdcAddress } = require("./common");
+const { wethAddress, usdcAddress, _biggestUSDCHolder } = require("./common");
 const { resetFork, logBlock, getUSDC, getERC20Balance, mineSomeBlocks } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
@@ -41,7 +41,7 @@ describe("VaultMath", function () {
 
     it("swap", async function () {
         swapAmount = utils.parseUnits("100000000", 6).toString();
-        await getUSDC(swapAmount, contractHelper.address, "0xcffad3200574698b78f32232aa9d63eabd290703");
+        await getUSDC(swapAmount, contractHelper.address, _biggestUSDCHolder);
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
 

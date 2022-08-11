@@ -1,7 +1,7 @@
 const { expect, assert } = require("chai");
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress } = require("./common");
+const { wethAddress, osqthAddress, usdcAddress, _governanceAddress, _vaultAddress, maxUint256 } = require("./common");
 const {
     mineSomeBlocks,
     resetFork,
@@ -19,7 +19,7 @@ const ownable = require("./helpers/abi/ownable");
 
 describe.skip("Mainnet Infrustructure Test", function () {
     let governance;
-    let governanceAddress = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
+    let governanceAddress = _governanceAddress;
     it("Should set actors", async function () {
         await resetFork(15275315);
         await hre.network.provider.request({
@@ -33,8 +33,7 @@ describe.skip("Mainnet Infrustructure Test", function () {
 
     it("1 test", async function () {
         let MyContract = await ethers.getContractFactory("Vault");
-        const vaultAddress = "0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac";
-        const Vault = await MyContract.attach(vaultAddress);
+        const Vault = await MyContract.attach(_vaultAddress);
         let tx;
 
         let tS = (await Vault.totalSupply()).toString();
@@ -53,22 +52,20 @@ describe.skip("Mainnet Infrustructure Test", function () {
         console.log(sqth.toString());
         console.log(data[3].toString());
 
-        let WETH = await ethers.getContractAt("IWETH", "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2");
-        let USDC = await ethers.getContractAt("IWETH", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48");
-        let OSQTH = await ethers.getContractAt("IWETH", "0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B");
-        const maxApproval = BigNumber.from(
-            "115792089237316195423570985008687907853269984665640564039457584007913129639935"
-        );
+        let WETH = await ethers.getContractAt("IWETH", wethAddress);
+        let USDC = await ethers.getContractAt("IWETH", usdcAddress);
+        let OSQTH = await ethers.getContractAt("IWETH", osqthAddress);
+        const maxApproval = BigNumber.from(maxUint256);
 
         console.log("> userEth %s", await getERC20Balance(governance.address, wethAddress));
         console.log("> userUsdc %s", await getERC20Balance(governance.address, usdcAddress));
         console.log("> userOsqth %s", await getERC20Balance(governance.address, osqthAddress));
 
-        tx = await WETH.connect(governance).approve(vaultAddress, maxApproval);
+        tx = await WETH.connect(governance).approve(_vaultAddress, maxApproval);
         await tx.wait();
-        tx = await USDC.connect(governance).approve(vaultAddress, maxApproval);
+        tx = await USDC.connect(governance).approve(_vaultAddress, maxApproval);
         await tx.wait();
-        tx = await OSQTH.connect(governance).approve(vaultAddress, maxApproval);
+        tx = await OSQTH.connect(governance).approve(_vaultAddress, maxApproval);
         await tx.wait();
 
         let to = governanceAddress;

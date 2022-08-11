@@ -1,6 +1,6 @@
 const { BigNumber } = require("ethers");
 const { ethers, network } = require("hardhat");
-const { wethAddress, usdcAddress, osqthAddress } = require("../common");
+const { wethAddress, usdcAddress, osqthAddress, _biggestOSqthHolder } = require("../common");
 
 const gasToSend = 100812679875357878208;
 
@@ -71,7 +71,7 @@ const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqth
 const getAndApprove2 = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
     await getWETH(wethInput, actor.address);
     await getUSDC(usdcInput, actor.address);
-    await getOSQTH(osqthInput, actor.address, "0x5d296b8de19a3c134efafde57beedad4a1b76334");
+    await getOSQTH(osqthInput, actor.address, _biggestOSqthHolder);
 
     await approveERC20(actor, contractAddress, wethInput, wethAddress);
     await approveERC20(actor, contractAddress, usdcInput, usdcAddress);

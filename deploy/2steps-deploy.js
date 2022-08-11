@@ -5,8 +5,17 @@ process.exit(0); // Block file in order to not accidentally deploy
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
+const {
+    _governanceAddress,
+    _vaultAddress,
+    _vaultAuctionAddress,
+    _vaultMathAddress,
+    _vaultTreasuryAddress,
+    _vaultStorageAddress,
+    _uniMathAddress,
+} = require("../test/common/index");
 
-const governance = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
+const governance = _governanceAddress;
 
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),
@@ -45,14 +54,14 @@ const hardhatDeployContractsInParallel = async (governance, params) => {
 };
 
 const hardhatInitializeContracts = async () => {
-    const Vault = await ethers.getContractAt("IFaucetHelper", "0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac");
-    const VaultAuction = await ethers.getContractAt("IFaucetHelper", "0xA9a68eA2746793F43af0f827EC3DbBb049359067");
-    const VaultMath = await ethers.getContractAt("IFaucetHelper", "0xfbcF638ea33A5F87D1e39509E7deF653958FA9C4");
-    const VaultTreasury = await ethers.getContractAt("IFaucetHelper", "0xf403970040e27613a45699c3a32d6be3751f0184");
-    const VaultStorage = await ethers.getContractAt("IFaucetHelper", "0x60554f5064c4bb6cba563ad4066b22ab6a43c806");
+    const Vault = await ethers.getContractAt("IFaucetHelper", _vaultAddress);
+    const VaultAuction = await ethers.getContractAt("IFaucetHelper", _vaultAuctionAddress);
+    const VaultMath = await ethers.getContractAt("IFaucetHelper", _vaultMathAddress);
+    const VaultTreasury = await ethers.getContractAt("IFaucetHelper", _vaultTreasuryAddress);
+    const VaultStorage = await ethers.getContractAt("IFaucetHelper", _vaultStorageAddress);
 
     const arguments = [
-        "0x61d3312e32f3f6f69ae5629d717f318bc4656abd", // UniswapMath Address
+        _uniMathAddress, // UniswapMath Address
         Vault.address,
         VaultAuction.address,
         VaultMath.address,

@@ -1,6 +1,7 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
+const { _governanceAddress } = require("../test/common/index");
 
 module.exports = [
     utils.parseUnits("100", 18),
@@ -10,5 +11,5 @@ module.exports = [
     BigNumber.from("950000000000000000"),
     BigNumber.from("1050000000000000000"),
     BigNumber.from("0"),
-    "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a",
+    _governanceAddress,
 ];

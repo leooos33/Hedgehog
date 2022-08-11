@@ -10,6 +10,7 @@ const {
     getOSQTH,
     getUSDC,
 } = require("./helpers");
+const { _governanceAddress, _rebalancerAddressOld, _vaultAuctionAddress, _vaultMathAddress } = require("./common");
 
 const ownable = require("./helpers/abi/ownable");
 
@@ -18,27 +19,25 @@ describe.skip("Test with real mainnet contracts", function () {
     it("Should set actors", async function () {
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
-            params: ["0x42B1299fCcA091A83C08C24915Be6E6d63906b1a"],
+            params: [_governanceAddress],
         });
 
-        governance = await ethers.getSigner("0x42B1299fCcA091A83C08C24915Be6E6d63906b1a");
+        governance = await ethers.getSigner(_governanceAddress);
         console.log("governance:", governance.address);
 
         await resetFork(15262729);
     });
 
     it("check update", async function () {
-        // const rebalancer = ethers.getContractAt(ownable, "0xD3ed5915AAA27dB7a3646bf926dB6C98243d5c40");
+        // const rebalancer = ethers.getContractAt(ownable, _rebalancerAddressOld");
 
         const MyContract = await ethers.getContractFactory("Rebalancer");
-        const rebalancer = await MyContract.attach("0xD3ed5915AAA27dB7a3646bf926dB6C98243d5c40");
+        const rebalancer = await MyContract.attach(_rebalancerAddressOld);
 
         console.log("owner:", await rebalancer.owner());
         // console.log("addressAuction:", await rebalancer.addressAuction());
 
-        const tx = await rebalancer
-            .connect(governance)
-            .setContracts("0xA9a68eA2746793F43af0f827EC3DbBb049359067", "0xfbcf638ea33a5f87d1e39509e7def653958fa9c4");
+        const tx = await rebalancer.connect(governance).setContracts(_vaultAuctionAddress, _vaultMathAddress);
         let receipt = await tx.wait();
         console.log("> Gas used:", receipt.gasUsed.toString());
 
