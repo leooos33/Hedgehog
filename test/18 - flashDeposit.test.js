@@ -89,6 +89,7 @@ describe.only("Flash deposit", function () {
     it("deposit2", async function () {
         tx = await FlashDeposit.connect(depositor2).deposit(
             utils.parseUnits("1", 18),
+            utils.parseUnits("99", 16),
             depositor2.address,
             "0",
             "0",
@@ -102,5 +103,9 @@ describe.only("Flash deposit", function () {
         console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, usdcAddress));
         console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
         console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
+
+        console.log("> balance weth afer deposit %s", await getERC20Balance(FlashDeposit.address, wethAddress));
+        console.log("> balance usdc afer deposit %s", await getERC20Balance(FlashDeposit.address, usdcAddress));
+        console.log("> balance osqth afer deposit %s", await getERC20Balance(FlashDeposit.address, osqthAddress));
     });
 });
