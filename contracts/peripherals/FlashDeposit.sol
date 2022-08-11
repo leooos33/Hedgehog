@@ -58,8 +58,11 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
     ) external nonReentrant returns (uint256) {
         IERC20(weth).transferFrom(msg.sender, address(this), amountEth);
 
-        (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit, uint256 ratio) = IVault(addressVault)
+        (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
             .getAmountsToDeposit(amountEth);
+        console.log("ethToDeposit: %s", ethToDeposit);
+        console.log("usdcToDeposit: %s", usdcToDeposit);
+        console.log("osqthToDeposit: %s", osqthToDeposit);
 
         ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
             tokenIn: address(weth),

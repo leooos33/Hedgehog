@@ -108,6 +108,9 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(_amountUsdc >= amountUsdcMin, "C2");
         require(_amountOsqth >= amountOsqthMin, "C3");
 
+        console.log("_amountEth: %s", _amountEth);
+        console.log("_amountUsdc: %s", _amountUsdc);
+        console.log("_amountOsqth: %s", _amountOsqth);
         //Pull in tokens
         if (_amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, _amountEth);
         if (_amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, _amountUsdc);
@@ -279,8 +282,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             ratio = totalEth.div(totalValue);
         }
 
-        ethToDeposit = ethAmount.mul(ratio);
-        usdcToDeposit = uint256(usdcAmount).mul(ratio);
-        osqthToDeposit = osqthAmount.mul(ratio);
+        ethToDeposit = ethAmount.mul(ratio).add(10);
+        usdcToDeposit = uint256(usdcAmount).mul(ratio).add(10);
+        osqthToDeposit = osqthAmount.mul(ratio).add(10);
     }
 }

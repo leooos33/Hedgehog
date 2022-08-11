@@ -153,7 +153,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         uint256 amount0Owed,
         uint256 amount1Owed,
         bytes calldata data
-    ) external override {
+    ) external override notPaused {
         require(msg.sender == Constants.poolEthUsdc || msg.sender == Constants.poolEthOsqth, "C20");
         (address token0, address token1) = abi.decode(data, (address, address));
 

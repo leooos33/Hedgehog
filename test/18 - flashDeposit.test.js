@@ -14,7 +14,7 @@ const {
 } = require("./helpers");
 const { deploymentParams, deployContract, hardhatDeploy } = require("./deploy");
 
-describe("Mainnet Infrustructure Test", function () {
+describe.only("Flash deposit", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, FlashDeposit;
 
@@ -35,6 +35,7 @@ describe("Mainnet Infrustructure Test", function () {
         const signers = await ethers.getSigners();
         governance = signers[0];
         depositor1 = signers[7];
+        depositor2 = signers[8];
 
         const params = [...deploymentParams];
         deploymentParams[6] = "10000";
@@ -54,16 +55,16 @@ describe("Mainnet Infrustructure Test", function () {
         );
         await getAndApprove2(
             depositor2,
-            Vault.address,
+            FlashDeposit.address,
             presets.depositor2.wethInput,
             presets.depositor2.usdcInput,
             presets.depositor2.osqthInput
         );
 
-        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, wethAddress));
-        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, usdcAddress));
-        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, osqthAddress));
-        console.log("> userShareAfterDeposit", await getERC20Balance(depositor1.address, Vault.address));
+        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, wethAddress));
+        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, usdcAddress));
+        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
+        console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
     });
 
     it("deposit1", async function () {
@@ -79,21 +80,16 @@ describe("Mainnet Infrustructure Test", function () {
         await tx.wait();
 
         // State
-        const userEthBalanceAfterDeposit = await getERC20Balance(depositor1.address, wethAddress);
-        const userUsdcBalanceAfterDeposit = await getERC20Balance(depositor1.address, usdcAddress);
-        const userOsqthBalanceAfterDeposit = await getERC20Balance(depositor1.address, osqthAddress);
-        const userShareAfterDeposit = await getERC20Balance(depositor1.address, Vault.address);
-
-        console.log("> userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
-        console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
-        console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
-        console.log("> userShareAfterDeposit", userShareAfterDeposit);
+        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, wethAddress));
+        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, usdcAddress));
+        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, osqthAddress));
+        console.log("> userShareAfterDeposit", await getERC20Balance(depositor1.address, Vault.address));
     });
 
     it("deposit2", async function () {
-        tx = await FlashDeposit.connect(depositor1).deposit(
+        tx = await FlashDeposit.connect(depositor2).deposit(
             utils.parseUnits("1", 18),
-            depositor1.address,
+            depositor2.address,
             "0",
             "0",
             "0"
@@ -102,9 +98,9 @@ describe("Mainnet Infrustructure Test", function () {
         console.log("> Gas used flashDepsoit: %s", receipt.gasUsed);
 
         // State
-        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, wethAddress));
-        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, usdcAddress));
-        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, osqthAddress));
-        console.log("> userShareAfterDeposit", await getERC20Balance(depositor1.address, Vault.address));
+        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, wethAddress));
+        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, usdcAddress));
+        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
+        console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
     });
 });
