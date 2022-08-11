@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe.only("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -125,13 +125,13 @@ describe("Macro test mainnet", function () {
     });
 
     it("deposit2", async function () {
-        const amountDeposit = await Vault.getAmountsToDeposit("59974637618044338084");
+        const amountDeposit = await Vault.calcSharesAndAmounts("59974637618044338084", "0", "0", "0", "false");
 
         console.log(
             "> ETH to deposit %s,USDC to deposit %s, oSQTH to deposit %s",
-            amountDeposit[0],
             amountDeposit[1],
-            amountDeposit[2]
+            amountDeposit[2],
+            amountDeposit[3]
         );
 
         tx = await Vault.connect(depositor2).deposit(
