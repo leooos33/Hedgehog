@@ -14,7 +14,7 @@ const {
 } = require("./helpers");
 const { deploymentParams, deployContract, hardhatDeploy } = require("./deploy");
 
-describe.only("Mainnet Infrustructure Test", function () {
+describe("Mainnet Infrustructure Test", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, FlashDeposit;
 

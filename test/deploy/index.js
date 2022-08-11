@@ -71,7 +71,7 @@ const hardhatInitializeDeploed = async () => {
         await ethers.getContractAt("IVault", "0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac"),
         await ethers.getContractAt("IAuction", "0xA9a68eA2746793F43af0f827EC3DbBb049359067"),
         await ethers.getContractAt("IVaultMath", "0xfbcf638ea33a5f87d1e39509e7def653958fa9c4"),
-        await ethers.getContractAt("IVaultTreasury", "0xf403970040e27613a45699c3a32d6be3751f0184"),
+        await ethers.getContractAt("VaultTreasury", "0xf403970040e27613a45699c3a32d6be3751f0184"),
         await ethers.getContractAt(
             "contracts/interfaces/IVaultStorage.sol:IVaultStorage",
             "0x60554f5064c4bb6cba563ad4066b22ab6a43c806"

@@ -17,7 +17,7 @@ const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 
-describe("Mainnet Infrustructure Test", function () {
+describe.skip("Mainnet Infrustructure Test", function () {
     let governance;
     let governanceAddress = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
     it("Should set actors", async function () {

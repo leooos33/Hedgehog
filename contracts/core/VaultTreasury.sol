@@ -133,7 +133,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         if (liquidity > 0) {
             address token0 = pool == Constants.poolEthUsdc ? address(Constants.usdc) : address(Constants.weth);
             address token1 = pool == Constants.poolEthUsdc ? address(Constants.weth) : address(Constants.osqth);
-            bytes memory params = abi.encode(pool, token0, token1);
+            bytes memory params = abi.encode(token0, token1);
 
             IUniswapV3Pool(pool).mint(address(this), tickLower, tickUpper, liquidity, params);
         }
@@ -154,9 +154,9 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         uint256 amount1Owed,
         bytes calldata data
     ) external override {
-        (address pool, address token0, address token1) = abi.decode(data, (address, address, address));
+        require(msg.sender == Constants.poolEthUsdc || msg.sender == Constants.poolEthOsqth, "C20");
+        (address token0, address token1) = abi.decode(data, (address, address));
 
-        require(msg.sender == pool, "C20");
         if (amount0Owed > 0) IERC20(token0).safeTransfer(msg.sender, amount0Owed);
         if (amount1Owed > 0) IERC20(token1).safeTransfer(msg.sender, amount1Owed);
     }
