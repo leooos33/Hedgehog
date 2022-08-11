@@ -132,13 +132,13 @@ describe("Macro test mainnet", function () {
     });
 
     it("deposit2", async function () {
-        const amountDeposit = await Vault.getAmountsToDeposit("59974637618044338084");
+        const amountDeposit = await Vault.calcSharesAndAmounts("59974637618044338084", "0", "0", "0", "false");
 
         console.log(
             "> ETH to deposit %s,USDC to deposit %s, oSQTH to deposit %s",
-            amountDeposit[0],
             amountDeposit[1],
-            amountDeposit[2]
+            amountDeposit[2],
+            amountDeposit[3]
         );
 
         tx = await Vault.connect(depositor2).deposit(
