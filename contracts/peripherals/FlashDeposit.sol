@@ -2,7 +2,7 @@
 pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {IAuction} from "../interfaces/IAuction.sol";
 import {IVault} from "../interfaces/IVault.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,7 +14,7 @@ import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/Transfer
 import "hardhat/console.sol";
 
 contract FlashDeposit is Ownable, ReentrancyGuard {
-    using SafeMath for uint256;
+    using PRBMathUD60x18 for uint256;
 
     address public addressVault = 0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac;
 
@@ -58,8 +58,13 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
     ) external nonReentrant returns (uint256) {
         IERC20(weth).transferFrom(msg.sender, address(this), amountEth);
 
-        (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
-            .getAmountsToDeposit(amountEth);
+        console.log("amountEthToDeposit %s", amountEth);
+
+        uint256 ethIN;
+        uint256 ethToDeposit;
+        {
+        ( , uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
+            .calcSharesAndAmounts(amountEth.mul(99e16), 0, 0, 0, true);
         console.log("ethToDeposit: %s", ethToDeposit);
         console.log("usdcToDeposit: %s", usdcToDeposit);
         console.log("osqthToDeposit: %s", osqthToDeposit);
@@ -74,7 +79,7 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             amountInMaximum: amountEth,
             sqrtPriceLimitX96: 0
         });
-        swapRouter.exactOutputSingle(params1);
+        uint256 ethIN1 =  swapRouter.exactOutputSingle(params1);
 
         ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
             tokenIn: address(weth),
@@ -86,17 +91,29 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             amountInMaximum: amountEth,
             sqrtPriceLimitX96: 0
         });
-        swapRouter.exactOutputSingle(params2);
+        uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
 
-        return
-            IVault(addressVault).deposit(
-                ethToDeposit,
-                usdcToDeposit,
-                osqthToDeposit,
+        ethIN = ethIN1 + ethIN2;
+        }
+
+        console.log(">> balance weth afer swap: %s", IERC20(weth).balanceOf(address(this)));
+        console.log(">> balance usdc afer swap: %s", IERC20(usdc).balanceOf(address(this)));
+        console.log(">> balance osqth afer swap: %s", IERC20(osqth).balanceOf(address(this)));
+
+        uint256 shares = IVault(addressVault).deposit(
+                amountEth.mul(99e16).sub(ethIN),
+                IERC20(usdc).balanceOf(address(this)),
+                IERC20(osqth).balanceOf(address(this)),
                 msg.sender,
                 amountEthMin,
                 amountUsdcMin,
                 amountOsqthMin
             );
+
+        console.log(">> balance weth afer deposit: %s", IERC20(weth).balanceOf(address(this)));
+        console.log(">> balance usdc afer deposit: %s", IERC20(usdc).balanceOf(address(this)));
+        console.log(">> balance osqth afer deposit: %s", IERC20(osqth).balanceOf(address(this)));
+
+        return shares;
     }
 }
