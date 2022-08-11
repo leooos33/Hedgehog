@@ -230,25 +230,21 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Get current prices
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
-        uint256 depositorValue = _isFlash ? _amountEth : IVaultMath(vaultMath).getValue(
-            _amountEth,
-            _amountUsdc,
-            _amountOsqth,
-            ethUsdcPrice,
-            osqthEthPrice
-        );
+        uint256 depositorValue = _isFlash
+            ? _amountEth
+            : IVaultMath(vaultMath).getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
         console.log("depositorValue %s", depositorValue);
 
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
-            shares =  depositorValue;
+            shares = depositorValue;
             ethToDeposit = depositorValue.mul(5e17);
             usdcToDeposit = depositorValue.mul(25e16).mul(ethUsdcPrice).div(uint256(1e30));
             osqthToDeposit = depositorValue.mul(25e16).div(osqthEthPrice);
         } else {
-        //Get total amounts of token balances
+            //Get total amounts of token balances
             (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
-            
+
             uint256 totalValue = IVaultMath(vaultMath).getValue(
                 ethAmount,
                 usdcAmount,
@@ -260,44 +256,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             uint256 ratio = depositorValue.div(totalValue);
             console.log("ratio %s", ratio);
 
-            shares =  _totalSupply.mul(ratio);
+            shares = _totalSupply.mul(ratio);
             ethToDeposit = ethAmount.mul(ratio);
             usdcToDeposit = usdcAmount.mul(ratio);
             osqthToDeposit = osqthAmount.mul(ratio);
         }
     }
-
-    // /// @dev calculate required amount of ETH, USDC, and oSQTH based on the total amount of ETH to deposit
-    // function getAmountsToDeposit(uint256 totalEth)
-    //     public
-    //     view
-    //     override
-    //     returns (
-    //         uint256 ethToDeposit,
-    //         uint256 usdcToDeposit,
-    //         uint256 osqthToDeposit,
-    //         uint256 ratio
-    //     )
-    // {
-    //     //Get total amounts of token balances
-    //     (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
-
-    //     {
-    //         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-
-    //         uint256 totalValue = IVaultMath(vaultMath).getValue(
-    //             ethAmount,
-    //             usdcAmount,
-    //             osqthAmount,
-    //             ethUsdcPrice,
-    //             osqthEthPrice
-    //         );
-
-    //         ratio = totalEth.div(totalValue);
-    //     }
-
-    //     ethToDeposit = ethAmount.mul(ratio);
-    //     usdcToDeposit = usdcAmount.mul(ratio);
-    //     osqthToDeposit = osqthAmount.mul(ratio);
-    // }
 }

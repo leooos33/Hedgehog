@@ -63,37 +63,37 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         uint256 ethIN;
         uint256 ethToDeposit;
         {
-        ( , uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
-            .calcSharesAndAmounts(amountEth.mul(99e16), 0, 0, 0, true);
-        console.log("ethToDeposit: %s", ethToDeposit);
-        console.log("usdcToDeposit: %s", usdcToDeposit);
-        console.log("osqthToDeposit: %s", osqthToDeposit);
+            (, uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
+                .calcSharesAndAmounts(amountEth.mul(99e16), 0, 0, 0, true);
+            console.log("ethToDeposit: %s", ethToDeposit);
+            console.log("usdcToDeposit: %s", usdcToDeposit);
+            console.log("osqthToDeposit: %s", osqthToDeposit);
 
-        ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(weth),
-            tokenOut: address(usdc),
-            fee: 500,
-            recipient: address(this),
-            deadline: block.timestamp,
-            amountOut: usdcToDeposit,
-            amountInMaximum: amountEth,
-            sqrtPriceLimitX96: 0
-        });
-        uint256 ethIN1 =  swapRouter.exactOutputSingle(params1);
+            ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(weth),
+                tokenOut: address(usdc),
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: usdcToDeposit,
+                amountInMaximum: amountEth,
+                sqrtPriceLimitX96: 0
+            });
+            uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
 
-        ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(weth),
-            tokenOut: address(osqth),
-            fee: 3000,
-            recipient: address(this),
-            deadline: block.timestamp,
-            amountOut: osqthToDeposit,
-            amountInMaximum: amountEth,
-            sqrtPriceLimitX96: 0
-        });
-        uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
+            ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(weth),
+                tokenOut: address(osqth),
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: osqthToDeposit,
+                amountInMaximum: amountEth,
+                sqrtPriceLimitX96: 0
+            });
+            uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
 
-        ethIN = ethIN1 + ethIN2;
+            ethIN = ethIN1 + ethIN2;
         }
 
         console.log(">> balance weth afer swap: %s", IERC20(weth).balanceOf(address(this)));
@@ -101,14 +101,14 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         console.log(">> balance osqth afer swap: %s", IERC20(osqth).balanceOf(address(this)));
 
         uint256 shares = IVault(addressVault).deposit(
-                amountEth.mul(99e16).sub(ethIN),
-                IERC20(usdc).balanceOf(address(this)),
-                IERC20(osqth).balanceOf(address(this)),
-                msg.sender,
-                amountEthMin,
-                amountUsdcMin,
-                amountOsqthMin
-            );
+            amountEth.mul(99e16).sub(ethIN),
+            IERC20(usdc).balanceOf(address(this)),
+            IERC20(osqth).balanceOf(address(this)),
+            msg.sender,
+            amountEthMin,
+            amountUsdcMin,
+            amountOsqthMin
+        );
 
         console.log(">> balance weth afer deposit: %s", IERC20(weth).balanceOf(address(this)));
         console.log(">> balance usdc afer deposit: %s", IERC20(usdc).balanceOf(address(this)));
