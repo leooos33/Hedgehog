@@ -230,7 +230,7 @@ describe("Macro test mainnet", function () {
     }).timeout(1000000);
 
     it("rebalance with flash loan", async function () {
-        // this.skip();
+        this.skip();
         const Rebalancer = await ethers.getContractFactory("Rebalancer");
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
@@ -265,7 +265,7 @@ describe("Macro test mainnet", function () {
     });
 
     it("rebalance iterative", async function () {
-        this.skip();
+        // this.skip();
         const testHolder = {};
         const MockRebalancer = await ethers.getContractFactory("MockRebalancer");
         mockRebalancer = await MockRebalancer.deploy();
