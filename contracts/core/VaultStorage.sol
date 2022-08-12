@@ -59,7 +59,7 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override accruedFeesOsqth;
 
     //@dev total value
-    uint256 public totalValue;
+    uint256 public override totalValue;
 
     //@dev rebalance auction duration (seconds)
     uint256 public override auctionTime;

@@ -27,6 +27,8 @@ interface IVaultStorage {
 
     function ivAtLastRebalance() external view returns (uint256);
 
+    function totalValue() external view returns (uint256);
+
     function setParamsBeforeDeposit(
         uint256 _timeAtLastRebalance,
         uint256 _ivAtLastRebalance,
