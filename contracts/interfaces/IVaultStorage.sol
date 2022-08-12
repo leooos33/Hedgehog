@@ -39,6 +39,8 @@ interface IVaultStorage {
 
     function ethPriceAtLastRebalance() external view returns (uint256);
 
+    function rebalanceThreshold() external view returns (uint256);
+
     function rebalancePriceThreshold() external view returns (uint256);
 
     function maxPriceMultiplier() external view returns (uint256);

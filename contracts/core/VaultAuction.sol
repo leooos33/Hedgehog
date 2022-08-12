@@ -56,7 +56,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
         // no rebalance if the price change <= 1.69%
-        if (ratio <= 10169e14 && cachedValue != 0 ) {
+        
+        if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0 ) {
         IVaultStorage(vaultStorage).setSnapshot(
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper(),

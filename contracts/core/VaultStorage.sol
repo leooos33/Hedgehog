@@ -36,6 +36,9 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev ETH/USDC price when last rebalance executed
     uint256 public override ethPriceAtLastRebalance;
 
+    //@dev ETH/USDC price when last rebalance executed
+    uint256 public override rebalanceThreshold = 10169e14;
+
     //@dev implied volatility when last rebalance executed
     uint256 public override ivAtLastRebalance;
 
@@ -186,6 +189,10 @@ contract VaultStorage is IVaultStorage, Faucet {
      */
     function setMaxPriceMultiplier(uint256 _maxPriceMultiplier) external onlyGovernance {
         maxPriceMultiplier = _maxPriceMultiplier;
+    }
+
+    function setRebalanceThreshold(uint256 _rebalanceThreshold) external onlyGovernance {
+        rebalanceThreshold = _rebalanceThreshold;
     }
 
     // @dev snapshot after each rebalance
