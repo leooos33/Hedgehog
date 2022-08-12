@@ -56,30 +56,28 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
         // no rebalance if the price change <= 1.69%
-        
-        if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0 ) {
-        IVaultStorage(vaultStorage).setSnapshot(
-            IVaultStorage(vaultStorage).orderEthUsdcLower(),
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            IVaultStorage(vaultStorage).orderOsqthEthLower(),
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            block.timestamp,
-            IVaultMath(vaultMath).getIV(),
-            cachedValue,
-            cachedPrice
-        );
-        console.log("no rebalance %s");
-        emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
 
+        if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0) {
+            IVaultStorage(vaultStorage).setSnapshot(
+                IVaultStorage(vaultStorage).orderEthUsdcLower(),
+                IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+                IVaultStorage(vaultStorage).orderOsqthEthLower(),
+                IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+                block.timestamp,
+                IVaultMath(vaultMath).getIV(),
+                cachedValue,
+                cachedPrice
+            );
+            console.log("no rebalance %s");
+            emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
         } else {
+            _executeAuction(
+                keeper,
+                auctionTriggerTime,
+                Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
+            );
 
-        _executeAuction(
-            keeper,
-            auctionTriggerTime,
-            Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
-        );
-
-        emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
+            emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
         }
     }
 
@@ -191,7 +189,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //total ETH value of the strategy holdings at the current prices
         uint256 totalValue;
-        {   //scope to avoid stack too deep error
+        {
+            //scope to avoid stack too deep error
 
             //current balances
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
@@ -258,7 +257,14 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             1e18
         );
 
-        return Constants.AuctionParams(boundaries, liquidityEthUsdc, liquidityOsqthEth, totalValue, ethUsdcPrice.mul(priceMultiplier));
+        return
+            Constants.AuctionParams(
+                boundaries,
+                liquidityEthUsdc,
+                liquidityOsqthEth,
+                totalValue,
+                ethUsdcPrice.mul(priceMultiplier)
+            );
     }
 
     /**
