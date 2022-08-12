@@ -33,6 +33,7 @@ describe("Macro test", function () {
 
         const params = [...deploymentParams];
         params[6] = "10000";
+        params[0] = utils.parseUnits("80", 18);
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
         await logBlock();
 
@@ -53,14 +54,14 @@ describe("Macro test", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "26418885994532528989",
-            usdcInput: "12506405330",
-            osqthInput: "204482223867910110089",
+            wethInput: "250508511330590775860",
+            usdcInput: "276186032850",
+            osqthInput: "792975016775564721384",
         },
         keeper: {
-            wethInput: BigNumber.from("46420453093069060030").add(BigNumber.from("7611641957027153635")).toString(),
-            usdcInput: BigNumber.from("35170786530").add(BigNumber.from("6086663569")).toString(),
-            osqthInput: BigNumber.from("226662623566831825098").add(BigNumber.from("38536032101104376335")).toString(),
+            wethInput: BigNumber.from("0").add(BigNumber.from("0")).toString(),
+            usdcInput: BigNumber.from("7603469692").add(BigNumber.from("7631624485")).toString(),
+            osqthInput: BigNumber.from("0").add(BigNumber.from("0")).toString(),
         },
     };
     it("preset", async function () {
@@ -177,22 +178,16 @@ describe("Macro test", function () {
     it("rebalance", async function () {
         await mineSomeBlocks(83622);
 
-        const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-        const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-        const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-        console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-        console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-        console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+        console.log("> Keeper ETH balance before rebalance %s", await getERC20Balance(keeper.address, wethAddress));
+        console.log("> Keeper USDC balance before rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
+        console.log("> Keeper oSQTH balance before rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         await tx.wait();
 
-        const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
-        const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
-        const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-        console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
-        console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
-        console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
+        console.log("> Keeper ETH balance after rebalance %s", await getERC20Balance(keeper.address, wethAddress));
+        console.log("> Keeper USDC balance after rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
+        console.log("> Keeper oSQTH balance after rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
@@ -200,11 +195,12 @@ describe("Macro test", function () {
 
     it("deposit3 -> cap limit", async function () {
         let succeded = false;
+        console.log("> totalSupply:", await Vault.totalSupply());
         try {
             tx = await Vault.connect(depositor3).deposit(
-                "27630456391863397407",
-                "29892919002",
-                "33072912443025954753",
+                "276304563918633974070",
+                "298929190020",
+                "330729124430259547530",
                 depositor3.address,
                 "0",
                 "0",
@@ -214,6 +210,7 @@ describe("Macro test", function () {
         } catch (err) {
             if (err.message == `VM Exception while processing transaction: reverted with reason string 'C4'`)
                 succeded = true;
+            else console.log(err.message);
         }
         assert(succeded, "Cap was not reached");
     });
@@ -291,12 +288,9 @@ describe("Macro test", function () {
     it("rebalance", async function () {
         await mineSomeBlocks(83622);
 
-        const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-        const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-        const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-        console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-        console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-        console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+        console.log("> Keeper ETH balance before rebalance %s", await getERC20Balance(keeper.address, wethAddress));
+        console.log("> Keeper USDC balance before rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
+        console.log("> Keeper oSQTH balance before rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
 
         const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
         console.log("AuctionParamsBefore %s", AuctionParamsBefore);
@@ -304,12 +298,9 @@ describe("Macro test", function () {
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         await tx.wait();
 
-        const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
-        const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
-        const osqthAmountK = await getERC20Balance(keeper.address, osqthAddress);
-        console.log("> Keeper ETH balance after rebalance %s", ethAmountK);
-        console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
-        console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
+        console.log("> Keeper ETH balance after rebalance %s", await getERC20Balance(keeper.address, wethAddress));
+        console.log("> Keeper USDC balance after rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
+        console.log("> Keeper oSQTH balance after rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);

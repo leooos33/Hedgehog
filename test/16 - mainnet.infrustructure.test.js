@@ -42,7 +42,7 @@ describe.skip("Mainnet Infrustructure Test", function () {
         let usdc = utils.parseUnits("12", 6);
         let sqth = utils.parseUnits("0.08", 18);
 
-        let data = await Vault.calcSharesAndAmounts(eth, usdc, sqth, tS);
+        let data = await Vault.calcSharesAndAmounts(eth, usdc, sqth, tS, false);
         console.log(data);
 
         console.log(eth.toString());
