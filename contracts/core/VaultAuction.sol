@@ -45,6 +45,31 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         require(isTimeRebalanceAllowed, "C10");
 
+        //current EthUsdc price
+        (uint256 ethUsdcPrice, ) = IVaultMath(vaultMath).getPrices();
+
+        //EthUsdc price at last rebalance
+        uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
+
+        uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
+
+        // no rebalance if the price change <= 1.69%
+        if (ratio <= 10169e14) {
+        IVaultStorage(vaultStorage).setSnapshot(
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            block.timestamp,
+            IVaultMath(vaultMath).getIV(),
+            IVaultStorage(vaultStorage).totalValue(),
+            cachedPrice
+        );
+
+        emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
+
+        } else {
+
         _executeAuction(
             keeper,
             auctionTriggerTime,
@@ -52,6 +77,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
+        }
     }
 
     /**
