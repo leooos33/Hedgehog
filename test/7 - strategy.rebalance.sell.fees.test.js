@@ -147,9 +147,9 @@ describe("Strategy rebalance, sell with comissions", function () {
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
         await logBalance(keeper.address);
-        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "524900849099353768", 1, 18), "1!");
-        //assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "9044128865", 1, 6), "2!"); // Deffers between test runs significantly
-        // assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "36137303615851849485", 4, 18), "3!"); // Deffers between test runs significantly
+        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "1198102697859594378", 1, 18), "1!");
+        //assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "3153007043", 1, 6), "2!"); // Deffers between test runs significantly
+        // assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "46080448846115023957", 4, 18), "3!"); // Deffers between test runs significantly
 
         const amount = await VaultMath.getTotalAmounts();
 
@@ -191,7 +191,7 @@ describe("Strategy rebalance, sell with comissions", function () {
         // console.log(amount);
 
         // Balances
-        assert(assertWP(await getERC20Balance(contractHelper.address, wethAddress), "2932062768070314980891", 4, 18));
+        assert(assertWP(await getERC20Balance(contractHelper.address, wethAddress), "2932065821691604666588", 4, 18));
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
 
         const amount = await VaultMath.getTotalAmounts();
@@ -203,7 +203,7 @@ describe("Strategy rebalance, sell with comissions", function () {
             amount[2]
         );
 
-        const amountDeposit = await Vault.getAmountsToDeposit("1000000000000000000");
+        const amountDeposit = await Vault.calcSharesAndAmounts("1000000000000000000", 0, 0, 0, true);
 
         console.log("> USDC to deposit %s, oSQTH to deposit %s", amountDeposit[0], amountDeposit[1]);
     });
@@ -223,9 +223,9 @@ describe("Strategy rebalance, sell with comissions", function () {
         console.log("> USDC balance %s", usdcBalance);
         console.log("> oSQTH balance %s", osqthBalance);
 
-        assert(assertWP(ethBalance, "16347482773253353125", 1, 18), "!");
-        // assert(assertWP(usdcBalance, "45773130273", 1, 6), "!"); // Deffers between test runs significantly
-        // assert(assertWP(osqthBalance, "19533654806345837221", 3, 18), "!"); // Deffers between test runs significantly
+        assert(assertWP(ethBalance, "15338120124891306475", 1, 18), "!");
+        // assert(assertWP(usdcBalance, "52810124174", 1, 6), "!"); // Deffers between test runs significantly
+        // assert(assertWP(osqthBalance, "9590509695533215004", 3, 18), "!"); // Deffers between test runs significantly
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");

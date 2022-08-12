@@ -163,7 +163,7 @@ describe("Strategy rebalance sell", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "524900849089835938", 1, 18), "1!");
+        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "1198102927555124878", 1, 18), "1!");
         // assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "9044128865", 1, 6), "2!"); // Deffers between test runs significantly
         // assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "36137303615812121037", 1, 18), "3!"); // Deffers between test runs significantly
 
@@ -219,7 +219,7 @@ describe("Strategy rebalance sell", function () {
         // Balances
         //await logBalance(depositor.address);
 
-        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "16347482833618586254", 1, 18), "1!");
+        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "15338119863405932623", 1, 18), "1!");
         // assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "45760137180", 1, 6), "2!"); // Deffers between test runs significantly
         // assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "19533654925741070050", 1, 18), "3!"); // Deffers between test runs significantly
 

@@ -38,9 +38,9 @@ describe("Strategy rebalance buy", function () {
         await contractHelper.deployed();
     });
 
-    const wethInputR = "484346021562508299";
-    const usdcInputR = "0";
-    const osqthInputR = "15130465078513721932";
+    const wethInputR = "0";
+    const usdcInputR = "686851794";
+    const osqthInputR = "0";
     it("preset", async function () {
         await getAndApprove(keeper, VaultAuction.address, wethInputR, usdcInputR, osqthInputR);
     });
@@ -142,9 +142,9 @@ describe("Strategy rebalance buy", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "100010000000000", 3, 18), "1!");
-        assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "16560159061", 2, 6), "2!");
-        assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "1000000000000", 3, 18), "3!");
+        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "1344690635026081974", 3, 18), "1!");
+        assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "99684", 2, 6), "2!");
+        assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "2287996609233353372", 3, 18), "3!");
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
@@ -176,7 +176,7 @@ describe("Strategy rebalance buy", function () {
         // console.log(amount);
 
         // Balances
-        assert(assertWP(await getERC20Balance(contractHelper.address, wethAddress), "5775698213492986005363", 6, 18));
+        assert(assertWP(await getERC20Balance(contractHelper.address, wethAddress), "5775701145177843499710", 6, 18));
         assert(assertWP(await getERC20Balance(contractHelper.address, usdcAddress), "0", 2, 6));
     });
 
@@ -189,9 +189,9 @@ describe("Strategy rebalance buy", function () {
 
         // Balances
         await logBalance(depositor.address);
-        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "16543098999198005782", 3, 18));
-        // assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "18826047051", 1, 6)); // Deffers between test runs significantly //18809731500
-        assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "48203375999108324462", 3, 18));
+        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "14422921638375998597", 3, 18));
+        // assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "37071596620", 1, 6)); // Deffers between test runs significantly //18809731500
+        assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "30784915833792601371", 3, 18));
 
         // Shares
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");

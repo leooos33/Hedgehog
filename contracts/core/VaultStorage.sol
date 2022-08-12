@@ -259,4 +259,28 @@ contract VaultStorage is IVaultStorage, Faucet {
 
         emit SharedEvents.Paused(_pause);
     }
+
+    /**
+     * Used to for unit testing
+     */
+    // TODO: remove on main
+    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
+        timeAtLastRebalance = _timeAtLastRebalance;
+    }
+
+    /**
+     * Used to for unit testing
+     */
+    // TODO: remove on main
+    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public onlyGovernance {
+        ivAtLastRebalance = _ivAtLastRebalance;
+    }
+
+    /**
+     * Used to for unit testing
+     */
+    // TODO: remove on main
+    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
+        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
+    }
 }

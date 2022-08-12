@@ -27,7 +27,8 @@ describe("Strategy deposit", function () {
             "18411299302474150889",
             "31216859424",
             "34537692970562685403",
-            "0"
+            "0",
+            false
         );
         console.log("> amount", amount);
 
