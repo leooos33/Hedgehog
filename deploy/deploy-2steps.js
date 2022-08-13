@@ -14,6 +14,7 @@ const {
     _vaultStorageAddress,
     _uniMathAddress,
 } = require("../test/common/index");
+const { deployContract } = require("./common");
 
 const governance = _governanceAddress;
 
@@ -86,16 +87,6 @@ const hardhatInitializeContracts = async () => {
     // await tx.wait();
     tx = await VaultStorage.setComponents(...arguments);
     // await tx.wait();
-};
-
-const deployContract = async (name, params, deploy = true) => {
-    console.log("Deploying ->", name);
-    const Contract = await ethers.getContractFactory(name);
-    let contract = await Contract.deploy(...params);
-    if (deploy) {
-        await contract.deployed();
-    }
-    return contract;
 };
 
 // hardhatInitializeContracts(governance, mainnetDeploymentParams).catch((error) => {

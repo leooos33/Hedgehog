@@ -17,7 +17,7 @@ const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 
-describe.only("Mainnet Infrustructure Test", function () {
+describe("Mainnet Infrustructure Test", function () {
     let governance;
     let governanceAddress = _governanceAddress;
     it("Should set actors", async function () {

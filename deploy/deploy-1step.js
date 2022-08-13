@@ -4,6 +4,7 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
 const { _governanceAddress, _harhatAccount1, _harhatAccount7 } = require("../test/common/index");
+const { deployContract } = require("./common");
 
 const governance = _governanceAddress;
 // const governance = _harhatAccount1;
@@ -56,16 +57,6 @@ const hardhatDeploy = async (governance, params) => {
     await tx.wait();
     tx = await VaultStorage.setComponents(...arguments);
     await tx.wait();
-};
-
-const deployContract = async (name, params, deploy = true) => {
-    console.log("Deploying ->", name);
-    const Contract = await ethers.getContractFactory(name);
-    let contract = await Contract.deploy(...params);
-    if (deploy) {
-        await contract.deployed();
-    }
-    return contract;
 };
 
 // We recommend this pattern to be able to use async/await everywhere

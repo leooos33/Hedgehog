@@ -11,12 +11,10 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
-
 contract FlashDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
-    address public addressVault = 0x6894cf73D22B34fA2b30E5a4c706AD6c2f2b24ac;
+    address public addressVault = 0x001eb0D277d5B24A306582387Cfc16Fa37a1375C;
 
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
@@ -40,6 +38,17 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         IERC20(weth).approve(addressVault, type(uint256).max);
     }
 
+    function collectRemains(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        address to
+    ) external onlyOwner {
+        if (amountEth > 0) IERC20(weth).transfer(to, amountEth);
+        if (amountUsdc > 0) IERC20(usdc).transfer(to, amountUsdc);
+        if (amountOsqth > 0) IERC20(osqth).transfer(to, amountOsqth);
+    }
+
     /**
     @notice deposit tokens in proportion to the vault's holding
     @param amountEth ETH amount to deposit
@@ -58,13 +67,8 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         uint256 amountOsqthMin
     ) external nonReentrant returns (uint256) {
         IERC20(weth).transferFrom(msg.sender, address(this), amountEth);
-        console.log("amountEthToDeposit %s", amountEth);
 
         (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = swap(amountEth, slippage);
-
-        console.log(">> balance weth afer swap: %s", IERC20(weth).balanceOf(address(this)));
-        console.log(">> balance usdc afer swap: %s", IERC20(usdc).balanceOf(address(this)));
-        console.log(">> balance osqth afer swap: %s", IERC20(osqth).balanceOf(address(this)));
 
         return
             IVault(addressVault).deposit(
@@ -86,12 +90,13 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             uint256
         )
     {
-        (, uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault)
-            .calcSharesAndAmounts(amountEth.mul(slippage), 0, 0, 0, true);
-
-        console.log("ethToDeposit: %s", ethToDeposit);
-        console.log("usdcToDeposit: %s", usdcToDeposit);
-        console.log("osqthToDeposit: %s", osqthToDeposit);
+        (, , uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault).calcSharesAndAmounts(
+            amountEth.mul(slippage),
+            0,
+            0,
+            0,
+            true
+        );
 
         ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
             tokenIn: address(weth),
