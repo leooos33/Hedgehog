@@ -231,7 +231,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256 cachedBump = expIVbump.mul(2e18).sub(2e18);
             expIVbump = cachedBump > uint256(1e18) ? uint256(1e18) : cachedBump;
 
-
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
                 ethUsdcPrice.mul(priceMultiplier),

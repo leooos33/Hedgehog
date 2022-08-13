@@ -109,9 +109,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(_amountUsdc >= amountUsdcMin, "C2");
         require(_amountOsqth >= amountOsqthMin, "C3");
 
-        console.log("_amountEth: %s", _amountEth);
-        console.log("_amountUsdc: %s", _amountUsdc);
-        console.log("_amountOsqth: %s", _amountOsqth);
         //Pull in tokens
         if (_amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, _amountEth);
         if (_amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, _amountUsdc);
@@ -233,7 +230,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         uint256 depositorValue = _isFlash
             ? _amountEth
             : IVaultMath(vaultMath).getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
-        console.log("depositorValue %s", depositorValue);
 
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
@@ -254,7 +250,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             );
 
             uint256 ratio = depositorValue.div(totalValue);
-            console.log("ratio %s", ratio);
 
             shares = _totalSupply.mul(ratio);
             ethToDeposit = ethAmount.mul(ratio);
