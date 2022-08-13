@@ -30,15 +30,15 @@ const mainnetDeploymentParams = [
 const hardhatDeployContractsInParallel = async (governance, params) => {
     // const UniswapMath = await deployContract("UniswapMath", [], false); //? Omited due to its existing
     const Vault = await deployContract("Vault", [], false);
-    const VaultAuction = await deployContract("VaultAuction", [], true);
+    const VaultAuction = await deployContract("VaultAuction", [], false);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
     params.push(governance);
-    const VaultStorage = await deployContract("VaultStorage", params);
+    const VaultStorage = await deployContract("VaultStorage", params, false);
 
     const arguments = [
-        "0x61d3312e32f3f6f69ae5629d717f318bc4656abd",
+        _uniMathAddress,
         Vault.address,
         VaultAuction.address,
         VaultMath.address,
@@ -99,7 +99,7 @@ const deployContract = async (name, params, deploy = true) => {
 };
 
 // hardhatInitializeContracts(governance, mainnetDeploymentParams).catch((error) => {
-hardhatDeployContractsInParallel(governance, mainnetDeploymentParams).catch((error) => {
+hardhatInitializeContracts(governance, mainnetDeploymentParams).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

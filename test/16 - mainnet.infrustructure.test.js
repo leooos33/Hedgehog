@@ -17,11 +17,11 @@ const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 
-describe.skip("Mainnet Infrustructure Test", function () {
+describe.only("Mainnet Infrustructure Test", function () {
     let governance;
     let governanceAddress = _governanceAddress;
     it("Should set actors", async function () {
-        await resetFork(15275315);
+        await resetFork(15333510);
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
             params: [governanceAddress],
@@ -38,11 +38,11 @@ describe.skip("Mainnet Infrustructure Test", function () {
 
         let tS = (await Vault.totalSupply()).toString();
 
-        let eth = utils.parseUnits("0.015", 18); //50
-        let usdc = utils.parseUnits("12", 6);
-        let sqth = utils.parseUnits("0.08", 18);
+        let eth = utils.parseUnits("0.005", 18);
+        let usdc = utils.parseUnits("4.6", 6);
+        let sqth = utils.parseUnits("0.026", 18);
 
-        let data = await Vault.calcSharesAndAmounts(eth, usdc, sqth, tS, false);
+        let data = await Vault.connect(governance).calcSharesAndAmounts(eth, usdc, sqth, tS, false);
         console.log(data);
 
         console.log(eth.toString());
