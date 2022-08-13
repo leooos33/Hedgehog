@@ -35,7 +35,7 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev ETH/USDC price when last rebalance executed
     uint256 public override ethPriceAtLastRebalance;
 
-    //@dev ETH/USDC price when last rebalance executed
+    //@dev min price change for initiating rebalance (1.69%)
     uint256 public override rebalanceThreshold = 10169e14;
 
     //@dev implied volatility when last rebalance executed
@@ -45,12 +45,12 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override rebalanceTimeThreshold;
     uint256 public override rebalancePriceThreshold;
 
-    //@dev iv adjustment parameter
-    uint256 public override adjParam = 100000000000000000;
+    //@dev iv adjustment parameter (0.05)
+    uint256 public override adjParam = 5e16;
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 900;
+    int24 public override baseThreshold = 1440;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
