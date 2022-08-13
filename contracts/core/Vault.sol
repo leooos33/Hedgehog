@@ -20,8 +20,6 @@ import {Faucet} from "../libraries/Faucet.sol";
 
 import {VaultAuction} from "./VaultAuction.sol";
 
-import "hardhat/console.sol";
-
 /**
  * Error
  * C0: Paused
@@ -55,7 +53,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     /**
      * @notice strategy constructor
      */
-    // unicode"🦔" TODO
     constructor() ERC20("Liqui Hedgehog ", "Hedgehog") {}
 
     /**

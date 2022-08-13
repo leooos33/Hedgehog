@@ -4,8 +4,6 @@ pragma solidity =0.8.4;
 
 import {Constants} from "../libraries/Constants.sol";
 
-import "hardhat/console.sol";
-
 interface IVaultStorage {
     function orderEthUsdcLower() external view returns (int24);
 

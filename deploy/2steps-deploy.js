@@ -28,8 +28,8 @@ const mainnetDeploymentParams = [
 ];
 
 const hardhatDeployContractsInParallel = async (governance, params) => {
-    const UniswapMath = await deployContract("UniswapMath", [], false);
-    const Vault = await deployContract("Vault", [], true);
+    // const UniswapMath = await deployContract("UniswapMath", [], false); //? Omited due to its existing
+    const Vault = await deployContract("Vault", [], false);
     const VaultAuction = await deployContract("VaultAuction", [], true);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
@@ -38,7 +38,7 @@ const hardhatDeployContractsInParallel = async (governance, params) => {
     const VaultStorage = await deployContract("VaultStorage", params);
 
     const arguments = [
-        UniswapMath.address,
+        "0x61d3312e32f3f6f69ae5629d717f318bc4656abd",
         Vault.address,
         VaultAuction.address,
         VaultMath.address,

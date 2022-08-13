@@ -9,7 +9,6 @@ import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
-import "hardhat/console.sol";
 
 contract VaultStorage is IVaultStorage, Faucet {
     address public override governance;
@@ -205,7 +204,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _ivAtLastRebalance,
         uint256 _totalValue,
         uint256 _ethPriceAtLastRebalance
-    ) public override onlyVault {
+    ) external override onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
@@ -258,29 +257,5 @@ contract VaultStorage is IVaultStorage, Faucet {
         isSystemPaused = _pause;
 
         emit SharedEvents.Paused(_pause);
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
-        timeAtLastRebalance = _timeAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public onlyGovernance {
-        ivAtLastRebalance = _ivAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
-        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }

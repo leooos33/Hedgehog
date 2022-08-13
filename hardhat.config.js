@@ -8,6 +8,7 @@ const {
     ETHERSCAN_KEY,
     ROPSTEN_DEPLOYMENT_KEY,
     IFURA_ROPSTEN_URL,
+    MAINNET_DEPLOYMENT_KEY_OLD,
     MAINNET_DEPLOYMENT_KEY,
     IFURA_MAINNET_URL,
 } = require("./shared/config");
@@ -40,7 +41,7 @@ module.exports = {
         },
         mainnet: {
             url: IFURA_MAINNET_URL,
-            accounts: [MAINNET_DEPLOYMENT_KEY],
+            accounts: [MAINNET_DEPLOYMENT_KEY, MAINNET_DEPLOYMENT_KEY_OLD],
             gasPrice: 5000000000,
         },
     },
