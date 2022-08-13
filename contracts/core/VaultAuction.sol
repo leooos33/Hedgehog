@@ -55,7 +55,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
-        // no rebalance if the price change <= 1.69%
+        // no rebalance if the price change <= rebalanceThreshold
 
         if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0) {
             IVaultStorage(vaultStorage).setSnapshot(
@@ -191,7 +191,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 totalValue;
         {
             //scope to avoid stack too deep error
-
             //current balances
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
 
@@ -229,7 +228,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 expIVbump = cIV.div(pIV);
                 weight = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
-            expIVbump = expIVbump > uint256(2e18) ? uint256(2e18) : (expIVbump.mul(2e18)).sub(2e18);
+            uint256 cachedBump = expIVbump.mul(2e18).sub(2e18);
+            expIVbump = cachedBump > uint256(1e18) ? uint256(1e18) : cachedBump;
+
 
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
