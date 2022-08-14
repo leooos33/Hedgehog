@@ -40,9 +40,10 @@ module.exports = {
             accounts: [ROPSTEN_DEPLOYMENT_KEY],
             gasPrice: 5000000000,
         },
+        //MAINNET_DEPLOYMENT_KEY
         mainnet: {
             url: IFURA_MAINNET_URL,
-            accounts: [MAINNET_DEPLOYMENT_KEY, MAINNET_DEPLOYMENT_KEY_OLD],
+            accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
             gasPrice: 5000000000,
         },
     },
