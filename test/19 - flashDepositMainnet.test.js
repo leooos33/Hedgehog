@@ -4,7 +4,7 @@ const { wethAddress, osqthAddress, usdcAddress, _governanceAddress } = require("
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Flash deposit", function () {
+describe("Flash deposit", function () {
     let tx, receipt, FlashDeposit;
     let actor;
     let actorAddress = _governanceAddress;
