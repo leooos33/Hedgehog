@@ -100,6 +100,12 @@ describe.only("Flash deposit", function () {
         // const flashDepositAddress = _flashDepositAddress;
         const flashDepositAddress = FlashDeposit.address;
 
+        const [owner] = await ethers.getSigners();
+        await owner.sendTransaction({
+            to: actorAddress,
+            value: ethers.utils.parseEther("10.0"), // Sends exactly 1.0 ether
+        });
+
         let WETH = await ethers.getContractAt("IWETH", wethAddress);
         tx = await WETH.connect(actor).approve(flashDepositAddress, BigNumber.from(maxUint256));
         await tx.wait();
@@ -113,7 +119,7 @@ describe.only("Flash deposit", function () {
         // console.log("> user Usdc a %s", await getERC20Allowance(flashDepositAddress, _vaultAddress, usdcAddress));
         // console.log("> user Osqth a %s", await getERC20Allowance(flashDepositAddress, _vaultAddress, osqthAddress));
 
-        // await getWETH(utils.parseUnits("1", 18), flashDepositAddress);
+        // await getWETH(utils.parseUnits("1", 18), actor.address);
         // await getUSDC(utils.parseUnits("100", 6), flashDepositAddress);
         // await getOSQTH(utils.parseUnits("1", 18), flashDepositAddress, _biggestOSqthHolder);
 
@@ -132,14 +138,12 @@ describe.only("Flash deposit", function () {
             ts,
             true
         );
-        console.log(a);
+        // console.log(a);
 
-        tx = await FlashDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", "0", "0", {
-            gasLimit: 900000,
-            gasPrice: 8000000000,
-        });
-        await tx.wait();
+        tx = await FlashDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", "0", "0", "1");
+        receipt = await tx.wait();
         console.log("> deposit()");
+        console.log("> Gas used: %s", receipt.gasUsed);
 
         console.log("> user Eth %s", await getERC20Balance(actor.address, wethAddress));
         console.log("> user Usdc %s", await getERC20Balance(actor.address, usdcAddress));
