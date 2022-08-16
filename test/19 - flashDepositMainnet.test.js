@@ -8,6 +8,7 @@ const {
     _flashDepositAddress,
     _vaultAddress,
     _biggestOSqthHolder,
+    maxUint256,
 } = require("./common");
 const {
     resetFork,
@@ -37,11 +38,11 @@ describe.only("Flash deposit", function () {
         actor = await ethers.getSigner(actorAddress);
         console.log("actor:", actor.address);
 
-        MyContract = await ethers.getContractFactory("FlashDeposit");
-        FlashDeposit = await MyContract.attach(_flashDepositAddress);
+        // MyContract = await ethers.getContractFactory("FlashDeposit");
+        // FlashDeposit = await MyContract.attach(_flashDepositAddress);
         MyContract = await ethers.getContractFactory("Vault");
         Vault = await MyContract.attach(_vaultAddress);
-        // FlashDeposit = await deployContract("FlashDeposit", [], false);
+        FlashDeposit = await deployContract("FlashDeposit", [], false);
         // tx = await FlashDeposit.setContracts(Vault.address);
         // await tx.wait();
     });
@@ -95,34 +96,44 @@ describe.only("Flash deposit", function () {
     });
 
     it("flash deposit real", async function () {
+        // this.skip();
+        // const flashDepositAddress = _flashDepositAddress;
+        const flashDepositAddress = FlashDeposit.address;
+
+        let WETH = await ethers.getContractAt("IWETH", wethAddress);
+        tx = await WETH.connect(actor).approve(flashDepositAddress, BigNumber.from(maxUint256));
+        await tx.wait();
+
         console.log("> user Eth %s", await getERC20Balance(actor.address, wethAddress));
-        console.log("> user Eth a %s", await getERC20Allowance(actor.address, _flashDepositAddress, wethAddress));
+        console.log("> user Eth a %s", await getERC20Allowance(actor.address, flashDepositAddress, wethAddress));
         // console.log("> user Usdc %s", await getERC20Balance(actor.address, usdcAddress));
         // console.log("> user Osqth %s", await getERC20Balance(actor.address, osqthAddress));
 
-        // console.log("> user Eth a %s", await getERC20Allowance(_flashDepositAddress, _vaultAddress, wethAddress));
-        // console.log("> user Usdc a %s", await getERC20Allowance(_flashDepositAddress, _vaultAddress, usdcAddress));
-        // console.log("> user Osqth a %s", await getERC20Allowance(_flashDepositAddress, _vaultAddress, osqthAddress));
+        // console.log("> user Eth a %s", await getERC20Allowance(flashDepositAddress, _vaultAddress, wethAddress));
+        // console.log("> user Usdc a %s", await getERC20Allowance(flashDepositAddress, _vaultAddress, usdcAddress));
+        // console.log("> user Osqth a %s", await getERC20Allowance(flashDepositAddress, _vaultAddress, osqthAddress));
 
-        await getWETH(utils.parseUnits("1", 18), _flashDepositAddress);
-        await getUSDC(utils.parseUnits("100", 6), _flashDepositAddress);
-        await getOSQTH(utils.parseUnits("1", 18), _flashDepositAddress, _biggestOSqthHolder);
+        // await getWETH(utils.parseUnits("1", 18), flashDepositAddress);
+        // await getUSDC(utils.parseUnits("100", 6), flashDepositAddress);
+        // await getOSQTH(utils.parseUnits("1", 18), flashDepositAddress, _biggestOSqthHolder);
 
-        console.log("> FlashDeposit Eth %s", await getERC20Balance(_flashDepositAddress, wethAddress));
-        console.log("> FlashDeposit Usdc %s", await getERC20Balance(_flashDepositAddress, usdcAddress));
-        console.log("> FlashDeposit Osqth %s", await getERC20Balance(_flashDepositAddress, osqthAddress));
+        console.log("> FlashDeposit Eth %s", await getERC20Balance(flashDepositAddress, wethAddress));
+        console.log("> FlashDeposit Usdc %s", await getERC20Balance(flashDepositAddress, usdcAddress));
+        console.log("> FlashDeposit Osqth %s", await getERC20Balance(flashDepositAddress, osqthAddress));
+
+        const ts = await Vault.totalSupply();
         const a = await Vault.calcSharesAndAmounts(
             BigNumber.from("4000000000000000").mul(BigNumber.from("995000000000000000")).div(utils.parseUnits("1", 18)),
             0,
             0,
-            0,
+            ts,
             true
         );
         console.log(a);
 
         tx = await FlashDeposit.connect(actor).deposit(
             "4000000000000000",
-            "895000000000000000",
+            "995000000000000000",
             actorAddress,
             "0",
             "0",
@@ -139,8 +150,8 @@ describe.only("Flash deposit", function () {
         console.log("> user Usdc %s", await getERC20Balance(actor.address, usdcAddress));
         console.log("> user Osqth %s", await getERC20Balance(actor.address, osqthAddress));
 
-        console.log("> FlashDeposit Eth %s", await getERC20Balance(_flashDepositAddress, wethAddress));
-        console.log("> FlashDeposit Usdc %s", await getERC20Balance(_flashDepositAddress, usdcAddress));
-        console.log("> FlashDeposit Osqth %s", await getERC20Balance(_flashDepositAddress, osqthAddress));
+        console.log("> FlashDeposit Eth %s", await getERC20Balance(flashDepositAddress, wethAddress));
+        console.log("> FlashDeposit Usdc %s", await getERC20Balance(flashDepositAddress, usdcAddress));
+        console.log("> FlashDeposit Osqth %s", await getERC20Balance(flashDepositAddress, osqthAddress));
     });
 });
