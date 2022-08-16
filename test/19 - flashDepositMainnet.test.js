@@ -121,9 +121,12 @@ describe.only("Flash deposit", function () {
         console.log("> FlashDeposit Usdc %s", await getERC20Balance(flashDepositAddress, usdcAddress));
         console.log("> FlashDeposit Osqth %s", await getERC20Balance(flashDepositAddress, osqthAddress));
 
+        const slippage = "999000000000000000";
+        const amountETH = "4000000000000000";
+
         const ts = await Vault.totalSupply();
         const a = await Vault.calcSharesAndAmounts(
-            BigNumber.from("4000000000000000").mul(BigNumber.from("995000000000000000")).div(utils.parseUnits("1", 18)),
+            BigNumber.from(amountETH).mul(BigNumber.from(slippage)).div(utils.parseUnits("1", 18)),
             0,
             0,
             ts,
@@ -131,18 +134,10 @@ describe.only("Flash deposit", function () {
         );
         console.log(a);
 
-        tx = await FlashDeposit.connect(actor).deposit(
-            "4000000000000000",
-            "995000000000000000",
-            actorAddress,
-            "0",
-            "0",
-            "0",
-            {
-                gasLimit: 900000,
-                gasPrice: 8000000000,
-            }
-        );
+        tx = await FlashDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", "0", "0", {
+            gasLimit: 900000,
+            gasPrice: 8000000000,
+        });
         await tx.wait();
         console.log("> deposit()");
 
