@@ -11,6 +11,8 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
+import "hardhat/console.sol";
+
 contract FlashDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -53,18 +55,12 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
     @notice deposit tokens in proportion to the vault's holding
     @param amountEth ETH amount to deposit
     @param to receiver address
-    @param amountEthMin revert if resulting amount of ETH is smaller than this
-    @param amountUsdcMin revert if resulting amount of USDC is smaller than this
-    @param amountOsqthMin revert if resulting amount of oSQTH is smaller than this
     @return shares minted shares
     */
     function deposit(
         uint256 amountEth,
         uint256 slippage,
         address to,
-        uint256 amountEthMin,
-        uint256 amountUsdcMin,
-        uint256 amountOsqthMin,
         int24 returnMode
     ) external nonReentrant returns (uint256) {
         IERC20(weth).transferFrom(msg.sender, address(this), amountEth);
@@ -76,12 +72,12 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             usdcToDeposit,
             osqthToDeposit,
             to,
-            amountEthMin,
-            amountUsdcMin,
-            amountOsqthMin
+            0,
+            0,
+            0
         );
-        if (returnMode == 1) reverseSwap(to);
-        if (returnMode == 2) withdraw(to);
+         if (returnMode == 1) reverseSwap(to);
+         if (returnMode == 2) withdraw(to);
         return shares;
     }
 
@@ -93,18 +89,18 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             uint256
         )
     {
-        uint256 ts = IERC20(addressVault).totalSupply();
         (, , uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault).calcSharesAndAmounts(
             amountEth.mul(slippage),
             0,
             0,
-            ts,
+            IERC20(addressVault).totalSupply(),
             true
         );
-
+        uint256 ethIN;
+        {
         ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: weth,
-            tokenOut: usdc,
+            tokenIn: address(weth),
+            tokenOut: address(usdc),
             fee: 500,
             recipient: address(this),
             deadline: block.timestamp,
@@ -115,8 +111,8 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
 
         ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: weth,
-            tokenOut: osqth,
+            tokenIn: address(weth),
+            tokenOut: address(osqth),
             fee: 3000,
             recipient: address(this),
             deadline: block.timestamp,
@@ -125,13 +121,16 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             sqrtPriceLimitX96: 0
         });
         uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
-        return (amountEth.mul(slippage).sub(ethIN1.add(ethIN2)), usdcToDeposit, osqthToDeposit);
+
+        ethIN = ethIN1.add(ethIN2);
+        }
+        return (amountEth.mul(slippage).sub(ethIN), usdcToDeposit, osqthToDeposit);
     }
 
-    function reverseSwap(address to) internal {
-        ISwapRouter.ExactInputSingleParams memory params1 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: usdc,
-            tokenOut: weth,
+        function reverseSwap(address to) internal {
+        ISwapRouter.ExactInputSingleParams memory params3 = ISwapRouter.ExactInputSingleParams({
+            tokenIn: address(usdc),
+            tokenOut: address(weth),
             fee: 500,
             recipient: to,
             deadline: block.timestamp,
@@ -139,11 +138,12 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
-        swapRouter.exactInputSingle(params1);
+
+        swapRouter.exactInputSingle(params3);
 
         ISwapRouter.ExactInputSingleParams memory params2 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: osqth,
-            tokenOut: weth,
+            tokenIn: address(osqth),
+            tokenOut: address(weth),
             fee: 500,
             recipient: to,
             deadline: block.timestamp,

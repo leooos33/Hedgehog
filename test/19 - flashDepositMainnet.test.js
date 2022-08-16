@@ -140,7 +140,10 @@ describe.only("Flash deposit", function () {
         );
         // console.log(a);
 
-        tx = await FlashDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", "0", "0", "1");
+        tx = await FlashDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", "0", "0", "1" , {
+            gasLimit: 1500000,
+            gasPrice: 8000000000,
+        });
         receipt = await tx.wait();
         console.log("> deposit()");
         console.log("> Gas used: %s", receipt.gasUsed);
