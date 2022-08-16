@@ -4,7 +4,7 @@ const { wethAddress, osqthAddress, usdcAddress, _governanceAddress, _vaultStorag
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Snapshot", function () {
+describe("Snapshot", function () {
     it("Get snapshot", async function () {
         await resetFork(15345193);
 
