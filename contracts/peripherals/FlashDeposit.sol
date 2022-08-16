@@ -90,11 +90,12 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             uint256
         )
     {
+        uint256 ts = IERC20(addressVault).totalSupply();
         (, , uint256 usdcToDeposit, uint256 osqthToDeposit) = IVault(addressVault).calcSharesAndAmounts(
             amountEth.mul(slippage),
             0,
             0,
-            0,
+            ts,
             true
         );
 
