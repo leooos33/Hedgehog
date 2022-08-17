@@ -11,9 +11,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-//import "hardhat/console.sol";
-
-contract FlashDeposit is Ownable, ReentrancyGuard {
+contract OneClickDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
     address public addressVault = 0x001eb0D277d5B24A306582387Cfc16Fa37a1375C;
@@ -57,18 +55,10 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
 
         (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = swap(amountEth, slippage);
 
-        uint256 shares = IVault(addressVault).deposit(
-            ethToDeposit,
-            usdcToDeposit,
-            osqthToDeposit,
-            to,
-            0,
-            0,
-            0
-        );
+        uint256 shares = IVault(addressVault).deposit(ethToDeposit, usdcToDeposit, osqthToDeposit, to, 0, 0, 0);
 
-         if (returnMode == 0) swapAllToEth(to);
-         if (returnMode == 1) withdrawRT(to);
+        if (returnMode == 0) swapAllToEth(to);
+        if (returnMode == 1) withdrawRT(to);
 
         return shares;
     }
@@ -91,43 +81,43 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
 
         uint256 ethIN;
         {
-        // swap wETH --> USDC
-        ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(WETH),
-            tokenOut: address(USDC),
-            fee: 500,
-            recipient: address(this),
-            deadline: block.timestamp,
-            amountOut: usdcToDeposit,
-            amountInMaximum: amountEth,
-            sqrtPriceLimitX96: 0
-        });
-        uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
+            // swap wETH --> USDC
+            ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
+                tokenIn: WETH,
+                tokenOut: USDC,
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: usdcToDeposit,
+                amountInMaximum: amountEth,
+                sqrtPriceLimitX96: 0
+            });
+            uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
 
-        // swap wETH --> oSQTH
-        ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(WETH),
-            tokenOut: address(OSQTH),
-            fee: 3000,
-            recipient: address(this),
-            deadline: block.timestamp,
-            amountOut: osqthToDeposit,
-            amountInMaximum: amountEth,
-            sqrtPriceLimitX96: 0
-        });
-        uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
+            // swap wETH --> oSQTH
+            ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
+                tokenIn: WETH,
+                tokenOut: OSQTH,
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: osqthToDeposit,
+                amountInMaximum: amountEth,
+                sqrtPriceLimitX96: 0
+            });
+            uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
 
-        ethIN = ethIN1.add(ethIN2);
+            ethIN = ethIN1.add(ethIN2);
         }
         return (amountEth.mul(slippage).sub(ethIN), usdcToDeposit, osqthToDeposit);
     }
-        // @dev swap all remaining tokens to wETH and send it back to user
-        function swapAllToEth(address to) internal {
-        
+
+    // @dev swap all remaining tokens to wETH and send it back to user
+    function swapAllToEth(address to) internal {
         //swap remaining USDC --> wETH
         ISwapRouter.ExactInputSingleParams memory params3 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: address(USDC),
-            tokenOut: address(WETH),
+            tokenIn: USDC,
+            tokenOut: WETH,
             fee: 500,
             recipient: to,
             deadline: block.timestamp,
@@ -141,8 +131,8 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
 
         //swap remaining oSQTH --> wETH
         ISwapRouter.ExactInputSingleParams memory params2 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: address(OSQTH),
-            tokenOut: address(WETH),
+            tokenIn: OSQTH,
+            tokenOut: WETH,
             fee: 3000,
             recipient: to,
             deadline: block.timestamp,
@@ -153,7 +143,7 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         //Execute swap
         swapRouter.exactInputSingle(params2);
 
-        //Send wETH back to user 
+        //Send wETH back to user
         IERC20(WETH).transfer(to, _getBalance(WETH));
     }
 

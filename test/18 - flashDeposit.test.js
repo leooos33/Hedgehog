@@ -16,7 +16,7 @@ const { deploymentParams, deployContract, hardhatDeploy } = require("./deploy");
 
 describe("Flash deposit", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
-    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, FlashDeposit;
+    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, OneClickDeposit;
 
     const presets = {
         depositor1: {
@@ -41,9 +41,9 @@ describe("Flash deposit", function () {
         deploymentParams[6] = "10000";
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
 
-        FlashDeposit = await deployContract("FlashDeposit", [], false);
+        OneClickDeposit = await deployContract("OneClickDeposit", [], false);
 
-        tx = await FlashDeposit.setContracts(Vault.address);
+        tx = await OneClickDeposit.setContracts(Vault.address);
         await tx.wait();
 
         await getAndApprove2(
@@ -55,7 +55,7 @@ describe("Flash deposit", function () {
         );
         await getAndApprove2(
             depositor2,
-            FlashDeposit.address,
+            OneClickDeposit.address,
             presets.depositor2.wethInput,
             presets.depositor2.usdcInput,
             presets.depositor2.osqthInput
@@ -87,7 +87,7 @@ describe("Flash deposit", function () {
     });
 
     it("deposit2", async function () {
-        tx = await FlashDeposit.connect(depositor2).deposit(
+        tx = await OneClickDeposit.connect(depositor2).deposit(
             utils.parseUnits("1", 18),
             utils.parseUnits("99", 16),
             depositor2.address,
@@ -104,8 +104,8 @@ describe("Flash deposit", function () {
         console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
         console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
 
-        console.log("> balance weth afer deposit %s", await getERC20Balance(FlashDeposit.address, wethAddress));
-        console.log("> balance usdc afer deposit %s", await getERC20Balance(FlashDeposit.address, usdcAddress));
-        console.log("> balance osqth afer deposit %s", await getERC20Balance(FlashDeposit.address, osqthAddress));
+        console.log("> balance weth afer deposit %s", await getERC20Balance(OneClickDeposit.address, wethAddress));
+        console.log("> balance usdc afer deposit %s", await getERC20Balance(OneClickDeposit.address, usdcAddress));
+        console.log("> balance osqth afer deposit %s", await getERC20Balance(OneClickDeposit.address, osqthAddress));
     });
 });
