@@ -273,11 +273,11 @@ describe.only("Macro test mainnet", function () {
 
         await mineSomeBlocks(83069);
 
-        for (let i = 0; i <= 10; i++) {
+        for (let i = 0; i < 60; i++) {
             const res = (await mockRebalancer.rebalance()).toString();
             if (!testHolder[res]) testHolder[res] = 0;
             testHolder[res]++;
-            await mineSomeBlocks(60);
+            await mineSomeBlocks(10);
         }
         console.log(testHolder);
     }).timeout(1000000);

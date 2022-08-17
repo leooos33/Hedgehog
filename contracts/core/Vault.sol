@@ -20,8 +20,6 @@ import {Faucet} from "../libraries/Faucet.sol";
 
 import {VaultAuction} from "./VaultAuction.sol";
 
-import "hardhat/console.sol";
-
 /**
  * Error
  * C0: Paused
@@ -90,11 +88,11 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
             IVaultStorage(vaultStorage).setParamsBeforeDeposit(
                 block.timestamp,
-                1593007396290221622,
+                IVaultMath(vaultMath).getIV(),
                 ethPrice
             );
         }
-        console.log("iv %s", IVaultMath(vaultMath).getIV());
+
         //Calculate shares to mint
         (uint256 _shares, uint256 _amountEth, uint256 _amountUsdc, uint256 _amountOsqth) = calcSharesAndAmounts(
             amountEth,
