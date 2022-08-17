@@ -29,7 +29,7 @@ describe.only("One Click deposit", function () {
     let actorAddress = "0x6C4830E642159Be2e6c5cC4C6012BC5a21AA95Ce";
 
     it("Should set actors", async function () {
-        await resetFork(15359898);
+        await resetFork(15359899);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -151,6 +151,7 @@ describe.only("One Click deposit", function () {
         const oneClickDepositAddress = OneClickDeposit.address;
 
         console.log("> user Eth %s", await getERC20Balance(actor.address, wethAddress));
+        console.log("> user Eth a %s", await getERC20Allowance(actor.address, oneClickDepositAddress, wethAddress));
 
         console.log("> Contract Eth balance %s", await getERC20Balance(oneClickDepositAddress, wethAddress));
         console.log("> Contract Usdc balance %s", await getERC20Balance(oneClickDepositAddress, usdcAddress));
