@@ -11,7 +11,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
+//import "hardhat/console.sol";
 
 contract FlashDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
@@ -20,41 +20,31 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
 
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
-    address constant weth = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address constant usdc = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address constant osqth = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
+    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant OSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
 
     constructor() Ownable() {
-        TransferHelper.safeApprove(weth, address(swapRouter), type(uint256).max);
-        TransferHelper.safeApprove(usdc, address(swapRouter), type(uint256).max);
-        TransferHelper.safeApprove(osqth, address(swapRouter), type(uint256).max);
-        IERC20(usdc).approve(addressVault, type(uint256).max);
-        IERC20(osqth).approve(addressVault, type(uint256).max);
-        IERC20(weth).approve(addressVault, type(uint256).max);
+        TransferHelper.safeApprove(WETH, address(swapRouter), type(uint256).max);
+        TransferHelper.safeApprove(USDC, address(swapRouter), type(uint256).max);
+        TransferHelper.safeApprove(OSQTH, address(swapRouter), type(uint256).max);
+        IERC20(USDC).approve(addressVault, type(uint256).max);
+        IERC20(OSQTH).approve(addressVault, type(uint256).max);
+        IERC20(WETH).approve(addressVault, type(uint256).max);
     }
 
     function setContracts(address _addressVault) external onlyOwner {
         addressVault = _addressVault;
-        IERC20(usdc).approve(addressVault, type(uint256).max);
-        IERC20(osqth).approve(addressVault, type(uint256).max);
-        IERC20(weth).approve(addressVault, type(uint256).max);
-    }
-
-    function collectRemains(
-        uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth,
-        address to
-    ) external onlyOwner {
-        if (amountEth > 0) IERC20(weth).transfer(to, amountEth);
-        if (amountUsdc > 0) IERC20(usdc).transfer(to, amountUsdc);
-        if (amountOsqth > 0) IERC20(osqth).transfer(to, amountOsqth);
+        IERC20(USDC).approve(addressVault, type(uint256).max);
+        IERC20(OSQTH).approve(addressVault, type(uint256).max);
+        IERC20(WETH).approve(addressVault, type(uint256).max);
     }
 
     /**
     @notice deposit tokens in proportion to the vault's holding
     @param amountEth ETH amount to deposit
     @param to receiver address
+    @param returnMode if 1 convert remaining tokens to wETH and send it back to user, if 2 send remaining wETH, USDC, and oSQTH without convertation to wETH 
     @return shares minted shares
     */
     function deposit(
@@ -63,7 +53,7 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         address to,
         int24 returnMode
     ) external nonReentrant returns (uint256) {
-        IERC20(weth).transferFrom(msg.sender, address(this), amountEth);
+        IERC20(WETH).transferFrom(msg.sender, address(this), amountEth);
 
         (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = swap(amountEth, slippage);
 
@@ -76,8 +66,10 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             0,
             0
         );
-         if (returnMode == 1) reverseSwap(to);
-         if (returnMode == 2) withdraw(to);
+
+         if (returnMode == 0) swapAllToEth(to);
+         if (returnMode == 1) withdrawRT(to);
+
         return shares;
     }
 
@@ -96,11 +88,13 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
             IERC20(addressVault).totalSupply(),
             true
         );
+
         uint256 ethIN;
         {
+        // swap wETH --> USDC
         ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(weth),
-            tokenOut: address(usdc),
+            tokenIn: address(WETH),
+            tokenOut: address(USDC),
             fee: 500,
             recipient: address(this),
             deadline: block.timestamp,
@@ -110,9 +104,10 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         });
         uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
 
+        // swap wETH --> oSQTH
         ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
-            tokenIn: address(weth),
-            tokenOut: address(osqth),
+            tokenIn: address(WETH),
+            tokenOut: address(OSQTH),
             fee: 3000,
             recipient: address(this),
             deadline: block.timestamp,
@@ -126,38 +121,50 @@ contract FlashDeposit is Ownable, ReentrancyGuard {
         }
         return (amountEth.mul(slippage).sub(ethIN), usdcToDeposit, osqthToDeposit);
     }
-
-        function reverseSwap(address to) internal {
+        // @dev swap all remaining tokens to wETH and send it back to user
+        function swapAllToEth(address to) internal {
+        
+        //swap remaining USDC --> wETH
         ISwapRouter.ExactInputSingleParams memory params3 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: address(usdc),
-            tokenOut: address(weth),
+            tokenIn: address(USDC),
+            tokenOut: address(WETH),
             fee: 500,
             recipient: to,
             deadline: block.timestamp,
-            amountIn: IERC20(usdc).balanceOf(address(this)),
+            amountIn: _getBalance(USDC),
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
 
+        //Execute swap
         swapRouter.exactInputSingle(params3);
 
+        //swap remaining oSQTH --> wETH
         ISwapRouter.ExactInputSingleParams memory params2 = ISwapRouter.ExactInputSingleParams({
-            tokenIn: address(osqth),
-            tokenOut: address(weth),
-            fee: 500,
+            tokenIn: address(OSQTH),
+            tokenOut: address(WETH),
+            fee: 3000,
             recipient: to,
             deadline: block.timestamp,
-            amountIn: IERC20(osqth).balanceOf(address(this)),
+            amountIn: _getBalance(OSQTH),
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
         });
+        //Execute swap
         swapRouter.exactInputSingle(params2);
-        IERC20(weth).transfer(to, IERC20(weth).balanceOf(address(this)));
+
+        //Send wETH back to user 
+        IERC20(WETH).transfer(to, _getBalance(WETH));
     }
 
-    function withdraw(address to) internal {
-        IERC20(weth).transfer(to, IERC20(weth).balanceOf(address(this)));
-        IERC20(usdc).transfer(to, IERC20(usdc).balanceOf(address(this)));
-        IERC20(osqth).transfer(to, IERC20(osqth).balanceOf(address(this)));
+    // @dev sends remaining tokens back to user
+    function withdrawRT(address to) internal {
+        IERC20(WETH).transfer(to, _getBalance(WETH));
+        IERC20(USDC).transfer(to, _getBalance(USDC));
+        IERC20(OSQTH).transfer(to, _getBalance(OSQTH));
+    }
+
+    function _getBalance(address coin) internal view returns (uint256) {
+        return IERC20(coin).balanceOf(address(this));
     }
 }

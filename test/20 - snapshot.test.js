@@ -6,7 +6,7 @@ const { deployContract } = require("./deploy");
 
 describe("Snapshot", function () {
     it("Get snapshot", async function () {
-        await resetFork(15354389);
+        await resetFork(15356501);
 
         const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
 
