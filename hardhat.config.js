@@ -31,9 +31,10 @@ module.exports = {
             allowUnlimitedContractSize: process.env.DEBUG ? true : false,
             chainId: CHAIN_IDS.hardhat,
             forking: getForkingParams(),
-            gasLimit: 2100000,
-            gas: 1800000,
-            gasPrice: 5000000000,
+            // TODO: comment this then run tests
+            // gasLimit: 2100000,
+            // gas: 1800000,
+            // gasPrice: 5000000000,
         },
         ropsten: {
             url: IFURA_ROPSTEN_URL,
@@ -55,6 +56,10 @@ module.exports = {
             },
             {
                 version: "0.8.4",
+                optimizer: { enabled: true, runs: 10000 },
+            },
+            {
+                version: "0.8.0",
                 optimizer: { enabled: true, runs: 10000 },
             },
         ],

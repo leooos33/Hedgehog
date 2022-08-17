@@ -191,6 +191,7 @@ contract Rebalancer is Ownable {
 
         uint256 ethBefore = IERC20(weth).balanceOf(address(this));
 
+        // console.log(data.type_of_arbitrage);
         if (data.type_of_arbitrage == 1) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -499,6 +500,6 @@ contract Rebalancer is Ownable {
         console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
         console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
         require(IERC20(weth).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
-        revert("Success");
+        // revert("Success");
     }
 }
