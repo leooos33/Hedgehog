@@ -6,7 +6,7 @@ const {
     osqthAddress,
     usdcAddress,
     _governanceAddress,
-    _flashDepositAddress,
+    _oneClickDepositAddress,
     _vaultAddress,
     _biggestOSqthHolder,
     maxUint256,
@@ -23,13 +23,13 @@ const {
 const { deployContract } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe.only("Flash deposit", function () {
+describe.only("One Click deposit", function () {
     let tx, receipt, OneClickDeposit;
     let actor;
     let actorAddress = "0x6c4830e642159be2e6c5cc4c6012bc5a21aa95ce";
 
     it("Should set actors", async function () {
-        await resetFork(15351855);
+        await resetFork(15357811);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -39,19 +39,19 @@ describe.only("Flash deposit", function () {
         actor = await ethers.getSigner(actorAddress);
         console.log("actor:", actor.address);
 
-        // MyContract = await ethers.getContractFactory("OneClickDeposit");
-        // OneClickDeposit = await MyContract.attach(_flashDepositAddress);
-        MyContract = await ethers.getContractFactory("Vault");
-        Vault = await MyContract.attach(_vaultAddress);
-        OneClickDeposit = await deployContract("OneClickDeposit", [], false);
+        MyContract = await ethers.getContractFactory("OneClickDeposit");
+        OneClickDeposit = await MyContract.attach(_oneClickDepositAddress);
+        // MyContract = await ethers.getContractFactory("Vault");
+        // Vault = await MyContract.attach(_vaultAddress);
+        // OneClickDeposit = await deployContract("OneClickDeposit", [], false);
         // tx = await OneClickDeposit.setContracts(Vault.address);
         // await tx.wait();
     });
 
     it("flash deposit real (mode = 0)", async function () {
         // this.skip();
-        // const flashDepositAddress = _flashDepositAddress;
-        const flashDepositAddress = OneClickDeposit.address;
+        const oneClickDepositAddress = _oneClickDepositAddress;
+        // const oneClickDepositAddress = OneClickDeposit.address;
 
         const [owner] = await ethers.getSigners();
         await owner.sendTransaction({
@@ -60,15 +60,15 @@ describe.only("Flash deposit", function () {
         });
 
         let WETH = await ethers.getContractAt("IWETH", wethAddress);
-        tx = await WETH.connect(actor).approve(OneClickDeposit.address, BigNumber.from(maxUint256));
+        tx = await WETH.connect(actor).approve(oneClickDepositAddress, BigNumber.from(maxUint256));
         await tx.wait();
 
         await getWETH(utils.parseUnits("20", 18), actor.address);
         console.log("> user Eth %s", await getERC20Balance(actor.address, wethAddress));
 
-        console.log("> Contract Eth balance %s", await getERC20Balance(OneClickDeposit.address, wethAddress));
-        console.log("> Contrac Usdc balance %s", await getERC20Balance(OneClickDeposit.address, usdcAddress));
-        console.log("> Contract Osqth balance %s", await getERC20Balance(OneClickDeposit.address, osqthAddress));
+        console.log("> Contract Eth balance %s", await getERC20Balance(oneClickDepositAddress, wethAddress));
+        console.log("> Contrac Usdc balance %s", await getERC20Balance(oneClickDepositAddress, usdcAddress));
+        console.log("> Contract Osqth balance %s", await getERC20Balance(oneClickDepositAddress, osqthAddress));
 
         const slippage = "950000000000000000";
         const amountETH = "10000000000000000000";
@@ -92,15 +92,15 @@ describe.only("Flash deposit", function () {
         expect(await getERC20Balance(actor.address, usdcAddress)).to.equal("0");
         expect(await getERC20Balance(actor.address, osqthAddress)).to.equal("0");
 
-        expect(await getERC20Balance(flashDepositAddress, wethAddress)).to.equal("0");
-        expect(await getERC20Balance(flashDepositAddress, usdcAddress)).to.equal("0");
-        expect(await getERC20Balance(flashDepositAddress, osqthAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, osqthAddress)).to.equal("0");
     });
 
     it("flash deposit real (mode = 1)", async function () {
-        // this.skip();
-        // const flashDepositAddress = _flashDepositAddress;
-        const flashDepositAddress = OneClickDeposit.address;
+        this.skip();
+        // const oneClickDepositAddress = _oneClickDepositAddress;
+        const oneClickDepositAddress = OneClickDeposit.address;
 
         const [owner] = await ethers.getSigners();
         await owner.sendTransaction({
@@ -109,14 +109,14 @@ describe.only("Flash deposit", function () {
         });
 
         let WETH = await ethers.getContractAt("IWETH", wethAddress);
-        tx = await WETH.connect(actor).approve(flashDepositAddress, BigNumber.from(maxUint256));
+        tx = await WETH.connect(actor).approve(oneClickDepositAddress, BigNumber.from(maxUint256));
         await tx.wait();
         await getWETH(utils.parseUnits("20", 18), actor.address);
         console.log("> user Eth %s", await getERC20Balance(actor.address, wethAddress));
 
-        console.log("> Contract Eth balance %s", await getERC20Balance(flashDepositAddress, wethAddress));
-        console.log("> Contract Usdc balance %s", await getERC20Balance(flashDepositAddress, usdcAddress));
-        console.log("> Contract Osqth balance %s", await getERC20Balance(flashDepositAddress, osqthAddress));
+        console.log("> Contract Eth balance %s", await getERC20Balance(oneClickDepositAddress, wethAddress));
+        console.log("> Contract Usdc balance %s", await getERC20Balance(oneClickDepositAddress, usdcAddress));
+        console.log("> Contract Osqth balance %s", await getERC20Balance(oneClickDepositAddress, osqthAddress));
 
         const slippage = "990000000000000000";
         const amountETH = "10000000000000000000";
@@ -140,8 +140,8 @@ describe.only("Flash deposit", function () {
         expect(await getERC20Balance(actor.address, usdcAddress)).not.equal("0");
         expect(await getERC20Balance(actor.address, osqthAddress)).not.equal("0");
 
-        expect(await getERC20Balance(flashDepositAddress, wethAddress)).to.equal("0");
-        expect(await getERC20Balance(flashDepositAddress, usdcAddress)).to.equal("0");
-        expect(await getERC20Balance(flashDepositAddress, osqthAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(oneClickDepositAddress, osqthAddress)).to.equal("0");
     });
 });
