@@ -22,7 +22,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe.only("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -230,8 +230,8 @@ describe("Macro test mainnet", function () {
     }).timeout(1000000);
 
     it("rebalance with flash loan", async function () {
-        this.skip();
-        const Rebalancer = await ethers.getContractFactory("Rebalancer2");
+        // this.skip();
+        const Rebalancer = await ethers.getContractFactory("BigRebalancer");
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
 
@@ -265,7 +265,7 @@ describe("Macro test mainnet", function () {
     });
 
     it("rebalance iterative", async function () {
-        // this.skip();
+        this.skip();
         const testHolder = {};
         const MockRebalancer = await ethers.getContractFactory("MockRebalancer");
         mockRebalancer = await MockRebalancer.deploy();
