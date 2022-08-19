@@ -22,7 +22,7 @@ contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
     address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
-    address public addressMath = 0xdf374d19021831e785212f00837b5709820aa769;
+    address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
