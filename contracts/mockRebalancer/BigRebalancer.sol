@@ -21,8 +21,8 @@ import "hardhat/console.sol";
 contract BigRebalancer is Ownable {
     using SafeMath for uint256;
 
-    address public addressAuction = 0xA9a68eA2746793F43af0f827EC3DbBb049359067;
-    address public addressMath = 0xfbcF638ea33A5F87D1e39509E7deF653958FA9C4;
+    address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
+    address public addressMath = 0xdf374d19021831e785212f00837b5709820aa769;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
