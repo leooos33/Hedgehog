@@ -32,9 +32,9 @@ module.exports = {
             chainId: CHAIN_IDS.hardhat,
             forking: getForkingParams(),
             // TODO: comment this then run tests
-            // gasLimit: 2100000,
+            // gasLimit: 3000000,
             // gas: 1800000,
-            // gasPrice: 5000000000,
+            // gasPrice: 23000000000,
         },
         ropsten: {
             url: IFURA_ROPSTEN_URL,
