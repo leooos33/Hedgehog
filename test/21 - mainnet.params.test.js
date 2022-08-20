@@ -27,7 +27,7 @@ describe.only("Rebalance test mainnet", function () {
     let actorAddress = "0x42b1299fcca091a83c08c24915be6e6d63906b1a";
 
     it("Should deploy contract", async function () {
-        await resetFork(15379404);
+        await resetFork(15379536);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -67,10 +67,9 @@ describe.only("Rebalance test mainnet", function () {
         // console.log("am", am);
 
         // 1661026678 <- targetrebalance time
-        // 1661027028
-        // await mineSomeBlocks(13550);
+        await mineSomeBlocks(2272);
 
-        await mineSomeBlocks(13994);
+        // await mineSomeBlocks(13994);
 
         // MyContract = await ethers.getContractFactory("VaultMath");
         // VM = await MyContract.attach(aa);
@@ -98,7 +97,7 @@ describe.only("Rebalance test mainnet", function () {
         // await getWETH(utils.parseUnits("50", 18), Rebalancer.address, "0x7946b98660c04a19475148c25c6d3bb3bf7417e2");
         // await getUSDC(utils.parseUnits("500", 6), Rebalancer.address, "0x94c96dfe7d81628446bebf068461b4f728ed8670");
         // await getOSQTH(utils.parseUnits("6", 18), Rebalancer.address, "0xf9f613bdec2703ede176cc98a2276fa1f618a1b1");
-        await getUSDC("10000000", Rebalancer.address, "0x94c96dfe7d81628446bebf068461b4f728ed8670");
+        // await getUSDC("10000000", Rebalancer.address, "0x94c96dfe7d81628446bebf068461b4f728ed8670");
         // await getOSQTH("1000", Rebalancer.address, "0xf9f613bdec2703ede176cc98a2276fa1f618a1b1");
 
         console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
