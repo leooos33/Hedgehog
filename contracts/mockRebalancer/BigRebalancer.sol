@@ -488,7 +488,7 @@ contract BigRebalancer is Ownable {
 
             uint256 osqthAfter = IERC20(OSQTH).balanceOf(address(this));
 
-            // buy oSQTH with wETH
+            // buy wETH with oSQTH
             ISwapRouter.ExactInputSingleParams memory params1 = ISwapRouter.ExactInputSingleParams({
                 tokenIn: address(OSQTH),
                 tokenOut: address(WETH),
