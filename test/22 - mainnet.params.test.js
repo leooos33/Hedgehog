@@ -17,7 +17,7 @@ describe.only("Rebalance test mainnet", function () {
     let actorAddress = "0xbe74daf0930dfab7d8396eead251a4a21106797d";
 
     it("Should deploy contract", async function () {
-        await resetFork(15382421);
+        await resetFork(15382682);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -54,18 +54,21 @@ describe.only("Rebalance test mainnet", function () {
         console.log("> actor oSQTH %s", await getERC20Balance(actor.address, osqthAddress));
         console.log("> actor shares %s", await getERC20Balance(actor.address, Vault.address));
 
-        tx = await VaultStorage.connect(governance).setPause(true, {
-            gasLimit: 500000,
-            gasPrice: 4000000000,
-        });
-        receipt = await tx.wait();
+        // tx = await VaultStorage.connect(governance).setPause(true, {
+        //     gasLimit: 500000,
+        //     gasPrice: 4000000000,
+        // });
+        // receipt = await tx.wait();
 
-        tx = await Vault.connect(actor).withdraw("1164661693185355246", 0, 0, 0);
-        receipt = await tx.wait();
+        // tx = await Vault.connect(actor).withdraw("1164661693185355246", 0, 0, 0);
+        // receipt = await tx.wait();
 
         // Comment here to test pause
-        tx = await Vault.connect(actor).deposit(4, 4, 4, actor.address, "0", "0", "0");
-        await tx.wait();
+        // tx = await Vault.connect(actor).deposit(4, 4, 4, actor.address, "0", "0", "0");
+        // await tx.wait();
+
+        // tx = await VaultAuction.connect(actor).timeRebalance(actor.address, 4, 4, 4);
+        // await tx.wait();
 
         // console.log("> Gas used withdraw + fl: %s", receipt.gasUsed);
 
