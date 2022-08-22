@@ -33,7 +33,6 @@ describe.only("Rebalance test mainnet", function () {
         });
 
         governance = await ethers.getSigner(_governanceAddress);
-        Rebalancer = await ethers.getSigner(_rebalancerBigAddress);
         console.log("governance:", governance.address);
         console.log("auction:", VaultAuction.address);
         console.log("rebalancer %s", Rebalancer.address);
