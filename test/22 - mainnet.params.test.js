@@ -11,7 +11,7 @@ const {
 } = require("./common");
 const { resetFork, getERC20Balance } = require("./helpers");
 
-describe.only("Rebalance test mainnet", function () {
+describe("Rebalance test mainnet", function () {
     let tx, receipt, MyContract;
     let actor, governance;
     let actorAddress = "0xbe74daf0930dfab7d8396eead251a4a21106797d";

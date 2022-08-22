@@ -33,8 +33,10 @@ describe.only("Rebalance test mainnet", function () {
         });
 
         governance = await ethers.getSigner(_governanceAddress);
+        Rebalancer = await ethers.getSigner(_rebalancerBigAddress);
         console.log("governance:", governance.address);
         console.log("auction:", VaultAuction.address);
+        console.log("rebalancer %s", Rebalancer.address);
 
         // const signers = await ethers.getSigners();
         // chad = signers[0];
@@ -51,11 +53,11 @@ describe.only("Rebalance test mainnet", function () {
             gasPrice: 11000000000,
         });
 
-        // tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("1", 16), {
-        //     gasLimit: 40000,
-        //     gasPrice: 11000000000,
-        // });
-        // await tx.wait();
+        //  tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("1", 16), {
+        //      gasLimit: 40000,
+        //      gasPrice: 11000000000,
+        //  });
+        //  await tx.wait();
 
         tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {
             gasLimit: 40000,
@@ -69,43 +71,26 @@ describe.only("Rebalance test mainnet", function () {
         //  });
         //  await tx.wait();
 
-        tx = await VaultStorage.connect(governance).setProtocolFee(1, {
-            gasLimit: 50000,
-            gasPrice: 11000000000,
-        });
-        await tx.wait();
-
         console.log("> actor WETH %s", await getERC20Balance(governance.address, wethAddress));
         console.log("> actor USDC %s", await getERC20Balance(governance.address, usdcAddress));
         console.log("> actor oSQTH %s", await getERC20Balance(governance.address, osqthAddress));
 
-        // await approveERC20(governance, _vaultAuctionAddress, maxUint256, wethAddress);
-        // await approveERC20(governance, _vaultAuctionAddress, maxUint256, usdcAddress);
-        // await approveERC20(governance, _vaultAuctionAddress, maxUint256, osqthAddress);
-
-        // console.log("> actor WETH %s", await getERC20Allowance(governance.address, _vaultAuctionAddress, wethAddress));
-        // console.log("> actor USDC %s", await getERC20Allowance(governance.address, _vaultAuctionAddress, usdcAddress));
-        // console.log("> actor oSQT %s", await getERC20Allowance(governance.address, _vaultAuctionAddress, osqthAddress));
-
         console.log("params %s", await VaultAuction.getAuctionParams(1661070257));
 
-        tx = await Rebalancer.connect(governance).rebalance(0, {
+        console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
+        console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
+        console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
+
+        tx = await Rebalancer.connect(governance).rebalance("0", {
             gasLimit: 3000000,
             // gas: 1800000,
             gasPrice: 23000000000,
         });
         receipt = await tx.wait();
-
-        // tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
-        //     gasLimit: 2500000,
-        //     gasPrice: 11000000000,
-        // });
-        // receipt = await tx.wait();
-
         console.log("> Gas used withdraw + fl: %s", receipt.gasUsed);
 
-        console.log("> actor WETH %s", await getERC20Balance(governance.address, wethAddress));
-        console.log("> actor USDC %s", await getERC20Balance(governance.address, usdcAddress));
-        console.log("> actor oSQTH %s", await getERC20Balance(governance.address, osqthAddress));
+        console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
+        console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
+        console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
     });
 });
