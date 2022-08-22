@@ -8,12 +8,13 @@ const {
     _governanceAddress,
     _vaultStorageAddress,
     maxUint256,
+    _rebalancerBigAddress
 } = require("./common");
 const { resetFork, getERC20Balance, getERC20Allowance, approveERC20 } = require("./helpers");
 const { BigNumber } = require("ethers");
 
 describe.only("Rebalance test mainnet", function () {
-    let tx, receipt, MyContract, governance;
+    let tx, receipt, MyContract, governance, Rebalancer;
     // let actor;
     // let actorAddress = _governanceAddress;
 
@@ -25,6 +26,8 @@ describe.only("Rebalance test mainnet", function () {
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddress);
+        Rebalancer = await MyContract.attach(_rebalancerBigAddress);
+
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -91,6 +94,12 @@ describe.only("Rebalance test mainnet", function () {
         console.log("> actor oSQT %s", await getERC20Allowance(governance.address, _vaultAuctionAddress, osqthAddress));
 
         console.log("params %s", await VaultAuction.getAuctionParams(1661070257));
+
+        tx = await Rebalancer.connect(governance).rebalance(0, {
+            gasLimit: 3000000,
+            // gas: 1800000,
+            gasPrice: 23000000000,
+        });
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
