@@ -54,23 +54,29 @@ describe.only("Rebalance test mainnet", function () {
             gasPrice: 11000000000,
         });
 
-        tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("1", 16), {
-            gasLimit: 40000,
-            gasPrice: 11000000000,
-        });
-        await tx.wait();
+        // tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("1", 16), {
+        //     gasLimit: 40000,
+        //     gasPrice: 11000000000,
+        // });
+        // await tx.wait();
 
-        tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {
-            gasLimit: 40000,
-            gasPrice: 11000000000,
-        });
-        await tx.wait();
+         tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {
+             gasLimit: 40000,
+             gasPrice: 11000000000,
+         });
+         await tx.wait();
 
-        tx = await VaultStorage.connect(governance).setBaseThreshold(100000, {
-            gasLimit: 40000,
-            gasPrice: 11000000000,
-        });
-        await tx.wait();
+        //  tx = await VaultStorage.connect(governance).setBaseThreshold(100000, {
+        //      gasLimit: 40000,
+        //      gasPrice: 11000000000,
+        //  });
+        //  await tx.wait();
+
+          tx = await VaultStorage.connect(governance).setProtocolFee(1, {
+              gasLimit: 50000,
+              gasPrice: 11000000000,
+          });
+          await tx.wait();
 
         console.log("> actor WETH %s", await getERC20Balance(governance.address, wethAddress));
         console.log("> actor USDC %s", await getERC20Balance(governance.address, usdcAddress));
