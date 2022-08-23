@@ -51,33 +51,34 @@ describe.only("Rebalance test mainnet", function () {
         rebBefore = await getSnapshot(Rebalancer.address);
 
         tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("69", 16), {});
-        gas.add(await tx.wait());
+
+        gas = gas.add((await tx.wait()).gasUsed);
 
         tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
 
         tx = await VaultStorage.connect(governance).setPause(false, {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
         tx = await Rebalancer.connect(governance).rebalance(0, {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
         tx = await VaultStorage.connect(governance).setPause(true, {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
 
         tx = await VaultStorage.connect(governance).setAuctionTime(1, {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
 
         tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1, {});
-        gas.add(await tx.wait());
+        gas = gas.add((await tx.wait()).gasUsed);
 
         await mineSomeBlocks(3);
 
         for (let times = 0; times < 8; times++) {
             tx = await VaultStorage.connect(governance).setPause(false, {});
-            receipt = gas.add(await tx.wait());
+            gas = gas.add((await tx.wait()).gasUsed);
             tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {});
-            receipt = gas.add(await tx.wait());
+            gas = gas.add((await tx.wait()).gasUsed);
             tx = await VaultStorage.connect(governance).setPause(true, {});
-            receipt = gas.add(await tx.wait());
+            gas = gas.add((await tx.wait()).gasUsed);
 
             await mineSomeBlocks(3);
         }
