@@ -34,7 +34,7 @@ module.exports = {
             // TODO: comment this then run tests
             // gasLimit: 3000000,
             // gas: 1800000,
-            gasPrice: 11000000000,
+            gasPrice: 18000000000,
         },
         ropsten: {
             url: IFURA_ROPSTEN_URL,

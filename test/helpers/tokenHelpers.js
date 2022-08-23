@@ -81,7 +81,17 @@ const getAndApprove2 = async (actor, contractAddress, wethInput, usdcInput, osqt
     await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
 };
 
+const getSnapshot = async (address) => {
+    return {
+        WETH: await getERC20Balance(address, wethAddress),
+        USDC: await getERC20Balance(address, usdcAddress),
+        oSQTH: await getERC20Balance(address, osqthAddress),
+        ETH: await ethers.provider.getBalance(address),
+    };
+};
+
 module.exports = {
+    getSnapshot,
     getAndApprove,
     getAndApprove2,
     getOSQTH,

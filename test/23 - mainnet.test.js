@@ -13,7 +13,7 @@ const {
 } = require("./common");
 const { resetFork, getERC20Balance, getERC20Allowance, approveERC20, mineSomeBlocks } = require("./helpers");
 
-describe.only("Rebalance test mainnet", function () {
+describe("Rebalance test mainnet", function () {
     let tx, receipt, MyContract, governance, Rebalancer;
 
     it("Should deploy contract", async function () {
