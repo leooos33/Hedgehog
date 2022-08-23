@@ -60,7 +60,9 @@ describe.only("Rebalance test mainnet", function () {
         expect(await VaultStorage.governance()).to.equal(governance.address);
         expect(await Rebalancer.owner()).to.equal(governance.address);
 
-        //Change ownership
+        //!
+        //! Change ownership
+        //!
         tx = await VaultStorage.connect(governance).setGovernance(RescueTeam.address);
         gas = gas.add((await tx.wait()).gasUsed);
 
@@ -102,6 +104,9 @@ describe.only("Rebalance test mainnet", function () {
     });
 
     it("rebalance with flash loan", async function () {
+        //!
+        //! Return ownership
+        //!
         tx = await RescueTeam.connect(governance).returnGovernance();
         gas = gas.add((await tx.wait()).gasUsed);
 

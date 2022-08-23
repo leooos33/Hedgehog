@@ -45,7 +45,7 @@ module.exports = {
         mainnet: {
             url: IFURA_MAINNET_URL,
             accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
-            gasPrice: 5000000000,
+            gasPrice: 4000000000,
         },
     },
     solidity: {

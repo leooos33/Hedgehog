@@ -38,6 +38,9 @@ contract RescueTeam is Ownable {
         IERC20(usdc).approve(addressAuction, type(uint256).max);
         IERC20(osqth).approve(addressAuction, type(uint256).max);
         IERC20(weth).approve(addressAuction, type(uint256).max);
+        IERC20(usdc).approve(addressBig, type(uint256).max);
+        IERC20(osqth).approve(addressBig, type(uint256).max);
+        IERC20(weth).approve(addressBig, type(uint256).max);
     }
 
     function collectProtocol(
@@ -51,24 +54,24 @@ contract RescueTeam is Ownable {
         if (amountOsqth > 0) IERC20(osqth).transfer(to, amountOsqth);
     }
 
-    function rebalance() public onlyOwner {
+    function rebalance() external onlyOwner {
         IVaultStorage(addressStorage).setPause(false);
         IBig(addressBig).rebalance(0);
         IVaultStorage(addressStorage).setPause(true);
     }
 
-    function timeRebalance() public onlyOwner {
+    function timeRebalance() external onlyOwner {
         IVaultStorage(addressStorage).setPause(false);
         IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
         IVaultStorage(addressStorage).setPause(true);
     }
 
-    function returnGovernance() public onlyOwner {
+    function returnGovernance() external onlyOwner {
         IVaultStorage(addressStorage).setGovernance(msg.sender);
         IBig(addressBig).transferOwnership(msg.sender);
     }
 
-    function stepTwo() public onlyOwner {
+    function stepTwo() external onlyOwner {
         IVaultStorage(addressStorage).setAuctionTime(1);
         IVaultStorage(addressStorage).setRebalanceTimeThreshold(1);
     }
