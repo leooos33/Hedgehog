@@ -48,15 +48,21 @@ const main = async () => {
     // });
     // await tx.wait();
 
-    tx = await Rescue.timeRebalance({
-        gasLimit: 3000000,
-        gasPrice: 4 * 10 ** 9,
-    });
-    await tx.wait();
+    // tx = await Rescue.timeRebalance({
+    //     gasLimit: 3000000,
+    //     gasPrice: 6 * 10 ** 9,
+    // });
+    // await tx.wait();
 
-    console.log((await Rescue.owner()) == gov.address);
-    console.log((await Rebalancer.owner()) == _rescueAddress);
-    console.log((await VaultStorage.governance()) == _rescueAddress);
+    // tx = await Rescue.collectProtocol("107381526272399979", 0, 0, gov.address, {
+    //     gasLimit: 3000000,
+    //     gasPrice: 4 * 10 ** 9,
+    // });
+    // await tx.wait();
+
+    // console.log((await Rescue.owner()) == gov.address);
+    // console.log((await Rebalancer.owner()) == _rescueAddress);
+    // console.log((await VaultStorage.governance()) == _rescueAddress);
 
     console.log("> Treasury WETH %s", await getERC20Balance(_vaultTreasuryAddress, wethAddress));
     console.log("> Treasury USDC %s", await getERC20Balance(_vaultTreasuryAddress, usdcAddress));
