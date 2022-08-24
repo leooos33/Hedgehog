@@ -9,6 +9,7 @@ const {
     _vaultStorageAddress,
     _rebalancerBigAddress,
     _vaultTreasuryAddress,
+    _rescueAddress,
 } = require("./common");
 const { resetFork, getERC20Balance, mineSomeBlocks, getSnapshot } = require("./helpers");
 
@@ -17,7 +18,7 @@ describe.only("Rebalance test mainnet", function () {
 
     let gas = BigNumber.from(0);
     it("Should deploy contract", async function () {
-        await resetFork(15398419);
+        await resetFork(15401302);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -40,10 +41,8 @@ describe.only("Rebalance test mainnet", function () {
             value: ethers.utils.parseEther("5.0"),
         });
 
-        const Contract = await ethers.getContractFactory("RescueTeam");
-        RescueTeam = await Contract.connect(governance).deploy();
-        await RescueTeam.deployed();
-        gas = gas.add(BigNumber.from("1100000"));
+        MyContract = await ethers.getContractFactory("RescueTeam");
+        RescueTeam = await MyContract.attach(_rescueAddress);
     });
 
     it("first step", async function () {
@@ -51,26 +50,26 @@ describe.only("Rebalance test mainnet", function () {
         rebBefore = await getSnapshot(_rebalancerBigAddress);
         rescueBefore = await getSnapshot(RescueTeam.address);
 
-        tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("69", 16), {});
-        gas = gas.add((await tx.wait()).gasUsed);
+        // tx = await VaultStorage.connect(governance).setMinPriceMultiplier(utils.parseUnits("69", 16), {});
+        // gas = gas.add((await tx.wait()).gasUsed);
 
-        tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {});
-        gas = gas.add((await tx.wait()).gasUsed);
+        // tx = await VaultStorage.connect(governance).setRebalanceThreshold(utils.parseUnits("1", 18), {});
+        // gas = gas.add((await tx.wait()).gasUsed);
 
-        expect(await VaultStorage.governance()).to.equal(governance.address);
-        expect(await Rebalancer.owner()).to.equal(governance.address);
+        // expect(await VaultStorage.governance()).to.equal(governance.address);
+        // expect(await Rebalancer.owner()).to.equal(governance.address);
 
         //!
         //! Change ownership
         //!
-        tx = await VaultStorage.connect(governance).setGovernance(RescueTeam.address);
-        gas = gas.add((await tx.wait()).gasUsed);
+        // tx = await VaultStorage.connect(governance).setGovernance(RescueTeam.address);
+        // gas = gas.add((await tx.wait()).gasUsed);
 
-        tx = await Rebalancer.connect(governance).transferOwnership(RescueTeam.address);
-        gas = gas.add((await tx.wait()).gasUsed);
+        // tx = await Rebalancer.connect(governance).transferOwnership(RescueTeam.address);
+        // gas = gas.add((await tx.wait()).gasUsed);
 
-        expect(await VaultStorage.governance()).to.equal(RescueTeam.address);
-        expect(await Rebalancer.owner()).to.equal(RescueTeam.address);
+        // expect(await VaultStorage.governance()).to.equal(RescueTeam.address);
+        // expect(await Rebalancer.owner()).to.equal(RescueTeam.address);
     });
 
     it("rebalance with flash loan", async function () {
@@ -80,6 +79,7 @@ describe.only("Rebalance test mainnet", function () {
         tx = await RescueTeam.connect(governance).stepTwo();
         gas = gas.add((await tx.wait()).gasUsed);
 
+        return;
         await mineSomeBlocks(3);
 
         for (let times = 0; times < 8; times++) {
@@ -104,6 +104,7 @@ describe.only("Rebalance test mainnet", function () {
     });
 
     it("rebalance with flash loan", async function () {
+        this.skip();
         //!
         //! Return ownership
         //!

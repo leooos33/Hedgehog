@@ -1,4 +1,4 @@
-process.exit(0); // Block file in order to not accidentally deploy
+// process.exit(0); // Block file in order to not accidentally deploy
 
 const { assert } = require("chai");
 const {
@@ -10,13 +10,14 @@ const {
     wethAddress,
     usdcAddress,
     osqthAddress,
+    _rebalancerBigAddress,
 } = require("../test/common/index");
 
 const { getERC20Balance } = require("../test/helpers/tokenHelpers");
 
 const main = async () => {
-    let MyContract = await ethers.getContractFactory("Rebalancer");
-    const Rebalancer = await MyContract.attach(_rebalancerAddress);
+    let MyContract = await ethers.getContractFactory("BigRebalancer");
+    const Rebalancer = await MyContract.attach(_rebalancerBigAddress);
 
     MyContract = await ethers.getContractFactory("RescueTeam");
     const Rescue = await MyContract.attach(_rescueAddress);
@@ -29,9 +30,9 @@ const main = async () => {
 
     if (gov.address != _governanceAddress) process.exit(1);
 
-    // tx = await VaultStorage.setGovernance(_rescueAddress, {
+    // tx = await Rebalancer.transferOwnership(_rescueAddress, {
     //     gasLimit: 300000,
-    //     gasPrice: 7 * 10 ** 9,
+    //     gasPrice: 8 * 10 ** 9,
     // });
     // await tx.wait();
 
@@ -40,6 +41,18 @@ const main = async () => {
     //     gasPrice: 5 * 10 ** 9,
     // });
     // await tx.wait();
+
+    // tx = await Rescue.stepTwo({
+    //     gasLimit: 3000000,
+    //     gasPrice: 5 * 10 ** 9,
+    // });
+    // await tx.wait();
+
+    tx = await Rescue.timeRebalance({
+        gasLimit: 3000000,
+        gasPrice: 4 * 10 ** 9,
+    });
+    await tx.wait();
 
     console.log((await Rescue.owner()) == gov.address);
     console.log((await Rebalancer.owner()) == _rescueAddress);
