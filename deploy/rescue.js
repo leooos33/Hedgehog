@@ -64,9 +64,9 @@ const main = async () => {
     // console.log((await Rebalancer.owner()) == _rescueAddress);
     // console.log((await VaultStorage.governance()) == _rescueAddress);
 
-    console.log("> Treasury WETH %s", await getERC20Balance(_vaultTreasuryAddress, wethAddress));
-    console.log("> Treasury USDC %s", await getERC20Balance(_vaultTreasuryAddress, usdcAddress));
-    console.log("> Treasury oSQTH %s", await getERC20Balance(_vaultTreasuryAddress, osqthAddress));
+    // console.log("> Treasury WETH %s", await getERC20Balance(_vaultTreasuryAddress, wethAddress));
+    // console.log("> Treasury USDC %s", await getERC20Balance(_vaultTreasuryAddress, usdcAddress));
+    // console.log("> Treasury oSQTH %s", await getERC20Balance(_vaultTreasuryAddress, osqthAddress));
 
     console.log("> Governance WETH %s", await getERC20Balance(_governanceAddress, wethAddress));
     console.log("> Governance USDC %s", await getERC20Balance(_governanceAddress, usdcAddress));
