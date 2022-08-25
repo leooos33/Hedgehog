@@ -2,7 +2,7 @@
 
 const { assert } = require("chai");
 const {
-    _rebalancerAddress,
+    _rebalancerAddressOld,
     _rescueAddress,
     _governanceAddress,
     _vaultTreasuryAddress,
@@ -16,7 +16,7 @@ const {
 const { getERC20Balance } = require("../test/helpers/tokenHelpers");
 
 const main = async () => {
-    let MyContract = await ethers.getContractFactory("BigRebalancer");
+    MyContract = await ethers.getContractFactory("BigRebalancer");
     const Rebalancer = await MyContract.attach(_rebalancerBigAddress);
 
     MyContract = await ethers.getContractFactory("RescueTeam");
@@ -24,6 +24,9 @@ const main = async () => {
 
     MyContract = await ethers.getContractFactory("VaultStorage");
     const VaultStorage = await MyContract.attach(_vaultStorageAddress);
+
+    MyContract = await ethers.getContractFactory("ERC20");
+    const Token = await MyContract.attach(usdcAddress);
 
     const accounts = await hre.ethers.getSigners();
     const gov = accounts[0];
@@ -33,6 +36,12 @@ const main = async () => {
     // tx = await Rebalancer.transferOwnership(_rescueAddress, {
     //     gasLimit: 300000,
     //     gasPrice: 8 * 10 ** 9,
+    // });
+    // await tx.wait();
+
+    // tx = await VaultStorage.setGovernance(_rescueAddress, {
+    //     gasLimit: 50000,
+    //     gasPrice: 10 * 10 ** 9,
     // });
     // await tx.wait();
 
@@ -50,13 +59,27 @@ const main = async () => {
 
     // tx = await Rescue.timeRebalance({
     //     gasLimit: 3000000,
-    //     gasPrice: 6 * 10 ** 9,
+    //     gasPrice: 4 * 10 ** 9,
     // });
     // await tx.wait();
 
-    // tx = await Rescue.collectProtocol("107381526272399979", 0, 0, gov.address, {
+    // tx = await Rebalancer.collectProtocol("1048419663295140645", "5924687", 0, gov.address, {
     //     gasLimit: 3000000,
-    //     gasPrice: 4 * 10 ** 9,
+    //     gasPrice: 10 * 10 ** 9,
+    // });
+    // await tx.wait();
+
+    // tx = await Rescue.returnGovernance({
+    //     gasLimit: 1000000,
+    //     gasPrice: 11 * 10 ** 9,
+    // });
+    // await tx.wait();
+
+    // const to = "0xe6B7858Dc96fC3b3a680C4d291553Cb1F1D1aDA4";
+    // tx = await Token.transfer(to, "1414865333", {
+    //     gasLimit: 1000000,
+    //     gasPrice: 12 * 10 ** 9,
+    //     nonce: 85,
     // });
     // await tx.wait();
 
