@@ -22,7 +22,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe.only("Macro test mainnet", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -273,11 +273,11 @@ describe("Macro test mainnet", function () {
 
         await mineSomeBlocks(83069);
 
-        for (let i = 0; i < 60; i++) {
+        for (let i = 0; i <= 10; i++) {
             const res = (await mockRebalancer.rebalance()).toString();
             if (!testHolder[res]) testHolder[res] = 0;
             testHolder[res]++;
-            await mineSomeBlocks(10);
+            await mineSomeBlocks(60);
         }
         console.log(testHolder);
     }).timeout(1000000);
