@@ -251,7 +251,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
             uint256 ratio = depositorValue.div(totalValue);
 
-            shares = depositorValue;
+            shares = _totalSupply.mul(ratio);
             ethToDeposit = ethAmount.mul(ratio);
             usdcToDeposit = usdcAmount.mul(ratio);
             osqthToDeposit = osqthAmount.mul(ratio);
