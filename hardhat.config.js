@@ -25,17 +25,32 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 const CHAIN_IDS = {
     hardhat: 31337,
 };
+
+//TODO: do smth here
+const test = {
+    allowUnlimitedContractSize: process.env.DEBUG ? true : false,
+    chainId: CHAIN_IDS.hardhat,
+    forking: getForkingParams(),
+    // gasLimit: 3000000,
+    // gas: 1800000,
+    gasPrice: 18000000000,
+};
+
+const simulate = {
+    allowUnlimitedContractSize: true,
+    chainId: CHAIN_IDS.hardhat,
+    forking: getForkingParams(15534544),
+    mining: {
+        auto: false,
+        interval: 0,
+    },
+    gasPrice: "auto",
+    gas: "auto",
+};
+
 module.exports = {
     networks: {
-        hardhat: {
-            allowUnlimitedContractSize: process.env.DEBUG ? true : false,
-            chainId: CHAIN_IDS.hardhat,
-            forking: getForkingParams(),
-            // TODO: comment this then run tests
-            // gasLimit: 3000000,
-            // gas: 1800000,
-            gasPrice: 18000000000,
-        },
+        hardhat: simulate,
         ropsten: {
             url: IFURA_ROPSTEN_URL,
             accounts: [ROPSTEN_DEPLOYMENT_KEY],

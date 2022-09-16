@@ -11,6 +11,7 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import {IAuction} from "../interfaces/IAuction.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
@@ -23,6 +24,7 @@ contract BigRebalancer is Ownable {
 
     address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
     address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressStorage = 0x0973b2d95236964E59a9cE95aCE22b07FA87c26A;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -77,9 +79,11 @@ contract BigRebalancer is Ownable {
 
     //uint256 threshold
     function rebalance(uint256 threshold) public {
+        // require(!isQuickRebalance(), "quick rebalance");
+
         (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
-        // console.log("auctionTriggerTime %s", auctionTriggerTime);
+        console.log("auctionTriggerTime %s", auctionTriggerTime);
 
         require(isTimeRebalance, "Not time");
 
@@ -112,9 +116,9 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetUsdc - usdcBalance + 10;
 
-            // console.log("branch: 1");
-            // console.log("borrow weth %s", data.amount1);
-            // console.log("borrow usdc %s", data.amount2);
+            console.log("branch: 1");
+            console.log("borrow weth %s", data.amount1);
+            console.log("borrow usdc %s", data.amount2);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow osqth (get weth on euler and swap it to osqth)
@@ -125,8 +129,8 @@ contract BigRebalancer is Ownable {
             data.type_of_arbitrage = 2;
             data.amount1 = targetOsqth - osqthBalance + 10;
 
-            // console.log("branch: 2");
-            // console.log("borrow osqth %s", data.amount1);
+            console.log("branch: 2");
+            console.log("borrow osqth %s", data.amount1);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow usdc & osqth (borrow weth on euler and swap it to osqth)
@@ -138,9 +142,9 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetUsdc - usdcBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
 
-            // console.log("branch: 3");
-            // console.log("borrow usdc %s", data.amount1);
-            // console.log("borrow osqth %s", data.amount2);
+            console.log("branch: 3");
+            console.log("borrow usdc %s", data.amount1);
+            console.log("borrow osqth %s", data.amount2);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow weth
@@ -151,8 +155,8 @@ contract BigRebalancer is Ownable {
             data.type_of_arbitrage = 4;
             data.amount1 = targetEth - ethBalance + 10;
 
-            // console.log("branch: 4");
-            // console.log("borrow weth %s", data.amount1);
+            console.log("branch: 4");
+            console.log("borrow weth %s", data.amount1);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow weth & osqth (borrow weth on euler and swap it to osqth)
@@ -164,9 +168,9 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
 
-            // console.log("branch: 5");
-            // console.log("borrow weth %s", data.amount1);
-            // console.log("borrow osqth %s", data.amount2);
+            console.log("branch: 5");
+            console.log("borrow weth %s", data.amount1);
+            console.log("borrow osqth %s", data.amount2);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow usdc
@@ -177,8 +181,8 @@ contract BigRebalancer is Ownable {
             data.type_of_arbitrage = 6;
             data.amount1 = targetUsdc - usdcBalance + 10;
 
-            // console.log("branch: 6");
-            // console.log("borrow usdc %s", data.amount1);
+            console.log("branch: 6");
+            console.log("borrow usdc %s", data.amount1);
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else {
             revert("NO arbitage");
@@ -198,14 +202,14 @@ contract BigRebalancer is Ownable {
             IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(USDC));
             borrowedDToken2.borrow(0, data.amount2);
 
-            // console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
 
             IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-            // console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap oSQTH --> wETH
             swapRouter.exactInputSingle(
@@ -221,9 +225,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             uint256 ethAfter2 = IERC20(WETH).balanceOf(address(this));
 
@@ -241,16 +245,16 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             borrowedDToken1.repay(0, data.amount1);
             borrowedDToken2.repay(0, data.amount2);
         } else if (data.type_of_arbitrage == 2) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1);
-            // console.log("borrowed eth %s", IERC20(WETH).balanceOf(address(this)));
+            console.log("borrowed eth %s", IERC20(WETH).balanceOf(address(this)));
 
             // swap wETH --> oSQTH
             swapRouter.exactOutputSingle(
@@ -265,13 +269,13 @@ contract BigRebalancer is Ownable {
                     sqrtPriceLimitX96: 0
                 })
             );
-            // console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-            // console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap USDC --> wETH
             swapRouter.exactInputSingle(
@@ -301,9 +305,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             borrowedDToken1.repay(0, data.amount1);
         } else if (data.type_of_arbitrage == 3) {
@@ -328,9 +332,9 @@ contract BigRebalancer is Ownable {
 
             IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-            // console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap wETH --> USDC
             swapRouter.exactOutputSingle(
@@ -360,9 +364,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             borrowedDToken1.repay(0, data.amount1);
             borrowedDToken2.repay(0, data.amount2);
@@ -372,9 +376,9 @@ contract BigRebalancer is Ownable {
 
             IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-            // console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap oSQTH --> wETH
             swapRouter.exactInputSingle(
@@ -390,9 +394,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap USDC --> wETH
             swapRouter.exactInputSingle(
@@ -408,9 +412,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             borrowedDToken1.repay(0, data.amount1);
         } else if (data.type_of_arbitrage == 5) {
@@ -433,11 +437,15 @@ contract BigRebalancer is Ownable {
                 })
             );
 
+            console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+
             IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-            // console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             // swap USDC --> wETH
             swapRouter.exactInputSingle(
@@ -467,9 +475,9 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             borrowedDToken1.repay(0, data.amount1.add(data.amount2));
         } else if (data.type_of_arbitrage == 6) {
@@ -527,10 +535,19 @@ contract BigRebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
         }
 
-        // console.log(">> profit ETH %s", IERC20(WETH).balanceOf(address(this)));
-        // console.log(">> profit USDC %s", IERC20(USDC).balanceOf(address(this)));
-        // console.log(">> profit oSQTH %s", IERC20(OSQTH).balanceOf(address(this)));
+        console.log(">> profit ETH %s", IERC20(WETH).balanceOf(address(this)));
+        console.log(">> profit USDC %s", IERC20(USDC).balanceOf(address(this)));
+        console.log(">> profit oSQTH %s", IERC20(OSQTH).balanceOf(address(this)));
 
         require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
+    }
+
+    function isQuickRebalance() public view returns (bool) {
+        (uint256 ethUsdcPrice, ) = IVaultMath(addressMath).getPrices();
+        uint256 cachedPrice = IVaultStorage(addressStorage).ethPriceAtLastRebalance();
+
+        uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
+
+        return ratio <= IVaultStorage(addressStorage).rebalanceThreshold();
     }
 }
