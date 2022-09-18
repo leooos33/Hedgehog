@@ -228,9 +228,10 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             ? _amountEth
             : IVaultMath(vaultMath).getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
+        shares = depositorValue;
+
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
-            shares = depositorValue;
             ethToDeposit = depositorValue.mul(5e17);
             usdcToDeposit = depositorValue.mul(25e16).mul(ethUsdcPrice).div(uint256(1e30));
             osqthToDeposit = depositorValue.mul(25e16).div(osqthEthPrice);
@@ -248,7 +249,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
             uint256 ratio = depositorValue.div(totalValue);
 
-            shares = _totalSupply.mul(ratio);
             ethToDeposit = ethAmount.mul(ratio);
             usdcToDeposit = usdcAmount.mul(ratio);
             osqthToDeposit = osqthAmount.mul(ratio);

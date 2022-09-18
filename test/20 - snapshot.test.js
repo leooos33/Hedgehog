@@ -4,9 +4,9 @@ const { wethAddress, osqthAddress, usdcAddress, _governanceAddress, _vaultStorag
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe("Snapshot", function () {
+describe.only("Snapshot", function () {
     it("Get snapshot", async function () {
-        await resetFork(15356501);
+        await resetFork(15560400);
 
         const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
 
