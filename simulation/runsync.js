@@ -4,51 +4,73 @@ const { resetFork, logBlock } = require("../test/helpers");
 
 const mainnetProvider = new providers.InfuraProvider(1, IFURA_KEY);
 
-let initialized;
+const getLastBlock = async () => (await mainnetProvider.getBlock("latest")).number - 100;
 
-// mainnetProvider.on("block", async (blockNumber) => {
-//     blockNumber -= 5;
+const run = async () => {
+    let lastAvaliableBlock = await getLastBlock();
+    // let lastAvaliableBlock = 15553753;
+    await resetFork(lastAvaliableBlock);
+    console.log("initialized:", lastAvaliableBlock);
 
-// });
+    let prevBlock = lastAvaliableBlock;
+    while (true) {
+        prevBlock = await main(prevBlock);
+        // console.log("!");
+    }
+};
 
-const main = async () => {
-    blockNumber = 15534588;
-    await resetFork(blockNumber);
-    console.log("initialized:", blockNumber);
+run();
 
-    blockNumber = 15534589;
-    console.log("updated:", blockNumber);
-    const block = await mainnetProvider.getBlock(blockNumber);
+const main = async (prevBlock) => {
+    let lastAvaliableBlock = await getLastBlock();
+    // let lastAvaliableBlock = 15553754;
+    if (lastAvaliableBlock == prevBlock) {
+        return prevBlock;
+    }
 
-    for (const txhash of block.transactions) {
-        console.log(txhash);
-        const tx = await mainnetProvider.getTransaction(txhash);
+    console.log("updated:", lastAvaliableBlock);
+    const block = await mainnetProvider.getBlockWithTransactions(lastAvaliableBlock);
+
+    console.log(block.transactions.length);
+    for (const tx of block.transactions) {
+        console.log(tx.hash);
         await sendTxImpersonated(tx);
     }
 
-    await hre.network.provider.request({
-        method: "evm_mine",
-    });
+    console.log("done");
+    await network.provider.send("evm_mine");
+    // await hre.network.provider.request({
+    //     method: "evm_mine",
+    // });
+    console.log("done");
     await logBlock();
-    // console.log(tx);
+
+    return lastAvaliableBlock;
 };
 
-main();
-
 const sendTxImpersonated = async (tx) => {
-    const { from, gasPrice, gasLimit, to, value, nonce, data } = tx;
-    await hre.network.provider.request({
-        method: "hardhat_impersonateAccount",
-        params: [from],
-    });
-    const fromActor = await ethers.getSigner(from);
+    try {
+        // console.log(tx);
+        const { from, gasPrice, gasLimit, to, value, nonce, data } = tx;
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [from],
+        });
+        const fromActor = await ethers.getSigner(from);
 
-    await fromActor.sendTransaction({
-        gasPrice,
-        gasLimit,
-        to,
-        value,
-        nonce,
-        data,
-    });
+        // console.log("impersonated!");
+
+        await fromActor.sendTransaction({
+            // gasPrice,
+            // gasLimit,
+            to,
+            value,
+            nonce,
+            data,
+        });
+        // console.log(tx);
+    } catch (err) {
+        console.log(err);
+        console.log(tx);
+    }
 };

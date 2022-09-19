@@ -23,7 +23,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 const CHAIN_IDS = {
-    hardhat: 31337,
+    hardhat: 1,
 };
 
 //TODO: do smth here
@@ -44,8 +44,14 @@ const simulate = {
         auto: false,
         interval: 0,
     },
-    gasPrice: "auto",
-    gas: "auto",
+    mocha: {
+        timeout: 4000000000,
+    },
+    localhost: {
+        timeout: 4000000000,
+    },
+    // gasPrice: "auto",
+    // gas: "auto",
 };
 
 module.exports = {
