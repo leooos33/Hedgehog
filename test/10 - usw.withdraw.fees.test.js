@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test", function () {
+describe("User story with: withdraw protocol fees", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, notgovernance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();

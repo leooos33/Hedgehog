@@ -11,7 +11,7 @@ const {
 } = require("./common");
 const { resetFork, getERC20Balance } = require("./helpers");
 
-describe("Rebalance test mainnet", function () {
+describe.skip("Rebalance mainnet", function () {
     let tx, receipt, MyContract;
     let actor, governance;
     let actorAddress = "0xbe74daf0930dfab7d8396eead251a4a21106797d";

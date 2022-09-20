@@ -1,10 +1,17 @@
 const { ethers } = require("hardhat");
 const { utils } = ethers;
-const { wethAddress, osqthAddress, usdcAddress, _governanceAddress, _vaultStorageAddress, _vaultMathAddress } = require("./common");
+const {
+    wethAddress,
+    osqthAddress,
+    usdcAddress,
+    _governanceAddress,
+    _vaultStorageAddress,
+    _vaultMathAddress,
+} = require("./common");
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Snapshot", function () {
+describe.skip("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
         await resetFork(15560400);
 

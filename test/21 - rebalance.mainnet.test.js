@@ -21,7 +21,7 @@ const {
     getERC20Allowance,
 } = require("./helpers");
 
-describe("Rebalance test mainnet", function () {
+describe.skip("Rebalance mainnet", function () {
     let tx, receipt, Rebalancer, MyContract;
     let actor;
     let actorAddress = "0x42b1299fcca091a83c08c24915be6e6d63906b1a";

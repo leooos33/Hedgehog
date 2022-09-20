@@ -17,7 +17,7 @@ const { BigNumber } = require("ethers");
 
 const ownable = require("./helpers/abi/ownable");
 
-describe("Mainnet Infrustructure Test", function () {
+describe.skip("Simple Deposit Mainnet", function () {
     let governance;
     let governanceAddress = _governanceAddress;
     it("Should set actors", async function () {
@@ -31,7 +31,7 @@ describe("Mainnet Infrustructure Test", function () {
         console.log("governance:", governance.address);
     });
 
-    it("1 test", async function () {
+    it("deposit", async function () {
         let MyContract = await ethers.getContractFactory("Vault");
         const Vault = await MyContract.attach(_vaultAddress);
         let tx;
