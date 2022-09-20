@@ -40,18 +40,17 @@ const simulate = {
     allowUnlimitedContractSize: true,
     chainId: CHAIN_IDS.hardhat,
     forking: getForkingParams(15534544),
-    mining: {
-        auto: false,
-        interval: 0,
-    },
-    mocha: {
-        timeout: 4000000000,
-    },
-    localhost: {
-        timeout: 4000000000,
-    },
-    // gasPrice: "auto",
-    // gas: "auto",
+    gasPrice: 18000000000,
+    // mining: {
+    //     auto: true,
+    //     interval: 0,
+    // },
+    // mocha: {
+    //     timeout: 4000000000,
+    // },
+    // localhost: {
+    //     timeout: 4000000000,
+    // },
 };
 
 module.exports = {
