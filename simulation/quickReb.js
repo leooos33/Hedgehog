@@ -1,7 +1,6 @@
-const { resetFork, logBlock } = require("../test/helpers");
-const { wethAddress, usdcAddress, osqthAddress } = require("../test/common/index");
-const { hardhatDeploy, deploymentParams } = require("../test/deploy/index");
-const { getERC20Balance, getUSDC, getWETH, approveERC20 } = require("../test/helpers/tokenHelpers");
+const { logBlock } = require("../test/helpers");
+const { wethAddress, usdcAddress } = require("../test/common/index");
+const { getERC20Balance, getUSDC, getWETH } = require("../test/helpers/tokenHelpers");
 const { mineSomeBlocks } = require("../test/helpers");
 const { ethers } = require("hardhat");
 const { BigNumber } = require("ethers");
@@ -10,25 +9,13 @@ const { utils } = ethers;
 const main = async () => {
     const signers = await ethers.getSigners();
     governance = signers[0];
-    depositor = signers[13];
-
-    let initBlock = 15574801;
-    await resetFork(initBlock);
-    console.log("initialized:");
-    await logBlock();
 
     await init();
-    console.log("deployed:");
-    await logBlock();
-    await network.provider.send("evm_setAutomine", [true]);
-
-    await deposit();
 
     await bigSwap();
 
     await mineSomeBlocks(43170);
-
-    await mineSomeBlocks(600); // quicken the process
+    // await mineSomeBlocks(600); // quicken the process
 
     while (true) {
         await smallSwaps();
@@ -41,21 +28,6 @@ const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 function between(min, max) {
     return Math.floor(Math.random() * (max - min + 1) + min);
 }
-
-const deposit = async () => {
-    const ethToDeposit = utils.parseUnits("1", 18);
-
-    await getWETH(ethToDeposit.toString(), depositor.address);
-
-    await approveERC20(depositor, oneClickDeposit.address, ethToDeposit, wethAddress);
-
-    tx = await oneClickDeposit
-        .connect(depositor)
-        .deposit(ethToDeposit, utils.parseUnits("99", 16), depositor.address, "0");
-    await tx.wait();
-
-    console.log(">> Deposited %s WETH", ethToDeposit / 1e18);
-};
 
 const smallSwaps = async () => {
     if (between(0, 1)) {
@@ -95,7 +67,7 @@ const smallSwaps = async () => {
 };
 
 const bigSwap = async () => {
-    const swapAmount = utils.parseUnits("10000000", 6).toString();
+    const swapAmount = utils.parseUnits("1000", 6).toString();
     console.log("> Swap %s USDC to ETH", swapAmount / 1e6);
 
     const balance = await getERC20Balance(v3Helper.address, usdcAddress);
@@ -108,47 +80,21 @@ const bigSwap = async () => {
 };
 
 const init = async () => {
-    const params = [...deploymentParams];
-    [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
+    [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = [
+        "0x325c8Df4CFb5B068675AFF8f62aA668D1dEc3C4B",
+        "0x4eaB29997D332A666c3C366217Ab177cF9A7C436",
+        "0x5Ffe31E4676D3466268e28a75E51d1eFa4298620",
+        "0x627b9A657eac8c3463AD17009a424dFE3FDbd0b1",
+        "0xa62835D1A6bf5f521C4e2746E1F51c923b8f3483",
+        "0x8ac5eE52F70AE01dB914bE459D8B3d50126fd6aE",
+    ];
 
     Factory = await ethers.getContractFactory("V3Helper");
-    v3Helper = await Factory.deploy();
-    await v3Helper.deployed();
+    v3Helper = await Factory.attach("0xd753c12650c280383Ce873Cc3a898F6f53973d16");
 
-    console.log("v3Helper", v3Helper.address);
-
-    Factory = await ethers.getContractFactory("OneClickDeposit");
-    oneClickDeposit = await Factory.deploy();
-    await oneClickDeposit.deployed();
-
-    console.log("oneClickDeposit", oneClickDeposit.address);
-
-    tx = await oneClickDeposit.setContracts(Vault.address);
-    await tx.wait();
-
-    Factory = await ethers.getContractFactory("BigRebalancer");
-    rebalancer = await Factory.deploy();
-    await rebalancer.deployed();
-
-    console.log("rebalancer", rebalancer.address);
-
-    tx = await rebalancer.setContracts(VaultAuction.address, VaultMath.address);
-    await tx.wait();
-
-    // await logState(Vault.address);
-    // await logState(VaultAuction.address);
-    // await logState(VaultMath.address);
-    // await logState(VaultTreasury.address);
-    // await logState(VaultStorage.address);
-    // await logState(v3Helper.address);
-    // await logState(oneClickDeposit.address);
-    // await logState(rebalancer.address);
-};
-
-const logState = async (address) => {
-    console.log(await getERC20Balance(address, wethAddress));
-    console.log(await getERC20Balance(address, usdcAddress));
-    console.log(await getERC20Balance(address, osqthAddress));
+    oneClickDeposit = {
+        address: "0xd710a67624Ad831683C86a48291c597adE30F787",
+    };
 };
 
 main();

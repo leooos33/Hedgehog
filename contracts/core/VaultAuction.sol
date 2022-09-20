@@ -17,6 +17,8 @@ import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
+import "hardhat/console.sol";
+
 contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -358,7 +360,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         address coin,
         address keeper
     ) internal {
+        
         if (target >= balance) {
+            console.log(target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
             uint256 amount = balance.sub(target).sub(10);
