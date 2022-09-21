@@ -29,7 +29,7 @@ describe("User story with: no first withdraw", function () {
 
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
     it("Should deploy contract", async function () {
-        await resetFork(15173789);
+        await resetFork(15581574);
 
         const params = [...deploymentParams];
         params[6] = "10000";
@@ -43,9 +43,9 @@ describe("User story with: no first withdraw", function () {
 
     const presets = {
         depositor1: {
-            wethInput: "19987318809022169042",
-            usdcInput: "15374822619",
-            osqthInput: "113434930214010428403",
+            wethInput: "20959915135331610394",
+            usdcInput: "14136380459",
+            osqthInput: "162849663294932114123",
         },
         depositor2: {
             wethInput: "29987318809025550479",

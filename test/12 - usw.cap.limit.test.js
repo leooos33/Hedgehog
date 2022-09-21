@@ -29,7 +29,7 @@ describe("User story with: cap limit", function () {
 
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
     it("Should deploy contract", async function () {
-        await resetFork(15173789);
+        await resetFork(15581574);
 
         const params = [...deploymentParams];
         params[6] = "10000";
@@ -44,9 +44,9 @@ describe("User story with: cap limit", function () {
 
     const presets = {
         depositor1: {
-            wethInput: "19987318809022169042",
-            usdcInput: "15374822619",
-            osqthInput: "113434930214010428403",
+            wethInput: "263005770606497627844",
+            usdcInput: "14136380459",
+            osqthInput: "162849663294932114123",
         },
         depositor2: {
             wethInput: "29987318809025550479",
@@ -54,9 +54,9 @@ describe("User story with: cap limit", function () {
             osqthInput: "170188380388050211866",
         },
         depositor3: {
-            wethInput: "250508511330590775860",
+            wethInput: "263005770688016304079",
             usdcInput: "276186032850",
-            osqthInput: "792975016775564721384",
+            osqthInput: "1347979286402298994379",
         },
         keeper: {
             wethInput: BigNumber.from("0").add(BigNumber.from("0")).toString(),
