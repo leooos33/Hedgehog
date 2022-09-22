@@ -29,7 +29,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         actor = signers[10];
     });
 
-    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, rebalanceCall;
+    let Vault, VaultAuction, tx, rebalanceCall;
     it("Should deploy contract", async function () {
         await resetFork(15373344 - 10);
 
@@ -113,7 +113,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         expect(await userShareAfterDeposit).to.equal("13716878910130044140");
     });
 
-    it("swap_before_rebalance_USDC_to_ETH", async function () {
+    it("swap_before_rebalance_USDC_to_WETH", async function () {
         const testAmount = utils.parseUnits("10", 12).toString();
         console.log("> Swap %s USDC for ETH", testAmount);
 
@@ -159,7 +159,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await logBalance(rebalanceCall.address, "> rebalanceCall after");
     });
 
-    it("swap2", async function () {
+    it("swap_before_rebalance_USDC_to_WETH one more time", async function () {
         const testAmount = utils.parseUnits("10", 12).toString();
         console.log(">", testAmount);
 

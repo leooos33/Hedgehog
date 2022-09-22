@@ -3,8 +3,8 @@ pragma solidity ^0.8.0;
 
 pragma abicoder v2;
 
-import {IAuction} from "./interfaces/IAuction.sol";
-import {IVaultMath} from "./interfaces/IVaultMath.sol";
+import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "hardhat/console.sol";

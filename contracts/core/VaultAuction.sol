@@ -406,7 +406,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256
         )
     {
-        console.log(block.timestamp);
         Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
 
         (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
@@ -415,19 +414,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             auctionDetails.liquidityOsqthEth
         );
 
-        // console.log("target %s", targetEth);
-        // console.log("target %s", targetUsdc);
-        // console.log("target %s", targetOsqth);
-
         (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-
-        // console.log("balance %s", ethBalance);
-        // console.log("balance %s", usdcBalance);
-        // console.log("balance %s", osqthBalance);
-
-        // console.log("-%s", ethBalance - targetEth);
-        // console.log("-%s", usdcBalance - targetUsdc);
-        // console.log(targetOsqth - osqthBalance);
 
         return (targetEth, targetUsdc, targetOsqth, ethBalance, usdcBalance, osqthBalance);
     }

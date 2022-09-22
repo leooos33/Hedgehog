@@ -12,7 +12,7 @@ import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRoute
 import {IUniswapV3Pool} from "@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import {IOracle} from "./libraries/uniswap/IOracle.sol";
+import {IOracle} from "../libraries/uniswap/IOracle.sol";
 
 import "hardhat/console.sol";
 
