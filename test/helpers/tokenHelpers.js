@@ -56,9 +56,9 @@ const approveERC20 = async (owner, account, amount, tokenAddress) => {
     });
 };
 
-const getERC20Allowance = async (owner, spender, tokenAddress) => {
+const getERC20Allowance = async (ownerAddress, spenderAddress, tokenAddress) => {
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
-    return (await ERC20.allowance(owner, spender)).toString();
+    return (await ERC20.allowance(ownerAddress, spenderAddress)).toString();
 };
 
 const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
