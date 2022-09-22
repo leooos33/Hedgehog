@@ -48,9 +48,9 @@ const getERC20Balance = async (account, tokenAddress) => {
     return (await ERC20.balanceOf(account)).toString();
 };
 
-const approveERC20 = async (owner, account, amount, tokenAddress) => {
+const approveERC20 = async (owner, accountAddress, amount, tokenAddress) => {
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
-    await ERC20.connect(owner).approve(account, amount, {
+    await ERC20.connect(owner).approve(accountAddress, amount, {
         gasLimit: 2500000,
         gasPrice: 11000000000,
     });

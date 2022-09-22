@@ -79,7 +79,7 @@ contract BigRebalancer is Ownable {
     function rebalance(uint256 threshold) public {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
-        // console.log("auctionTriggerTime %s", auctionTriggerTime);
+        console.log("auctionTriggerTime %s", auctionTriggerTime);
 
         require(isTimeRebalance, "Not time");
 
@@ -92,12 +92,16 @@ contract BigRebalancer is Ownable {
             uint256 osqthBalance
         ) = IAuction(addressAuction).getAuctionParams(auctionTriggerTime);
 
-        console.log("targetEth %s", targetEth);
-        console.log("targetUsdc %s", targetUsdc);
-        console.log("targetOsqth %s", targetOsqth);
-        console.log("ethBalance %s", ethBalance);
-        console.log("usdcBalance %s", usdcBalance);
+        console.log("targetEth    %s", targetEth);
+        console.log("targetUsdc   %s", targetUsdc);
+        console.log("targetOsqth  %s", targetOsqth);
+        console.log("ethBalance   %s", ethBalance);
+        console.log("usdcBalance  %s", usdcBalance);
         console.log("osqthBalance %s", osqthBalance);
+
+        console.log("-%s", ethBalance - targetEth);
+        console.log("> ! %s", targetUsdc - usdcBalance);
+        console.log("-%s", osqthBalance - targetOsqth);
 
         FlCallbackData memory data;
         data.threshold = threshold;
@@ -175,7 +179,8 @@ contract BigRebalancer is Ownable {
             // 4) return usdc
 
             data.type_of_arbitrage = 6;
-            data.amount1 = targetUsdc - usdcBalance + 10;
+            // data.amount1 = targetUsdc - usdcBalance + 10;
+            data.amount1 = auctionTriggerTime;
 
             // console.log("branch: 6");
             // console.log("borrow usdc %s", data.amount1);
@@ -183,6 +188,23 @@ contract BigRebalancer is Ownable {
         } else {
             revert("NO arbitage");
         }
+    }
+
+    function rebalance2() public {
+        console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+        console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+        console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
+
+        (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
+        console.log("auctionTriggerTime %s", auctionTriggerTime);
+
+        log(auctionTriggerTime);
+
+        IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+
+        console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
+        console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
+        console.log(">> balance osqth after timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
     }
 
     function onDeferredLiquidityCheck(bytes memory encodedData) external {
@@ -474,7 +496,14 @@ contract BigRebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1.add(data.amount2));
         } else if (data.type_of_arbitrage == 6) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
-            borrowedDToken1.borrow(0, data.amount1);
+
+            log(data.amount1);
+
+            borrowedDToken1.borrow(0, 3007733 + 10 + 1041);
+
+            log(data.amount1);
+            (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
+            log(auctionTriggerTime);
 
             console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -501,9 +530,9 @@ contract BigRebalancer is Ownable {
             });
             swapRouter.exactInputSingle(params1);
 
-            console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            // console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            // console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            // console.log(">> balance osqth afer 1 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
             uint256 wethAll = IERC20(WETH).balanceOf(address(this));
 
@@ -514,17 +543,17 @@ contract BigRebalancer is Ownable {
                 fee: 500,
                 recipient: address(this),
                 deadline: block.timestamp,
-                amountOut: data.amount1,
+                amountOut: 3007733 + 10 + 1041,
                 amountInMaximum: wethAll,
                 sqrtPriceLimitX96: 0
             });
             swapRouter.exactOutputSingle(params2);
 
-            console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
-            console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
-            console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
+            // console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
+            // console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
+            // console.log(">> balance osqth afer 2 swap swap: %s", IERC20(OSQTH).balanceOf(address(this)));
 
-            borrowedDToken1.repay(0, data.amount1);
+            borrowedDToken1.repay(0, 3007733 + 10 + 1041);
         }
 
         // console.log(">> profit ETH %s", IERC20(WETH).balanceOf(address(this)));
@@ -532,5 +561,18 @@ contract BigRebalancer is Ownable {
         // console.log(">> profit oSQTH %s", IERC20(OSQTH).balanceOf(address(this)));
 
         require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
+    }
+
+    function log(uint256 reb) internal {
+        (
+            uint256 targetEth,
+            uint256 targetUsdc,
+            uint256 targetOsqth,
+            uint256 ethBalance,
+            uint256 usdcBalance,
+            uint256 osqthBalance
+        ) = IAuction(addressAuction).getAuctionParams(reb);
+
+        console.log("> ! %s", targetUsdc - usdcBalance);
     }
 }
