@@ -40,7 +40,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 minAmountUsdc,
         uint256 minAmountOsqth
     ) external override nonReentrant notPaused {
-        console.log(block.timestamp);
+        console.log("block.timestamp %s", block.timestamp);
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 

@@ -24,7 +24,7 @@ contract RebalanceCall {
     }
 
     function call() public {
-        (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
+        (, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
         console.log("auctionTriggerTime %s", auctionTriggerTime);
 
@@ -50,7 +50,7 @@ contract RebalanceCall {
     }
 
     function call2() public {
-        (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
+        (, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
         console.log("auctionTriggerTime %s", auctionTriggerTime);
 
@@ -70,7 +70,7 @@ contract RebalanceCall {
         console.log("usdcBalance  %s", usdcBalance);
         console.log("osqthBalance %s", osqthBalance);
 
-        console.log("before call", targetEth - ethBalance);
+        // console.log("before call", targetEth - ethBalance);
         console.log("before call", targetUsdc - usdcBalance);
 
         IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);

@@ -117,7 +117,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         const testAmount = utils.parseUnits("10", 12).toString();
         console.log("> Swap %s USDC for ETH", testAmount);
 
-        await getUSDC(testAmount, contractHelper.address);
+        await getUSDC(testAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
 
         // Balances
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal(testAmount);
@@ -159,13 +159,13 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await logBalance(rebalanceCall.address, "> rebalanceCall after");
     });
 
-    it("swap_before_rebalance_USDC_to_WETH one more time", async function () {
-        const testAmount = utils.parseUnits("10", 12).toString();
+    it("swap_before_rebalance_WETH_OSQTH one more time", async function () {
+        const testAmount = utils.parseUnits("10", 18).toString();
         console.log(">", testAmount);
 
-        await getUSDC(testAmount, contractHelper.address);
+        await getWETH(testAmount, rebalanceCall.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
 
-        tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
+        tx = await contractHelper.connect(swaper).swapWETH_OSQTH(testAmount);
         await tx.wait();
 
         for (const i of Array(6)) {
@@ -187,10 +187,10 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await mineSomeBlocks(83622);
         await mineSomeBlocks(83622);
 
-        const amount1 = BigNumber.from("672091313476078904").toString();
-        const amount2 = BigNumber.from("4378095219").toString();
+        // const amount1 = BigNumber.from("672091313476078904").toString();
+        const amount2 = BigNumber.from("5176873160").toString();
 
-        await getWETH(amount1, rebalanceCall.address);
+        // await getWETH(amount1, rebalanceCall.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
         await getUSDC(amount2, rebalanceCall.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
 
         await logBalance(rebalanceCall.address, "> rebalanceCall2 before");
