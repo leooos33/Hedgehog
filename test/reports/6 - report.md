@@ -31,7 +31,7 @@
 > rebalanceCall after USDC 2725912797
 > rebalanceCall after oSQTH 0
 
-    ✔ rebalance (2705ms)
+    ✔ rebalance (2609ms)
 
 > blockNumber: 15540612 timestamp: 1661107141
 > 83622 blocks was mine
@@ -43,27 +43,27 @@
 > rebalanceCall2 before USDC 4378095219
 > rebalanceCall2 before oSQTH 0
 > auctionTriggerTime 1661150330
-> targetEth 6250407415199740020
-> targetUsdc 9067770831
-> targetOsqth 11101193344076178451
-> ethBalance 5579572120491098747
-> usdcBalance 4686763400
+> targetEth 6272210635195567346
+> targetUsdc 7797976411
+> targetOsqth 18460575610972099038
+> ethBalance 5666133033450583901
+> usdcBalance 4528097262
 > osqthBalance 52176556308008603093
-> before call 670835294708641273
-> before call 4381007431
+> before call 606077601744983445
+> before call 3269879149
 > block.timestamp 1661274388
 > auctionTriggerTime 1661150330
-> targetEth 6251663426963845668
-> targetUsdc 9069592989
-> targetOsqth 11103424115369880837
-> ethBalance 5579572120491098747
-> usdcBalance 4691497780
+> targetEth 6273347394260636720
+> targetUsdc 7799389696
+> targetOsqth 18463921357454912000
+> ethBalance 5666133033450583901
+> usdcBalance 4532354212
 > osqthBalance 52176556308008603093
 > \_swapWithKeeper
-> 672091306472746931
+> 607214360810052829
 > \_swapWithKeeper
-> 4378095219
+> 3267035494
 > \_swapWithKeeper
-> rebalanceCall2 after ETH 7003331973
-> rebalanceCall2 after USDC 0
-> rebalanceCall2 after oSQTH 4107313219263872224
+> rebalanceCall2 after ETH 64876952666026075
+> rebalanceCall2 after USDC 1111059725
+> rebalanceCall2 after oSQTH 33712634950553691083
