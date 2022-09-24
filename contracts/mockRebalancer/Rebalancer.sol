@@ -10,6 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
@@ -23,6 +24,7 @@ contract Rebalancer is Ownable {
 
     address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
     address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressTreasury = 0xDF374d19021831E785212F00837B5709820AA769;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -83,6 +85,8 @@ contract Rebalancer is Ownable {
 
         require(isTimeRebalance, "Not time");
 
+        IVaultTreasury(addressTreasury).externalPoke();
+
         (
             uint256 targetEth,
             uint256 targetUsdc,
@@ -90,7 +94,7 @@ contract Rebalancer is Ownable {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getAuctionParams(auctionTriggerTime);
+        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
         // console.log("targetEth %s", targetEth);
         // console.log("targetUsdc %s", targetUsdc);

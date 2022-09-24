@@ -13,6 +13,8 @@ import {SharedEvents} from "../libraries/SharedEvents.sol";
 contract VaultStorage is IVaultStorage, Faucet {
     address public override governance;
 
+    address public override keeper;
+
     //@dev Uniswap pools tick spacing
     int24 public override tickSpacing = 60;
 
@@ -81,6 +83,7 @@ contract VaultStorage is IVaultStorage, Faucet {
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
        @param _governance governance address
+       @param _keeper keeper address
      */
     constructor(
         uint256 _cap,
@@ -90,7 +93,8 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
         uint256 _protocolFee,
-        address _governance
+        address _governance,
+        address _keeper
     ) Faucet() {
         cap = _cap;
 
@@ -107,14 +111,23 @@ contract VaultStorage is IVaultStorage, Faucet {
         ivAtLastRebalance = 0;
 
         governance = _governance;
+        keeper = _keeper;
     }
 
     /**
-     * @notice owner can transfer his admin power to another address
+     * @notice governance can transfer his admin power to another address
      * @param _governance new governance address
      */
     function setGovernance(address _governance) external override onlyGovernance {
         governance = _governance;
+    }
+
+    /**
+     * @notice keeper can transfer his admin power to another address
+     * @param _keeper new keeper address
+     */
+    function setKeeper(address _keeper) external override onlyKeeper {
+        keeper = _keeper;
     }
 
     /**

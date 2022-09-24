@@ -36,9 +36,9 @@ import "hardhat/console.sol";
  * C9: Amount of OSQTH is smaller when amountOsqthMin
  * C10: Time rebalance not allowed
  * C11: Price rebalance not allowed
- * C12: Not a vault
+ * C12: Not a vault or auction
  * C13: Not a vault math
- * C14: Not a keeper
+ * C14: Not a contracts
  * C15: Not a governance
  * C16: Zero amount
  * C17: Wrong address
@@ -46,6 +46,7 @@ import "hardhat/console.sol";
  * C19: Max TWAP Deviation
  * C20: Wrong pool
  * C21: Less than the minimum in rebalancing
+ * C22: Not a keeper
  */
 
 contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {

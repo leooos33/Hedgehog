@@ -382,9 +382,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @return usdcBalance current USDC balance
      * @return osqthBalance current Osqth balance
      */
-    function getAuctionParams(uint256 _auctionTriggerTime)
+    function getParams(uint256 _auctionTriggerTime)
         external
         override
+        view
         returns (
             uint256,
             uint256,
@@ -394,9 +395,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256
         )
     {
-        IVaultTreasury(vaultTreasury).pokeEthUsdc();
-        IVaultTreasury(vaultTreasury).pokeEthOsqth();
-        
         Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
 
         (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(

@@ -69,7 +69,7 @@ describe.skip("Rebalance mainnet", function () {
         console.log("> actor USDC %s", await getERC20Balance(governance.address, usdcAddress));
         console.log("> actor oSQTH %s", await getERC20Balance(governance.address, osqthAddress));
 
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257));
+        console.log("params %s", await VaultAuction.getParams(1661070257));
 
         console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
         console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
@@ -107,7 +107,7 @@ describe.skip("Rebalance mainnet", function () {
 
         await mineSomeBlocks(3);
 
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3));
 
         console.log("2");
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
@@ -120,7 +120,7 @@ describe.skip("Rebalance mainnet", function () {
         await mineSomeBlocks(3);
 
         console.log("3");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 2));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 2));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -132,7 +132,7 @@ describe.skip("Rebalance mainnet", function () {
         await mineSomeBlocks(3);
 
         console.log("4");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 3));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 3));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -143,7 +143,7 @@ describe.skip("Rebalance mainnet", function () {
 
         await mineSomeBlocks(3);
         console.log("5");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 4));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 4));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -155,7 +155,7 @@ describe.skip("Rebalance mainnet", function () {
         await mineSomeBlocks(3);
 
         console.log("6");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 5));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 5));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -166,7 +166,7 @@ describe.skip("Rebalance mainnet", function () {
 
         await mineSomeBlocks(3);
         console.log("7");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 6));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 6));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -177,7 +177,7 @@ describe.skip("Rebalance mainnet", function () {
 
         await mineSomeBlocks(3);
         console.log("8");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 7));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 7));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -188,7 +188,7 @@ describe.skip("Rebalance mainnet", function () {
 
         await mineSomeBlocks(3);
         console.log("9");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 8));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 8));
 
         tx = await VaultAuction.connect(governance).timeRebalance(governance.address, 0, 0, 0, {
             gasLimit: 2500000,
@@ -202,7 +202,7 @@ describe.skip("Rebalance mainnet", function () {
         console.log("> actor oSQTH %s", await getERC20Balance(governance.address, osqthAddress));
 
         console.log("10");
-        console.log("params %s", await VaultAuction.getAuctionParams(1661070257 + 3 * 9));
+        console.log("params %s", await VaultAuction.getParams(1661070257 + 3 * 9));
 
         const ethPriceAtLastRebalance = await VaultStorage.ethPriceAtLastRebalance();
         console.log("ethPriceAtLastRebalance:", ethPriceAtLastRebalance.toString());

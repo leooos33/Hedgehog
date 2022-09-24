@@ -240,7 +240,6 @@ describe.only("User story with: cap limit", function () {
     });
 
     it("withdraw2", async function () {
-
         const userEthBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, wethAddress);
         const userUsdcBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, usdcAddress);
         const userOsqthBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, osqthAddress);
@@ -302,7 +301,7 @@ describe.only("User story with: cap limit", function () {
         console.log("> Keeper USDC balance before rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
         console.log("> Keeper oSQTH balance before rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
 
-        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
         console.log("AuctionParamsBefore %s", AuctionParamsBefore);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
@@ -315,7 +314,7 @@ describe.only("User story with: cap limit", function () {
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
 
-        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
         console.log("AuctionParamsAfter %s", AuctionParamsAfter);
     });
 

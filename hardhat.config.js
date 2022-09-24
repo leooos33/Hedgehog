@@ -36,17 +36,16 @@ module.exports = {
             // gas: 1800000,
             // gasPrice: 18000000000,
         },
-        // ropsten: {
-        //     url: IFURA_ROPSTEN_URL,
-        //     accounts: [ROPSTEN_DEPLOYMENT_KEY],
-        //     gasPrice: 5000000000,
-        // },
-        // //MAINNET_DEPLOYMENT_KEY
-        // mainnet: {
-        //     url: IFURA_MAINNET_URL,
-        //     accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
-        //     gasPrice: 4000000000,
-        // },
+        ropsten: {
+            url: IFURA_ROPSTEN_URL,
+            accounts: [ROPSTEN_DEPLOYMENT_KEY],
+            gasPrice: 5000000000,
+        },
+        mainnet: {
+            url: IFURA_MAINNET_URL,
+            accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
+            gasPrice: 4000000000,
+        },
     },
     solidity: {
         compilers: [

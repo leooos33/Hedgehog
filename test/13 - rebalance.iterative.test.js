@@ -275,6 +275,8 @@ describe("Rebalance iterative", function () {
         await mineSomeBlocks(83069);
 
         for (let i = 0; i < 60; i++) {
+            const ts = await mockRebalancer.poke();
+            await ts.wait();
             const res = (await mockRebalancer.rebalance()).toString();
             if (!testHolder[res]) testHolder[res] = 0;
             testHolder[res]++;

@@ -76,4 +76,6 @@ interface IVaultTreasury {
     function pokeEthUsdc() external;
 
     function pokeEthOsqth() external;
+
+    function externalPoke() external;
 }

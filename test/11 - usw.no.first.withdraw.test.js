@@ -285,7 +285,7 @@ describe("User story with: no first withdraw", function () {
         console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
         console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
 
-        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
         console.log("AuctionParamsBefore %s", AuctionParamsBefore);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
@@ -301,7 +301,7 @@ describe("User story with: no first withdraw", function () {
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
 
-        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getAuctionParams("14487789");
+        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
         console.log("AuctionParamsAfter %s", AuctionParamsAfter);
     });
 

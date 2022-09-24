@@ -85,7 +85,7 @@ describe.skip("Rebalance mainnet", function () {
         this.skip();
         console.log(await VaultMath.isTimeRebalance());
         // return;
-        console.log(await VaultAuction.getAuctionParams("1660983213"));
+        console.log(await VaultAuction.getParams("1660983213"));
         // return;
 
         //----- Approves -----

@@ -182,7 +182,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     /// @dev poke for ETH-USDC pool
-    function pokeEthUsdc() external override onlyContracts {
+    function pokeEthUsdc() public override onlyVault {
         poke(
             address(Constants.poolEthUsdc),
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
@@ -191,13 +191,18 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     /// @dev poke for ETH-oSQTH pool
-    function pokeEthOsqth() external override onlyContracts {
+    function pokeEthOsqth() public override onlyVault {
         poke(
             address(Constants.poolEthOsqth),
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
 
+    }
+
+    function externalPoke() external override onlyKeeper {
+        pokeEthOsqth();
+        pokeEthUsdc();
     }
 
     /// @dev liquidity of the position in the ETH-USDC pool
