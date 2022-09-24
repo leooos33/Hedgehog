@@ -50,6 +50,7 @@ const assertWP = (a, b, pres = 4, num = 18) => {
 
     return false;
 };
+
 // console.log(assertWP("33111111", "33111111", 6, 6)); // true
 // console.log(assertWP("33111111", "33111112", 6, 6)); // false
 // console.log(assertWP("33111111", "33111112", 5, 6)); // true

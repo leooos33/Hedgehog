@@ -31,6 +31,7 @@ const hardhatDeploy = async (governance, params) => {
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
     params.push(governance.address);
+    params.push(governance.address);
     const VaultStorage = await deployContract("VaultStorage", params, false);
 
     const arguments = [

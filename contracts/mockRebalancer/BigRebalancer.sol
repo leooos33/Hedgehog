@@ -20,6 +20,38 @@ import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/Transfer
 
 import "hardhat/console.sol";
 
+// Rebalance flow
+
+// 1) borrow weth & usdc
+// 2) get osqth
+// 3) sellv3 osqth
+// 4) return eth & usdc
+
+// 1) borrow osqth (get weth on euler and swap it to osqth)
+// 2) get usdc & weth
+// 3) sellv3 usdc
+// 4) return weth
+
+// 1) borrow usdc & osqth (borrow weth on euler and swap it to osqth)
+// 2) get weth
+// 3) sellv3 weth
+// 4) return usdc & weth
+
+// 1) borrow weth
+// 2) get usdc & osqth
+// 3) sellv3 usdc & osqth
+// 4) return weth
+
+// 1) borrow weth & osqth (borrow weth on euler and swap it to osqth)
+// 2) get usdc
+// 3) sellv3 usdc
+// 4) return weth
+
+// 1) borrow usdc
+// 2) get osqth & weth
+// 3) sellv3 osqth & weth
+// 4) return usdc
+
 contract BigRebalancer is Ownable {
     using SafeMath for uint256;
 
@@ -60,7 +92,7 @@ contract BigRebalancer is Ownable {
         IERC20(WETH).approve(euler, type(uint256).max);
     }
 
-    function setContracts(address _addressAuction, address _addressMath) external {
+    function setContracts(address _addressAuction, address _addressMath) external onlyOwner {
         addressAuction = _addressAuction;
         addressMath = _addressMath;
         IERC20(USDC).approve(addressAuction, type(uint256).max);
@@ -73,14 +105,13 @@ contract BigRebalancer is Ownable {
         uint256 amountUsdc,
         uint256 amountOsqth,
         address to
-    ) external {
+    ) external onlyOwner {
         if (amountEth > 0) IERC20(WETH).transfer(to, amountEth);
         if (amountUsdc > 0) IERC20(USDC).transfer(to, amountUsdc);
         if (amountOsqth > 0) IERC20(OSQTH).transfer(to, amountOsqth);
     }
 
-    //uint256 threshold
-    function rebalance(uint256 threshold) public {
+    function rebalance(uint256 threshold) public onlyOwner {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
         console.log("auctionTriggerTime %s", auctionTriggerTime);
@@ -499,7 +530,7 @@ contract BigRebalancer is Ownable {
             uint256 osqthAfter = IERC20(OSQTH).balanceOf(address(this));
 
             // buy wETH with oSQTH
-            ISwapRouter.ExactInputSingleParams memory params1 = ISwapRouter.ExactInputSingleParams({
+            swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
                 tokenIn: address(OSQTH),
                 tokenOut: address(WETH),
                 fee: 3000,
@@ -508,8 +539,7 @@ contract BigRebalancer is Ownable {
                 amountIn: osqthAfter,
                 amountOutMinimum: 0,
                 sqrtPriceLimitX96: 0
-            });
-            swapRouter.exactInputSingle(params1);
+            }));
 
             console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
@@ -518,7 +548,7 @@ contract BigRebalancer is Ownable {
             uint256 wethAll = IERC20(WETH).balanceOf(address(this));
 
             // swap wETH --> USDC
-            ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
+            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
                 tokenIn: address(WETH),
                 tokenOut: address(USDC),
                 fee: 500,
@@ -527,8 +557,7 @@ contract BigRebalancer is Ownable {
                 amountOut: data.amount1,
                 amountInMaximum: wethAll,
                 sqrtPriceLimitX96: 0
-            });
-            swapRouter.exactOutputSingle(params2);
+            }));
 
             console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));

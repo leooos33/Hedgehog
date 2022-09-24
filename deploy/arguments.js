@@ -12,4 +12,5 @@ module.exports = [
     BigNumber.from("1050000000000000000"),
     BigNumber.from("0"),
     _governanceAddress,
+    _governanceAddress,
 ];

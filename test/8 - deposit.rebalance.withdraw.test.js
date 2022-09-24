@@ -15,7 +15,7 @@ const {
 } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("User story with: deposit -> rebalance -> withdraw", function () {
+describe.skip("User story with: deposit -> rebalance -> withdraw", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
