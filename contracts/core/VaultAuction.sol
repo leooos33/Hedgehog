@@ -40,9 +40,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 minAmountUsdc,
         uint256 minAmountOsqth
     ) external override nonReentrant notPaused {
+        console.log("block.timestamp %s", block.timestamp);
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
+        console.log("auctionTriggerTime %s", auctionTriggerTime);
         require(isTimeRebalanceAllowed, "C10");
 
         //current EthUsdc price
@@ -146,6 +148,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityEthUsdc,
             params.liquidityOsqthEth
         );
+
+        console.log("targetEth    %s", targetEth);
+        console.log("targetUsdc   %s", targetUsdc);
+        console.log("targetOsqth  %s", targetOsqth);
+        console.log("ethBalance   %s", ethBalance);
+        console.log("usdcBalance  %s", usdcBalance);
+        console.log("osqthBalance %s", osqthBalance);
 
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);

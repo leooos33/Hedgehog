@@ -98,11 +98,11 @@ contract BigRebalancer is Ownable {
             uint256 osqthBalance
         ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
-        console.log("targetEth %s", targetEth);
-        console.log("targetUsdc %s", targetUsdc);
-        console.log("targetOsqth %s", targetOsqth);
-        console.log("ethBalance %s", ethBalance);
-        console.log("usdcBalance %s", usdcBalance);
+        console.log("targetEth    %s", targetEth);
+        console.log("targetUsdc   %s", targetUsdc);
+        console.log("targetOsqth  %s", targetOsqth);
+        console.log("ethBalance   %s", ethBalance);
+        console.log("usdcBalance  %s", usdcBalance);
         console.log("osqthBalance %s", osqthBalance);
 
         FlCallbackData memory data;

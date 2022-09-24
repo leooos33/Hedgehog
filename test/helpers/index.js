@@ -16,7 +16,7 @@ const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock, logBalanc
 const mineSomeBlocks = async (blocksToMine) => {
     await logBlock();
     await hre.network.provider.send("hardhat_mine", [`0x${blocksToMine.toString(16)}`]);
-    console.log(`${blocksToMine} blocks was mine`);
+    console.log(`> ${blocksToMine} blocks was mine`);
     await logBlock();
 };
 

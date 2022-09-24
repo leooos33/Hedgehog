@@ -75,10 +75,10 @@ const logBlock = async () => {
     console.log("> blockNumber:", blockNumBefore, "timestamp:", timestampBefore);
 };
 
-const logBalance = async (address) => {
-    console.log(await getERC20Balance(address, wethAddress));
-    console.log(await getERC20Balance(address, usdcAddress));
-    console.log(await getERC20Balance(address, osqthAddress));
+const logBalance = async (address, label = "") => {
+    console.log(label + " ETH", await getERC20Balance(address, wethAddress));
+    console.log(label + " USDC", await getERC20Balance(address, usdcAddress));
+    console.log(label + " oSQTH", await getERC20Balance(address, osqthAddress));
 };
 
 module.exports = {
