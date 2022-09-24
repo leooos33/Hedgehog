@@ -18,6 +18,8 @@ import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 
+import "hardhat/console.sol";
+
 contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallback, Faucet {
     using SafeERC20 for IERC20;
 
@@ -59,10 +61,11 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         )
     {
         bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
+        
         return IUniswapV3Pool(pool).positions(positionKey);
     }
 
-    /// @dev return amount of tokens in both pools
+    /// @dev return amount of tokens for specified liquidity
     function allAmountsForLiquidity(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
@@ -110,10 +113,9 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper
     ) external override onlyContracts returns (uint256 collect0, uint256 collect1) {
-        address recipient = address(this);
 
         (collect0, collect1) = IUniswapV3Pool(pool).collect(
-            recipient,
+            address(this),
             tickLower,
             tickUpper,
             type(uint128).max,
@@ -180,7 +182,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     /// @dev poke for ETH-USDC pool
-    function pokeEthUsdc() external override onlyVault {
+    function pokeEthUsdc() external override onlyContracts {
         poke(
             address(Constants.poolEthUsdc),
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
@@ -189,12 +191,13 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     /// @dev poke for ETH-oSQTH pool
-    function pokeEthOsqth() external override onlyVault {
+    function pokeEthOsqth() external override onlyContracts {
         poke(
             address(Constants.poolEthOsqth),
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper()
         );
+
     }
 
     /// @dev liquidity of the position in the ETH-USDC pool

@@ -20,6 +20,8 @@ import {Faucet} from "../libraries/Faucet.sol";
 
 import {VaultAuction} from "./VaultAuction.sol";
 
+import "hardhat/console.sol";
+
 /**
  * Error
  * C0: Paused
@@ -141,25 +143,52 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         //Burn shares
         _burn(msg.sender, shares);
 
-        //withdraw user share of tokens from lp positions in the current proportion
-        (uint256 amountUsdc, uint256 amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
+        uint256 ratio = shares.div(_totalSupply);
+
+        IVaultTreasury(vaultTreasury).pokeEthUsdc();
+        IVaultTreasury(vaultTreasury).pokeEthOsqth();
+
+        uint256 amountEth;
+        uint256 amountUsdc;
+        uint256 amountOsqth;
+
+        if (_getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10) {
+        uint256 amountEth0;
+        (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            shares,
-            _totalSupply
+            ratio
         );
-
-        (uint256 amountEth1, uint256 amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
+        uint256 amountEth1;
+        (amountEth1, amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            shares,
-            _totalSupply
+            ratio
         );
+        amountEth = amountEth0 + amountEth1;
+        } else {
 
-        uint256 amountEth = amountEth0 + amountEth1;
+        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+        amountEth = ethBalance.mul(ratio);
+        amountUsdc = usdcBalance.mul(ratio);
+        amountOsqth = osqthBalance.mul(ratio);
 
+        IVaultMath(vaultMath).burnLiquidityShare(
+            Constants.poolEthUsdc,
+            IVaultStorage(vaultStorage).orderEthUsdcLower(),
+            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+            ratio
+        );
+        IVaultMath(vaultMath).burnLiquidityShare(
+            Constants.poolEthOsqth,
+            IVaultStorage(vaultStorage).orderOsqthEthLower(),
+            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+            ratio
+        );
+        }
+        
         require(amountEth != 0 || amountUsdc != 0 || amountOsqth != 0, "C6");
 
         require(amountEth >= amountEthMin, "C7");

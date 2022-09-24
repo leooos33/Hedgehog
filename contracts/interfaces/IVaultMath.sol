@@ -28,8 +28,7 @@ interface IVaultMath {
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint256 shares,
-        uint256 totalSupply
+        uint256 ratio
     ) external returns (uint256 amount0, uint256 amount1);
 
     function getTotalAmounts()

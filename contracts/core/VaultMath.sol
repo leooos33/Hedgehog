@@ -18,6 +18,8 @@ import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
+import "hardhat/console.sol";
+
 contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
@@ -47,7 +49,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
-
         (uint256 amountWeth1, uint256 osqthAmount) = _getPositionAmounts(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
@@ -81,17 +82,12 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             tickUpper,
             liquidity
         );
+        
+        uint256 oneMinusFee = uint256(1e18).sub(IVaultStorage(vaultStorage).protocolFee());
 
-        uint256 oneMinusFee = uint256(1e6).sub(IVaultStorage(vaultStorage).protocolFee());
-
-        uint256 total0;
-        if (pool == Constants.poolEthUsdc) {
-            total0 = amount0.add(uint256(tokensOwed0).mul(oneMinusFee).div(1e30));
-        } else {
-            total0 = amount0.add(uint256(tokensOwed0).mul(oneMinusFee).div(1e30));
-        }
-
-        return (total0, amount1.add(uint256(tokensOwed1).mul(oneMinusFee).div(1e30)));
+        return (
+                amount0.add(uint256(tokensOwed0).mul(oneMinusFee)), 
+                amount1.add(uint256(tokensOwed1).mul(oneMinusFee)));
     }
 
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
@@ -99,12 +95,11 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         address pool,
         int24 tickLower,
         int24 tickUpper,
-        uint256 shares,
-        uint256 totalSupply
+        uint256 ratio
     ) external override onlyVault returns (uint256 amount0, uint256 amount1) {
         (uint128 totalLiquidity, , , , ) = IVaultTreasury(vaultTreasury).position(pool, tickLower, tickUpper);
 
-        uint256 liquidity = uint256(totalLiquidity).mul(shares).div(totalSupply);
+        uint256 liquidity = uint256(totalLiquidity).mul(ratio);
 
         if (liquidity > 0) {
             (uint256 burned0, uint256 burned1, uint256 fees0, uint256 fees1) = burnAndCollect(
@@ -114,8 +109,8 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
                 _toUint128(liquidity)
             );
 
-            amount0 = burned0.add(fees0.mul(shares).div(totalSupply));
-            amount1 = burned1.add(fees1.mul(shares).div(totalSupply));
+            amount0 = burned0.add(fees0.mul(ratio));
+            amount1 = burned1.add(fees1.mul(ratio));
         }
     }
 
@@ -142,11 +137,12 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
 
         (uint256 collect0, uint256 collect1) = IVaultTreasury(vaultTreasury).collect(pool, tickLower, tickUpper);
 
+        feesToVault0 = collect0.sub(burned0);
+        feesToVault1 = collect1.sub(burned1);
+
         uint256 protocolFee = IVaultStorage(vaultStorage).protocolFee();
 
         if (protocolFee > 0) {
-            feesToVault0 = collect0.sub(burned0);
-            feesToVault1 = collect1.sub(burned1);
 
             uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
             uint256 feesToProtocol1 = feesToVault1.div(protocolFee).div(1e34);

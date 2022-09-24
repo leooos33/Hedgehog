@@ -20,7 +20,7 @@ interface IAuction {
 
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
-        view
+        
         returns (
             uint256,
             uint256,

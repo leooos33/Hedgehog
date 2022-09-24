@@ -15,7 +15,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("User story with: cap limit", function () {
+describe.only("User story with: cap limit", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -32,7 +32,7 @@ describe("User story with: cap limit", function () {
         await resetFork(15581574);
 
         const params = [...deploymentParams];
-        params[6] = "10000";
+        params[6] = "0";
         params[0] = utils.parseUnits("80", 18);
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
         await logBlock();
@@ -113,17 +113,17 @@ describe("User story with: cap limit", function () {
         const userOsqthBalanceAfterDeposit = await getERC20Balance(depositor1.address, osqthAddress);
         const userShareAfterDeposit = await getERC20Balance(depositor1.address, Vault.address);
 
-        console.log("> userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
-        console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
-        console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
-        console.log("> userShareAfterDeposit", userShareAfterDeposit);
+        console.log("> user1EthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
+        console.log("> user1UsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
+        console.log("> user1OsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
+        console.log("> user1ShareAfterDeposit", userShareAfterDeposit);
     });
 
-    it("withdraw1 -> No liquidity", async function () {
-        await expect(Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0")).to.be.revertedWith(
-            "C6"
-        );
-    });
+    // it("withdraw1 -> No liquidity", async function () {
+    //     await expect(Vault.connect(depositor1).withdraw("19974637618044338084", "0", "0", "0")).to.be.revertedWith(
+    //         "C6"
+    //     );
+    // });
 
     it("deposit2", async function () {
         tx = await Vault.connect(depositor2).deposit(
@@ -143,10 +143,10 @@ describe("User story with: cap limit", function () {
         const userOsqthBalanceAfterDeposit = await getERC20Balance(depositor2.address, osqthAddress);
         const userShareAfterDeposit = await getERC20Balance(depositor2.address, Vault.address);
 
-        console.log("> userEthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
-        console.log("> userUsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
-        console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
-        console.log("> userShareAfterDeposit", userShareAfterDeposit);
+        console.log("> user2EthBalanceAfterDeposit %s", userEthBalanceAfterDeposit);
+        console.log("> user2UsdcBalanceAfterDeposit %s", userUsdcBalanceAfterDeposit);
+        console.log("> user2OsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
+        console.log("> user2ShareAfterDeposit", userShareAfterDeposit);
     });
 
     it("swap", async function () {
@@ -240,6 +240,16 @@ describe("User story with: cap limit", function () {
     });
 
     it("withdraw2", async function () {
+
+        const userEthBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, wethAddress);
+        const userUsdcBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, usdcAddress);
+        const userOsqthBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, osqthAddress);
+        const userShareBalanceBeforeWithdraw = await getERC20Balance(depositor2.address, Vault.address);
+        console.log("> userEthBalanceBeforeWithdraw %s", userEthBalanceBeforeWithdraw);
+        console.log("> userUsdcBalanceBeforeWithdraw %s", userUsdcBalanceBeforeWithdraw);
+        console.log("> userOsqthBalanceBeforeWithdraw %s", userOsqthBalanceBeforeWithdraw);
+        console.log("> userShareBalanceBeforeWithdraw", userShareBalanceBeforeWithdraw);
+
         tx = await Vault.connect(depositor2).withdraw(
             await getERC20Balance(depositor2.address, Vault.address),
             "0",
@@ -310,6 +320,15 @@ describe("User story with: cap limit", function () {
     });
 
     it("withdraw1", async function () {
+        const userEthBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, wethAddress);
+        const userUsdcBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
+        const userOsqthBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
+        const userShareBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, Vault.address);
+        console.log("> userEthBalanceBeforeWithdraw %s", userEthBalanceBeforeWithdraw);
+        console.log("> userUsdcBalanceBeforeWithdraw %s", userUsdcBalanceBeforeWithdraw);
+        console.log("> userOsqthBalanceBeforeWithdraw %s", userOsqthBalanceBeforeWithdraw);
+        console.log("> userShareBalanceBeforeWithdraw", userShareBalanceBeforeWithdraw);
+
         tx = await Vault.connect(depositor1).withdraw(
             await getERC20Balance(depositor1.address, Vault.address),
             "0",

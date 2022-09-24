@@ -17,6 +17,8 @@ import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
+import "hardhat/console.sol";
+
 contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -117,6 +119,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 _auctionTriggerTime,
         Constants.AuctionMinAmounts memory minAmounts
     ) internal {
+
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
@@ -181,6 +184,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
+
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
@@ -380,7 +384,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function getAuctionParams(uint256 _auctionTriggerTime)
         external
-        view
         override
         returns (
             uint256,
@@ -391,6 +394,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             uint256
         )
     {
+        IVaultTreasury(vaultTreasury).pokeEthUsdc();
+        IVaultTreasury(vaultTreasury).pokeEthOsqth();
+        
         Constants.AuctionParams memory auctionDetails = _getAuctionParams(_auctionTriggerTime);
 
         (uint256 targetEth, uint256 targetUsdc, uint256 targetOsqth) = _getTargets(
