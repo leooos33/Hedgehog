@@ -166,12 +166,11 @@ describe.only("User story with", function () {
         assert(succeded, "Cap was not reached");
 
         await logBalance(depositor3.address, "> user3 Balance After Deposit");
-
     });
 
     it("deposit3", async function () {
         const amountWETH = utils.parseUnits("5", 18);
-        
+
         await logBalance(depositor3.address, "> user3 Balance Before Deposit");
 
         tx = await oneClickDeposit
@@ -183,7 +182,6 @@ describe.only("User story with", function () {
         console.log("> user3 Share After Deposit", await getERC20Balance(depositor3.address, Vault.address));
     });
 
-    return;
     it("withdraw2", async function () {
         await logBalance(depositor2.address, "> user2 Balance Before Witdraw");
         console.log("> user2 Share Before Witdraw", await getERC20Balance(depositor2.address, Vault.address));
@@ -192,11 +190,10 @@ describe.only("User story with", function () {
         tx = await Vault.connect(depositor2).withdraw(BigNumber.from(allShares), "0", "0", "0");
         await tx.wait();
 
-        // await logBalance(depositor2.address, "> user2 Balance After Witdraw");
-        // console.log("> user2 Share After Witdraw", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(depositor2.address, "> user2 Balance After Witdraw");
+        console.log("> user2 Share After Witdraw", await getERC20Balance(depositor2.address, Vault.address));
     });
 
-    return;
     it("swap", async function () {
         await mineSomeBlocks(2216);
 
@@ -223,76 +220,37 @@ describe.only("User story with", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance", async function () {
+    it("rebalance2", async function () {
         await mineSomeBlocks(83622);
+        await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
 
-        console.log("> Keeper ETH balance before rebalance %s", await getERC20Balance(keeper.address, wethAddress));
-        console.log("> Keeper USDC balance before rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
-        console.log("> Keeper oSQTH balance before rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
-
-        const AuctionParamsBefore = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
-        console.log("AuctionParamsBefore %s", AuctionParamsBefore);
-
-        tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
+        tx = await rebalancer.connect(governance).rebalance(0);
         await tx.wait();
 
-        console.log("> Keeper ETH balance after rebalance %s", await getERC20Balance(keeper.address, wethAddress));
-        console.log("> Keeper USDC balance after rebalance %s", await getERC20Balance(keeper.address, usdcAddress));
-        console.log("> Keeper oSQTH balance after rebalance %s", await getERC20Balance(keeper.address, osqthAddress));
-
-        const amount = await VaultMath.getTotalAmounts();
-        console.log("> Total amounts:", amount);
-
-        const AuctionParamsAfter = await VaultAuction.connect(keeper).callStatic.getParams("14487789");
-        console.log("AuctionParamsAfter %s", AuctionParamsAfter);
+        await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
     });
 
     it("withdraw1", async function () {
-        const userEthBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, wethAddress);
-        const userUsdcBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
-        const userOsqthBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
-        const userShareBalanceBeforeWithdraw = await getERC20Balance(depositor1.address, Vault.address);
-        console.log("> userEthBalanceBeforeWithdraw %s", userEthBalanceBeforeWithdraw);
-        console.log("> userUsdcBalanceBeforeWithdraw %s", userUsdcBalanceBeforeWithdraw);
-        console.log("> userOsqthBalanceBeforeWithdraw %s", userOsqthBalanceBeforeWithdraw);
-        console.log("> userShareBalanceBeforeWithdraw", userShareBalanceBeforeWithdraw);
+        await logBalance(depositor1.address, "> user1 Balance Before Witdraw");
+        console.log("> user1 Share Before Witdraw", await getERC20Balance(depositor1.address, Vault.address));
 
-        tx = await Vault.connect(depositor1).withdraw(
-            await getERC20Balance(depositor1.address, Vault.address),
-            "0",
-            "0",
-            "0"
-        );
+        const allShares = await getERC20Balance(depositor1.address, Vault.address);
+        tx = await Vault.connect(depositor1).withdraw(BigNumber.from(allShares), "0", "0", "0");
         await tx.wait();
 
-        // State
-        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, wethAddress);
-        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor1.address, usdcAddress);
-        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor1.address, osqthAddress);
-        const userShareAfterWithdraw = await getERC20Balance(depositor1.address, Vault.address);
-        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+        await logBalance(depositor1.address, "> user1 Balance After Witdraw");
+        console.log("> user1 Share After Witdraw", await getERC20Balance(depositor1.address, Vault.address));
     });
 
     it("withdraw3", async function () {
-        tx = await Vault.connect(depositor3).withdraw(
-            await getERC20Balance(depositor3.address, Vault.address),
-            "0",
-            "0",
-            "0"
-        );
+        await logBalance(depositor3.address, "> user3 Balance Before Witdraw");
+        console.log("> user3 Share Before Witdraw", await getERC20Balance(depositor3.address, Vault.address));
+
+        const allShares = await getERC20Balance(depositor3.address, Vault.address);
+        tx = await Vault.connect(depositor3).withdraw(BigNumber.from(allShares), "0", "0", "0");
         await tx.wait();
 
-        // State
-        const userEthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, wethAddress);
-        const userUsdcBalanceAfterWithdraw = await getERC20Balance(depositor3.address, usdcAddress);
-        const userOsqthBalanceAfterWithdraw = await getERC20Balance(depositor3.address, osqthAddress);
-        const userShareAfterWithdraw = await getERC20Balance(depositor3.address, Vault.address);
-        console.log("> userEthBalanceAfterWithdraw %s", userEthBalanceAfterWithdraw);
-        console.log("> userUsdcBalanceAfterWithdraw %s", userUsdcBalanceAfterWithdraw);
-        console.log("> userOsqthBalanceAfterWithdraw %s", userOsqthBalanceAfterWithdraw);
-        console.log("> userShareAfterWithdraw", userShareAfterWithdraw);
+        await logBalance(depositor3.address, "> user3 Balance After Witdraw");
+        console.log("> user3 Share After Witdraw", await getERC20Balance(depositor3.address, Vault.address));
     });
 });
