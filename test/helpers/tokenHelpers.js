@@ -53,9 +53,10 @@ const approveERC20 = async (owner, account, amount, tokenAddress) => {
     await ERC20.connect(owner).approve(
         account,
         amount
+        //TODO: change gas during tests
         // {
-        // gasLimit: 2500000,
-        // gasPrice: 11000000000,
+        //     gasLimit: 2500000,
+        //     gasPrice: 11000000000,
         // }
     );
 };

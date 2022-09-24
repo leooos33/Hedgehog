@@ -362,7 +362,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         address coin,
         address keeper
     ) internal {
+        console.log("_swapWithKeeper");
         if (target >= balance) {
+            console.log(target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
             uint256 amount = balance.sub(target).sub(10);
