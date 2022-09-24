@@ -109,11 +109,11 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(_amountOsqth >= amountOsqthMin, "C3");
 
         //Pull in tokens
-        console.log(_amountEth);
+        console.log("_amountEth", _amountEth);
         if (_amountEth > 0) Constants.weth.transferFrom(msg.sender, vaultTreasury, _amountEth);
-        console.log(_amountUsdc);
+        console.log("_amountUsdc", _amountUsdc);
         if (_amountUsdc > 0) Constants.usdc.transferFrom(msg.sender, vaultTreasury, _amountUsdc);
-        console.log(_amountOsqth);
+        console.log("_amountOsqth", _amountOsqth);
         if (_amountOsqth > 0) Constants.osqth.transferFrom(msg.sender, vaultTreasury, _amountOsqth);
 
         //Mint shares to user

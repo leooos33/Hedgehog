@@ -164,17 +164,21 @@ describe.only("User story with", function () {
             else console.log(err.message);
         }
         assert(succeded, "Cap was not reached");
+
+        await logBalance(depositor3.address, "> user3 Balance After Deposit");
+
     });
 
     it("deposit3", async function () {
         const amountWETH = utils.parseUnits("5", 18);
+        
         await logBalance(depositor3.address, "> user3 Balance Before Deposit");
 
         tx = await oneClickDeposit
             .connect(depositor3)
-            .deposit(amountWETH, "950000000000000000", depositor3.address, "0");
+            .deposit(amountWETH, "995000000000000000", depositor3.address, "0");
         await tx.wait();
-
+        console.log("here");
         await logBalance(depositor3.address, "> user3 Balance After Deposit");
         console.log("> user3 Share After Deposit", await getERC20Balance(depositor3.address, Vault.address));
     });
