@@ -18,7 +18,7 @@ const {
 } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe.only("The example of miscalculation after the second rebalance", function () {
+describe("The example of miscalculation after the second rebalance", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
