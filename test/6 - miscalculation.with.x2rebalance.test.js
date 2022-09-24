@@ -164,7 +164,6 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await logBalance(rebalanceCall.address, "> rebalanceCall after");
     });
 
-    return;
     it("swap_before_rebalance_WETH_OSQTH one more time", async function () {
         const testAmount = utils.parseUnits("10", 18).toString();
         console.log(">", testAmount);
@@ -193,11 +192,9 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await mineSomeBlocks(83622);
         await mineSomeBlocks(83622);
 
-        // const amount1 = BigNumber.from("672091313476078904").toString();
-        const amount2 = BigNumber.from("5176873160").toString();
+        const amount = BigNumber.from("5176873160").toString();
 
-        // await getWETH(amount1, rebalanceCall.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
-        await getUSDC(amount2, rebalanceCall.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
+        await getUSDC(amount, rebalanceCall.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
 
         await logBalance(rebalanceCall.address, "> rebalanceCall2 before");
 

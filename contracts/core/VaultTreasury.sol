@@ -122,7 +122,17 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public override onlyContracts returns (uint256, uint256) {
+    ) external override onlyContracts returns (uint256, uint256) {
+        return _burn(pool, tickLower, tickUpper, liquidity);
+    }
+
+    /// @dev wrapper around "IUniswapV3Pool(pool).burn"
+    function _burn(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    ) internal returns (uint256, uint256) {
         return IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
     }
 
@@ -195,7 +205,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
-            burn(pool, tickLower, tickUpper, 0);
+            _burn(pool, tickLower, tickUpper, 0);
         }
     }
 
