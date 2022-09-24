@@ -20,7 +20,7 @@ const mainnetDeploymentParams = [
 
 const deploymentParams = mainnetDeploymentParams;
 
-const hardhatDeploy = async (governance, params) => {
+const hardhatDeploy = async (governance, params, keeperAddress = governance.address) => {
     await network.provider.send("evm_setAutomine", [false]);
 
     const UniswapMath = await deployContract("UniswapMath", [], false);
@@ -31,7 +31,7 @@ const hardhatDeploy = async (governance, params) => {
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
     params.push(governance.address);
-    params.push(governance.address);
+    params.push(keeperAddress);
     const VaultStorage = await deployContract("VaultStorage", params, false);
 
     const arguments = [

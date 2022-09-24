@@ -34,7 +34,11 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await resetFork(15373344 - 10);
 
         const params = [...deploymentParams];
-        [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
+        [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(
+            governance,
+            params,
+            "0xCa1D199b6F53Af7387ac543Af8e8a34455BBe5E0"
+        );
         await logBlock();
 
         const ContractHelper = await ethers.getContractFactory("V3Helper");
@@ -44,6 +48,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         RebalanceCall = await ethers.getContractFactory("RebalanceCall");
         rebalanceCall = await RebalanceCall.deploy();
         await rebalanceCall.deployed();
+        console.log("> RebalanceCall", rebalanceCall.address);
     });
 
     const presets = {
@@ -159,6 +164,7 @@ describe.only("The example of miscalculation after the second rebalance", functi
         await logBalance(rebalanceCall.address, "> rebalanceCall after");
     });
 
+    return;
     it("swap_before_rebalance_WETH_OSQTH one more time", async function () {
         const testAmount = utils.parseUnits("10", 18).toString();
         console.log(">", testAmount);

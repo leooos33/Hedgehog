@@ -19,7 +19,7 @@ contract MockRebalancer is Ownable {
     address public constant _addressAuction = 0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D;
     IAuction public constant vaultAuction = IAuction(_addressAuction);
     IVaultMath public constant vaultMath = IVaultMath(0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E);
-    IVaultTreasury public constant vaultTreasury = IVaultTreasury(0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E);//TODO: insert hardhat treasury address here
+    IVaultTreasury public constant vaultTreasury = IVaultTreasury(0x7580708993de7CA120E957A62f26A5dDD4b3D8aC);
 
     struct MyCallbackData {
         uint256 type_of_arbitrage;

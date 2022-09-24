@@ -121,7 +121,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 _auctionTriggerTime,
         Constants.AuctionMinAmounts memory minAmounts
     ) internal {
-
         //Withdraw all the liqudity from the positions
         IVaultMath(vaultMath).burnAndCollect(
             Constants.poolEthUsdc,
@@ -193,7 +192,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @param _auctionTriggerTime timestamp when auction started
      */
     function _getAuctionParams(uint256 _auctionTriggerTime) internal view returns (Constants.AuctionParams memory) {
-
         //current ETH/USDC and oSQTH/ETH price
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
 
@@ -395,8 +393,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      */
     function getParams(uint256 _auctionTriggerTime)
         external
-        override
         view
+        override
         returns (
             uint256,
             uint256,

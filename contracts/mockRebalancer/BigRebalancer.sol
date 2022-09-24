@@ -530,16 +530,18 @@ contract BigRebalancer is Ownable {
             uint256 osqthAfter = IERC20(OSQTH).balanceOf(address(this));
 
             // buy wETH with oSQTH
-            swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
-                tokenIn: address(OSQTH),
-                tokenOut: address(WETH),
-                fee: 3000,
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountIn: osqthAfter,
-                amountOutMinimum: 0,
-                sqrtPriceLimitX96: 0
-            }));
+            swapRouter.exactInputSingle(
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: address(OSQTH),
+                    tokenOut: address(WETH),
+                    fee: 3000,
+                    recipient: address(this),
+                    deadline: block.timestamp,
+                    amountIn: osqthAfter,
+                    amountOutMinimum: 0,
+                    sqrtPriceLimitX96: 0
+                })
+            );
 
             console.log(">> balance weth afer 1 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc afer 1 swap swap: %s", IERC20(USDC).balanceOf(address(this)));
@@ -548,16 +550,18 @@ contract BigRebalancer is Ownable {
             uint256 wethAll = IERC20(WETH).balanceOf(address(this));
 
             // swap wETH --> USDC
-            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
-                tokenIn: address(WETH),
-                tokenOut: address(USDC),
-                fee: 500,
-                recipient: address(this),
-                deadline: block.timestamp,
-                amountOut: data.amount1,
-                amountInMaximum: wethAll,
-                sqrtPriceLimitX96: 0
-            }));
+            swapRouter.exactOutputSingle(
+                ISwapRouter.ExactOutputSingleParams({
+                    tokenIn: address(WETH),
+                    tokenOut: address(USDC),
+                    fee: 500,
+                    recipient: address(this),
+                    deadline: block.timestamp,
+                    amountOut: data.amount1,
+                    amountInMaximum: wethAll,
+                    sqrtPriceLimitX96: 0
+                })
+            );
 
             console.log(">> balance weth afer 2 swap swap: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc afer 2 swap swap: %s", IERC20(USDC).balanceOf(address(this)));

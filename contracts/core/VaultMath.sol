@@ -82,12 +82,10 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
             tickUpper,
             liquidity
         );
-        
+
         uint256 oneMinusFee = uint256(1e18).sub(IVaultStorage(vaultStorage).protocolFee());
 
-        return (
-                amount0.add(uint256(tokensOwed0).mul(oneMinusFee)), 
-                amount1.add(uint256(tokensOwed1).mul(oneMinusFee)));
+        return (amount0.add(uint256(tokensOwed0).mul(oneMinusFee)), amount1.add(uint256(tokensOwed1).mul(oneMinusFee)));
     }
 
     /// @dev Withdraws share of liquidity in a range from Uniswap pool.
@@ -143,7 +141,6 @@ contract VaultMath is IVaultMath, ReentrancyGuard, Faucet {
         uint256 protocolFee = IVaultStorage(vaultStorage).protocolFee();
 
         if (protocolFee > 0) {
-
             uint256 feesToProtocol0 = feesToVault0.div(protocolFee).div(1e34);
             uint256 feesToProtocol1 = feesToVault1.div(protocolFee).div(1e34);
 

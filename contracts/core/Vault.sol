@@ -82,8 +82,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(to != address(0) && to != address(this), "C17");
 
         //Poke positions so vault's current holdings are up to date
-        IVaultTreasury(vaultTreasury).pokeEthUsdc();
-        IVaultTreasury(vaultTreasury).pokeEthOsqth();
+        IVaultTreasury(vaultTreasury).pokePools();
 
         uint256 _totalSupply = totalSupply();
         if (_totalSupply == 0) {
@@ -149,50 +148,50 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
         uint256 ratio = shares.div(_totalSupply);
 
-        IVaultTreasury(vaultTreasury).pokeEthUsdc();
-        IVaultTreasury(vaultTreasury).pokeEthOsqth();
+        IVaultTreasury(vaultTreasury).pokePools();
 
         uint256 amountEth;
         uint256 amountUsdc;
         uint256 amountOsqth;
 
-        if (_getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10) {
-        uint256 amountEth0;
-        (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcLower(),
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            ratio
-        );
-        uint256 amountEth1;
-        (amountEth1, amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthLower(),
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            ratio
-        );
-        amountEth = amountEth0 + amountEth1;
+        if (
+            _getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10
+        ) {
+            uint256 amountEth0;
+            (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
+                Constants.poolEthUsdc,
+                IVaultStorage(vaultStorage).orderEthUsdcLower(),
+                IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+                ratio
+            );
+            uint256 amountEth1;
+            (amountEth1, amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
+                Constants.poolEthOsqth,
+                IVaultStorage(vaultStorage).orderOsqthEthLower(),
+                IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+                ratio
+            );
+            amountEth = amountEth0 + amountEth1;
         } else {
+            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
+            amountEth = ethBalance.mul(ratio);
+            amountUsdc = usdcBalance.mul(ratio);
+            amountOsqth = osqthBalance.mul(ratio);
 
-        (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-        amountEth = ethBalance.mul(ratio);
-        amountUsdc = usdcBalance.mul(ratio);
-        amountOsqth = osqthBalance.mul(ratio);
-
-        IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthUsdc,
-            IVaultStorage(vaultStorage).orderEthUsdcLower(),
-            IVaultStorage(vaultStorage).orderEthUsdcUpper(),
-            ratio
-        );
-        IVaultMath(vaultMath).burnLiquidityShare(
-            Constants.poolEthOsqth,
-            IVaultStorage(vaultStorage).orderOsqthEthLower(),
-            IVaultStorage(vaultStorage).orderOsqthEthUpper(),
-            ratio
-        );
+            IVaultMath(vaultMath).burnLiquidityShare(
+                Constants.poolEthUsdc,
+                IVaultStorage(vaultStorage).orderEthUsdcLower(),
+                IVaultStorage(vaultStorage).orderEthUsdcUpper(),
+                ratio
+            );
+            IVaultMath(vaultMath).burnLiquidityShare(
+                Constants.poolEthOsqth,
+                IVaultStorage(vaultStorage).orderOsqthEthLower(),
+                IVaultStorage(vaultStorage).orderOsqthEthUpper(),
+                ratio
+            );
         }
-        
+
         require(amountEth != 0 || amountUsdc != 0 || amountOsqth != 0, "C6");
 
         require(amountEth >= amountEthMin, "C7");

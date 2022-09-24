@@ -51,7 +51,7 @@ const getERC20Balance = async (account, tokenAddress) => {
 const approveERC20 = async (owner, accountAddress, amount, tokenAddress) => {
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
     await ERC20.connect(owner).approve(
-        account,
+        accountAddress,
         amount
         //TODO: change gas during tests
         // {

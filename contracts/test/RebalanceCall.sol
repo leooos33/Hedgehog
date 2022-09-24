@@ -5,6 +5,7 @@ pragma abicoder v2;
 
 import {IAuction} from "../interfaces/IAuction.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 import "hardhat/console.sol";
@@ -12,6 +13,7 @@ import "hardhat/console.sol";
 contract RebalanceCall {
     address public addressAuction = 0xe38b6847E611e942E6c80eD89aE867F522402e80;
     address public addressMath = 0x2c8ED11fd7A058096F2e5828799c68BE88744E2F;
+    address public addressTreasury = 0x7580708993de7CA120E957A62f26A5dDD4b3D8aC;
 
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -28,6 +30,8 @@ contract RebalanceCall {
 
         console.log("auctionTriggerTime %s", auctionTriggerTime);
 
+        IVaultTreasury(addressTreasury).externalPoke();
+
         (
             uint256 targetEth,
             uint256 targetUsdc,
@@ -35,7 +39,7 @@ contract RebalanceCall {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getAuctionParams(auctionTriggerTime);
+        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
         console.log("targetEth    %s", targetEth);
         console.log("targetUsdc   %s", targetUsdc);
@@ -54,6 +58,8 @@ contract RebalanceCall {
 
         console.log("auctionTriggerTime %s", auctionTriggerTime);
 
+        IVaultTreasury(addressTreasury).externalPoke();
+
         (
             uint256 targetEth,
             uint256 targetUsdc,
@@ -61,7 +67,7 @@ contract RebalanceCall {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getAuctionParams(auctionTriggerTime);
+        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
         console.log("targetEth    %s", targetEth);
         console.log("targetUsdc   %s", targetUsdc);
