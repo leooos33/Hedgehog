@@ -253,4 +253,35 @@ describe.only("User story with", function () {
         await logBalance(depositor3.address, "> user3 Balance After Witdraw");
         console.log("> user3 Share After Witdraw", await getERC20Balance(depositor3.address, Vault.address));
     });
+
+    it("swap", async function () {
+        await mineSomeBlocks(2216);
+
+        swapAmount = utils.parseUnits("40000", 18).toString();
+        await getWETH(swapAmount, contractHelper.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+
+        await logBlock();
+
+        tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+        await tx.wait();
+
+        await logBlock();
+
+        console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+
+        await mineSomeBlocks(554);
+    });
+
+    it("price rebalance", async function () {
+        await mineSomeBlocks(83622);
+        await logBalance(governance.address, "> Governance Balance Before price rebalance");
+
+        tx = await VaultAuction.connect(governance).priceRebalance(governance.address, 15757716, 0, 0, 0);
+        await tx.wait();
+
+        await logBalance(governance.address, "> Governance Balance After price rebalance");
+    });
 });
