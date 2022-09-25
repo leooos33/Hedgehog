@@ -78,6 +78,7 @@ contract BigRebalancer is Ownable {
         uint256 amount1;
         uint256 amount2;
         uint256 threshold;
+        uint256 triggerTime;
     }
 
     constructor() Ownable() {
@@ -116,12 +117,17 @@ contract BigRebalancer is Ownable {
         if (amountOsqth > 0) IERC20(OSQTH).transfer(to, amountOsqth);
     }
 
-    function rebalance(uint256 threshold) public onlyOwner {
-        (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
+    function rebalance(uint256 threshold, uint256 triggerTime) public onlyOwner {
+        FlCallbackData memory data;
+        data.triggerTime = triggerTime;
+        if (triggerTime == 0) {
+            (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
-        console.log("auctionTriggerTime %s", auctionTriggerTime);
+            console.log("auctionTriggerTime %s", auctionTriggerTime);
 
-        require(isTimeRebalance, "Not time");
+            require(isTimeRebalance, "Not time");
+            triggerTime = auctionTriggerTime;
+        }
 
         IVaultTreasury(addressTreasury).externalPoke();
 
@@ -132,7 +138,7 @@ contract BigRebalancer is Ownable {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
+        ) = IAuction(addressAuction).getParams(triggerTime);
 
         console.log("targetEth    %s", targetEth);
         console.log("targetUsdc   %s", targetUsdc);
@@ -141,7 +147,6 @@ contract BigRebalancer is Ownable {
         console.log("usdcBalance  %s", usdcBalance);
         console.log("osqthBalance %s", osqthBalance);
 
-        FlCallbackData memory data;
         data.threshold = threshold;
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
@@ -243,7 +248,8 @@ contract BigRebalancer is Ownable {
             console.log(">> balance weth before timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -309,7 +315,8 @@ contract BigRebalancer is Ownable {
             );
             console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -369,7 +376,8 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -414,7 +422,8 @@ contract BigRebalancer is Ownable {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1);
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -479,7 +488,8 @@ contract BigRebalancer is Ownable {
             console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
             console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
@@ -527,7 +537,8 @@ contract BigRebalancer is Ownable {
             console.log(">> balance usdc before timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
             console.log(">> balance osqth before timeRebalance: %s", IERC20(OSQTH).balanceOf(address(this)));
 
-            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+            else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
 
             console.log(">> balance weth after timeRebalance: %s", IERC20(WETH).balanceOf(address(this)));
             console.log(">> balance usdc after timeRebalance: %s", IERC20(USDC).balanceOf(address(this)));
