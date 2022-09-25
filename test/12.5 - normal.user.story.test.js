@@ -244,14 +244,13 @@ describe.only("User story with", function () {
     it("swap", async function () {
         await mineSomeBlocks(2216);
 
-        swapAmount = utils.parseUnits("40000", 18).toString();
-        await getWETH(swapAmount, contractHelper.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
+        swapAmount = utils.parseUnits("33000000", 6).toString();
+        await getUSDC(swapAmount, contractHelper.address);
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-
         await logBlock();
 
-        tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
         await tx.wait();
 
         await logBlock();

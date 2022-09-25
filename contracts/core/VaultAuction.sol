@@ -157,8 +157,13 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
+        console.log("_swapWithKeeperETH");
+
         _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
+        console.log("_swapWithKeeperUSDC");
+
         _swapWithKeeper(osqthBalance, targetOsqth, minAmounts.minAmountOsqth, address(Constants.osqth), _keeper);
+        console.log("_swapWithKeeperOSQTH");
 
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -218,7 +223,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //scope to avoid stack too deep error
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
-
+            console.log("cIV %s", cIV);
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
@@ -369,7 +374,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         address coin,
         address keeper
     ) internal {
-        console.log("_swapWithKeeper");
         if (target >= balance) {
             console.log(target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
