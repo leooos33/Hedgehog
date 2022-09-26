@@ -18,8 +18,6 @@ import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 
-import "hardhat/console.sol";
-
 contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallback, Faucet {
     using SafeERC20 for IERC20;
 
