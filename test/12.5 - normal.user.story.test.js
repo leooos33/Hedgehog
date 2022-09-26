@@ -244,26 +244,41 @@ describe.only("User story with", function () {
     it("swap", async function () {
         await mineSomeBlocks(2216);
 
-        swapAmount = utils.parseUnits("33000000", 6).toString();
-        await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
-        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-        await logBlock();
+         swapAmount = utils.parseUnits("40000", 18).toString();
+         await getWETH(swapAmount, contractHelper.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
+         tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+         await tx.wait();
 
-        tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
-        await tx.wait();
+         swapAmount = utils.parseUnits("1700", 18).toString();
+         await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
+         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+         tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
+         await tx.wait();
 
-        await logBlock();
+        // swapAmount = utils.parseUnits("33000000", 6).toString();
+        // await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
+        // console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        // console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        // tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
+        // await tx.wait();
 
-        console.log("> WETH after swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        console.log("> USDC after swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        // await logBlock();
+
+        // swapAmount = utils.parseUnits("1500", 18).toString();
+        // await getWETH(swapAmount, contractHelper.address);
+        // console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+        // console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        // tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
+        // await tx.wait();
+
     });
 
     it("price rebalance", async function () {
         await mineSomeBlocks(200);
         await logBlock();
         await logBalance(governance.address, "> Governance Balance Before price rebalance");
-        await mineSomeBlocks(200);
+        await mineSomeBlocks(1250);
 
         tx = await rebalancer.connect(governance).rebalance(0, 1663937523);
         await tx.wait();
