@@ -79,7 +79,7 @@ describe.only("User story with", function () {
 
         tx = await oneClickDeposit
             .connect(depositor1)
-            .deposit(amountWETH, "950000000000000000", depositor1.address, "0");
+            .deposit(amountWETH, "999000000000000000", depositor1.address, "0");
         await tx.wait();
 
         await logBalance(depositor1.address, "> user1 Balance After Deposit");
@@ -102,7 +102,7 @@ describe.only("User story with", function () {
 
         tx = await oneClickDeposit
             .connect(depositor2)
-            .deposit(amountWETH, "950000000000000000", depositor2.address, "0");
+            .deposit(amountWETH, "999000000000000000", depositor2.address, "0");
         await tx.wait();
 
         await logBalance(depositor2.address, "> user2 Balance After Deposit");
@@ -175,7 +175,7 @@ describe.only("User story with", function () {
 
         tx = await oneClickDeposit
             .connect(depositor3)
-            .deposit(amountWETH, "995000000000000000", depositor3.address, "0");
+            .deposit(amountWETH, "999000000000000000", depositor3.address, "0");
         await tx.wait();
         await logBalance(depositor3.address, "> user3 Balance After Deposit");
         console.log("> user3 Share After Deposit", await getERC20Balance(depositor3.address, Vault.address));

@@ -11,8 +11,6 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
-
 contract OneClickDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -57,10 +55,6 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
 
         (uint256 ethToDeposit, uint256 usdcToDeposit, uint256 osqthToDeposit) = swap(amountEth, slippage);
 
-        console.log("ethBalance %s", _getBalance(WETH));
-        console.log("usdcBalance %s", _getBalance(USDC));
-        console.log("osqthBalance %s", _getBalance(OSQTH));
-
         uint256 shares = IVault(addressVault).deposit(ethToDeposit, usdcToDeposit, osqthToDeposit, to, 0, 0, 0);
 
         if (returnMode == 0) swapAllToEth(to);
@@ -87,9 +81,8 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
 
         uint256 ethIN;
         {
-            console.log("usdcToDeposit %s", usdcToDeposit);
             // swap wETH --> USDC
-            ISwapRouter.ExactOutputSingleParams memory params1 = ISwapRouter.ExactOutputSingleParams({
+            uint256 ethIN1 = swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
                 tokenIn: WETH,
                 tokenOut: USDC,
                 fee: 500,
@@ -98,11 +91,10 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
                 amountOut: usdcToDeposit.div(slippage),
                 amountInMaximum: amountEth,
                 sqrtPriceLimitX96: 0
-            });
-            uint256 ethIN1 = swapRouter.exactOutputSingle(params1);
+            }));
 
             // swap wETH --> oSQTH
-            ISwapRouter.ExactOutputSingleParams memory params2 = ISwapRouter.ExactOutputSingleParams({
+            uint256 ethIN2 = swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
                 tokenIn: WETH,
                 tokenOut: OSQTH,
                 fee: 3000,
@@ -111,8 +103,7 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
                 amountOut: osqthToDeposit,
                 amountInMaximum: amountEth,
                 sqrtPriceLimitX96: 0
-            });
-            uint256 ethIN2 = swapRouter.exactOutputSingle(params2);
+            }));
 
             ethIN = ethIN1.add(ethIN2);
         }
@@ -122,7 +113,7 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
     // @dev swap all remaining tokens to wETH and send it back to user
     function swapAllToEth(address to) internal {
         //swap remaining USDC --> wETH
-        ISwapRouter.ExactInputSingleParams memory params3 = ISwapRouter.ExactInputSingleParams({
+        swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
             tokenIn: USDC,
             tokenOut: WETH,
             fee: 500,
@@ -131,13 +122,10 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
             amountIn: _getBalance(USDC),
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
-        });
-
-        //Execute swap
-        swapRouter.exactInputSingle(params3);
+        }));
 
         //swap remaining oSQTH --> wETH
-        ISwapRouter.ExactInputSingleParams memory params2 = ISwapRouter.ExactInputSingleParams({
+        swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
             tokenIn: OSQTH,
             tokenOut: WETH,
             fee: 3000,
@@ -146,9 +134,7 @@ contract OneClickDeposit is Ownable, ReentrancyGuard {
             amountIn: _getBalance(OSQTH),
             amountOutMinimum: 0,
             sqrtPriceLimitX96: 0
-        });
-        //Execute swap
-        swapRouter.exactInputSingle(params2);
+        }));
 
         //Send wETH back to user
         IERC20(WETH).transfer(to, _getBalance(WETH));
