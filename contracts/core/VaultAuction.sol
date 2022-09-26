@@ -17,8 +17,6 @@ import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
-import "hardhat/console.sol";
-
 contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -40,11 +38,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         uint256 minAmountUsdc,
         uint256 minAmountOsqth
     ) external override nonReentrant notPaused {
-        console.log("block.timestamp %s", block.timestamp);
         //check if rebalancing based on time threshold is allowed
         (bool isTimeRebalanceAllowed, uint256 auctionTriggerTime) = IVaultMath(vaultMath).isTimeRebalance();
 
-        console.log("auctionTriggerTime %s", auctionTriggerTime);
         require(isTimeRebalanceAllowed, "C10");
 
         //current EthUsdc price
@@ -52,9 +48,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //EthUsdc price at last rebalance
         uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
-
         uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
-
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
         // no rebalance if the price change <= rebalanceThreshold
@@ -148,22 +142,10 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.liquidityOsqthEth
         );
 
-        console.log("targetEth    %s", targetEth);
-        console.log("targetUsdc   %s", targetUsdc);
-        console.log("targetOsqth  %s", targetOsqth);
-        console.log("ethBalance   %s", ethBalance);
-        console.log("usdcBalance  %s", usdcBalance);
-        console.log("osqthBalance %s", osqthBalance);
-
         //Exchange tokens with keeper
         _swapWithKeeper(ethBalance, targetEth, minAmounts.minAmountEth, address(Constants.weth), _keeper);
-        console.log("_swapWithKeeperETH");
-
         _swapWithKeeper(usdcBalance, targetUsdc, minAmounts.minAmountUsdc, address(Constants.usdc), _keeper);
-        console.log("_swapWithKeeperUSDC");
-
         _swapWithKeeper(osqthBalance, targetOsqth, minAmounts.minAmountOsqth, address(Constants.osqth), _keeper);
-        console.log("_swapWithKeeperOSQTH");
 
         //Place new positions
         IVaultTreasury(vaultTreasury).mintLiquidity(
@@ -223,7 +205,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //scope to avoid stack too deep error
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
-            console.log("cIV %s", cIV);
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
@@ -231,7 +212,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             bool isPosIVbump = cIV < pIV;
 
             priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
-
             //expected IV bump
             uint256 expIVbump;
             if (isPosIVbump) {
@@ -375,7 +355,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         address keeper
     ) internal {
         if (target >= balance) {
-            console.log(target.sub(balance).add(10));
             IERC20(coin).transferFrom(keeper, vaultTreasury, target.sub(balance).add(10));
         } else {
             uint256 amount = balance.sub(target).sub(10);
