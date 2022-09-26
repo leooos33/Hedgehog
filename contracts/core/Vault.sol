@@ -137,7 +137,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(shares > 0, "C5");
 
         uint256 _totalSupply = totalSupply();
-        
+
         //Burn shares
         _burn(msg.sender, shares);
 
@@ -151,7 +151,6 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         if (
             _getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10
         ) {
-
             uint256 amountEth0;
             (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthUsdc,
@@ -167,9 +166,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 ratio
             );
             amountEth = amountEth0 + amountEth1;
-
         } else {
-
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
             amountEth = ethBalance.mul(ratio);
             amountUsdc = usdcBalance.mul(ratio);
@@ -269,18 +266,18 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
 
             uint256 ratio;
             {
-            uint256 totalValue = IVaultMath(vaultMath).getValue(
-                ethAmount,
-                usdcAmount,
-                osqthAmount,
-                ethUsdcPrice,
-                osqthEthPrice
-            );
-            ratio = depositorValue.div(totalValue);
-            uint256 sharePrice = totalValue.div(_totalSupply);
-            shares = depositorValue.div(sharePrice);
+                uint256 totalValue = IVaultMath(vaultMath).getValue(
+                    ethAmount,
+                    usdcAmount,
+                    osqthAmount,
+                    ethUsdcPrice,
+                    osqthEthPrice
+                );
+                ratio = depositorValue.div(totalValue);
+                uint256 sharePrice = totalValue.div(_totalSupply);
+                shares = depositorValue.div(sharePrice);
             }
-            
+
             ethToDeposit = ethAmount.mul(ratio);
             usdcToDeposit = usdcAmount.mul(ratio);
             osqthToDeposit = osqthAmount.mul(ratio);

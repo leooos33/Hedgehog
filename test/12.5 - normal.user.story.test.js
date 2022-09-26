@@ -255,22 +255,21 @@ describe.only("User story with", function () {
         //  tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
         //  await tx.wait();
 
-         swapAmount = utils.parseUnits("33000000", 6).toString();
-         await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
-         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-         tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
-         await tx.wait();
+        swapAmount = utils.parseUnits("33000000", 6).toString();
+        await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+        tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
+        await tx.wait();
 
-         await logBlock();
+        await logBlock();
 
-         swapAmount = utils.parseUnits("1500", 18).toString();
-         await getWETH(swapAmount, contractHelper.address);
-         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
-         await tx.wait();
-
+        swapAmount = utils.parseUnits("1500", 18).toString();
+        await getWETH(swapAmount, contractHelper.address);
+        console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+        console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
+        await tx.wait();
     });
 
     it("price rebalance", async function () {

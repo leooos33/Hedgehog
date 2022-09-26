@@ -44,7 +44,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         require(isTimeRebalanceAllowed, "C10");
 
         //current EthUsdc price
-        (uint256 ethUsdcPrice, ) = IVaultMath(vaultMath).getPrices();  
+        (uint256 ethUsdcPrice, ) = IVaultMath(vaultMath).getPrices();
 
         //EthUsdc price at last rebalance
         uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
@@ -210,7 +210,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
             //is a positive IV bump
             bool isPosIVbump = cIV < pIV;
-            
+
             priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
             //expected IV bump
             uint256 expIVbump;

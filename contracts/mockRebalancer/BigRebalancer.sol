@@ -157,9 +157,7 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetUsdc - usdcBalance + 10;
 
-
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-
         } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow osqth (get weth on euler and swap it to osqth)
             // 2) get usdc & weth
@@ -170,7 +168,6 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetOsqth - osqthBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow usdc & osqth (borrow weth on euler and swap it to osqth)
             // 2) get weth
@@ -182,7 +179,6 @@ contract BigRebalancer is Ownable {
             data.amount2 = targetOsqth - osqthBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow weth
             // 2) get usdc & osqth
@@ -193,7 +189,6 @@ contract BigRebalancer is Ownable {
             data.amount1 = targetEth - ethBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-
         } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
             // 1) borrow weth & osqth (borrow weth on euler and swap it to osqth)
             // 2) get usdc
@@ -205,7 +200,6 @@ contract BigRebalancer is Ownable {
             data.amount2 = targetOsqth - osqthBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             // 1) borrow usdc
             // 2) get osqth & weth
@@ -228,7 +222,6 @@ contract BigRebalancer is Ownable {
         uint256 ethBefore = IERC20(WETH).balanceOf(address(this));
 
         if (data.type_of_arbitrage == 1) {
-
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1);
             IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(USDC));
@@ -267,9 +260,7 @@ contract BigRebalancer is Ownable {
 
             borrowedDToken1.repay(0, data.amount1);
             borrowedDToken2.repay(0, data.amount2);
-
         } else if (data.type_of_arbitrage == 2) {
-
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1);
 
@@ -304,24 +295,22 @@ contract BigRebalancer is Ownable {
                 })
             );
 
-             // swap oSQTH --> wETH
-             swapRouter.exactInputSingle(
-                 ISwapRouter.ExactInputSingleParams({
-                     tokenIn: address(OSQTH),
-                     tokenOut: address(WETH),
-                     fee: 3000,
-                     recipient: address(this),
-                     deadline: block.timestamp,
-                     amountIn: IERC20(OSQTH).balanceOf(address(this)),
-                     amountOutMinimum: 0,
-                     sqrtPriceLimitX96: 0
-                 })
-             );
+            // swap oSQTH --> wETH
+            swapRouter.exactInputSingle(
+                ISwapRouter.ExactInputSingleParams({
+                    tokenIn: address(OSQTH),
+                    tokenOut: address(WETH),
+                    fee: 3000,
+                    recipient: address(this),
+                    deadline: block.timestamp,
+                    amountIn: IERC20(OSQTH).balanceOf(address(this)),
+                    amountOutMinimum: 0,
+                    sqrtPriceLimitX96: 0
+                })
+            );
 
             borrowedDToken1.repay(0, data.amount1);
-
         } else if (data.type_of_arbitrage == 3) {
-
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
             borrowedDToken1.borrow(0, data.amount1);
             IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(WETH));
@@ -373,9 +362,7 @@ contract BigRebalancer is Ownable {
 
             borrowedDToken1.repay(0, data.amount1);
             borrowedDToken2.repay(0, data.amount2);
-
         } else if (data.type_of_arbitrage == 4) {
-
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1);
 
@@ -395,7 +382,7 @@ contract BigRebalancer is Ownable {
                     sqrtPriceLimitX96: 0
                 })
             );
-            
+
             // swap all USDC to wETH
             swapRouter.exactInputSingle(
                 ISwapRouter.ExactInputSingleParams({
@@ -411,9 +398,7 @@ contract BigRebalancer is Ownable {
             );
 
             borrowedDToken1.repay(0, data.amount1);
-
         } else if (data.type_of_arbitrage == 5) {
-            
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
             borrowedDToken1.borrow(0, data.amount1.add(data.amount2));
 
@@ -457,13 +442,11 @@ contract BigRebalancer is Ownable {
                     amountIn: IERC20(OSQTH).balanceOf(address(this)),
                     amountOutMinimum: 0,
                     sqrtPriceLimitX96: 0
-                    })
+                })
             );
 
             borrowedDToken1.repay(0, data.amount1.add(data.amount2));
-
         } else if (data.type_of_arbitrage == 6) {
-            
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
             borrowedDToken1.borrow(0, data.amount1);
 
@@ -499,7 +482,6 @@ contract BigRebalancer is Ownable {
             borrowedDToken1.repay(0, data.amount1);
         }
         require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
-
     }
 
     function isQuickRebalance() public view returns (bool) {

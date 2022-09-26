@@ -132,7 +132,7 @@ const init = async () => {
 
     console.log("rebalancer", rebalancer.address);
 
-    tx = await rebalancer.setContracts(VaultAuction.address, VaultMath.address);
+    tx = await rebalancer.setContracts(VaultAuction.address, VaultMath.address, VaultTreasury.address);
     await tx.wait();
 
     // await logState(Vault.address);
