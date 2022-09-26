@@ -137,12 +137,11 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         require(shares > 0, "C5");
 
         uint256 _totalSupply = totalSupply();
-
+        
         //Burn shares
         _burn(msg.sender, shares);
 
         uint256 ratio = shares.div(_totalSupply);
-
         IVaultTreasury(vaultTreasury).pokePools();
 
         uint256 amountEth;
@@ -152,6 +151,7 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
         if (
             _getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10
         ) {
+
             uint256 amountEth0;
             (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthUsdc,
@@ -167,7 +167,9 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 ratio
             );
             amountEth = amountEth0 + amountEth1;
+
         } else {
+
             (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
             amountEth = ethBalance.mul(ratio);
             amountUsdc = usdcBalance.mul(ratio);
@@ -250,15 +252,14 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
     {
         //Get current prices
         (uint256 ethUsdcPrice, uint256 osqthEthPrice) = IVaultMath(vaultMath).getPrices();
-
         uint256 depositorValue = _isFlash
             ? _amountEth
             : IVaultMath(vaultMath).getValue(_amountEth, _amountUsdc, _amountOsqth, ethUsdcPrice, osqthEthPrice);
 
-        shares = depositorValue;
-
         if (_totalSupply == 0) {
             //deposit in a 50% eth, 25% usdc, and 25% osqth proportion
+            shares = depositorValue;
+
             ethToDeposit = depositorValue.mul(5e17);
             usdcToDeposit = depositorValue.mul(25e16).mul(ethUsdcPrice).div(uint256(1e30));
             osqthToDeposit = depositorValue.mul(25e16).div(osqthEthPrice);
@@ -266,6 +267,8 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
             //Get total amounts of token balances
             (uint256 ethAmount, uint256 usdcAmount, uint256 osqthAmount) = IVaultMath(vaultMath).getTotalAmounts();
 
+            uint256 ratio;
+            {
             uint256 totalValue = IVaultMath(vaultMath).getValue(
                 ethAmount,
                 usdcAmount,
@@ -273,9 +276,11 @@ contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
                 ethUsdcPrice,
                 osqthEthPrice
             );
-
-            uint256 ratio = depositorValue.div(totalValue);
-
+            ratio = depositorValue.div(totalValue);
+            uint256 sharePrice = totalValue.div(_totalSupply);
+            shares = depositorValue.div(sharePrice);
+            }
+            
             ethToDeposit = ethAmount.mul(ratio);
             usdcToDeposit = usdcAmount.mul(ratio);
             osqthToDeposit = osqthAmount.mul(ratio);

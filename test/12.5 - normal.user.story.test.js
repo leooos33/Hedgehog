@@ -40,7 +40,6 @@ describe.only("User story with", function () {
 
         const params = [...deploymentParams];
         params[6] = "0";
-        params[0] = utils.parseUnits("80", 18);
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
 
         const ContractHelper = await ethers.getContractFactory("V3Helper");
@@ -73,13 +72,13 @@ describe.only("User story with", function () {
     });
 
     it("deposit1", async function () {
-        const amountWETH = utils.parseUnits("1", 18);
+        const amountWETH = utils.parseUnits("20", 18);
         await getAndApproveWETH(depositor1, amountWETH, oneClickDeposit.address);
         await logBalance(depositor1.address, "> user1 Balance Before Deposit");
 
         tx = await oneClickDeposit
             .connect(depositor1)
-            .deposit(amountWETH, "999000000000000000", depositor1.address, "0");
+            .deposit(amountWETH, "995000000000000000", depositor1.address, "0");
         await tx.wait();
 
         await logBalance(depositor1.address, "> user1 Balance After Deposit");
@@ -96,13 +95,13 @@ describe.only("User story with", function () {
     });
 
     it("deposit2", async function () {
-        const amountWETH = utils.parseUnits("2", 18);
+        const amountWETH = utils.parseUnits("29", 18);
         await getAndApproveWETH(depositor2, amountWETH, oneClickDeposit.address);
         await logBalance(depositor2.address, "> user2 Balance Before Deposit");
 
         tx = await oneClickDeposit
             .connect(depositor2)
-            .deposit(amountWETH, "999000000000000000", depositor2.address, "0");
+            .deposit(amountWETH, "995000000000000000", depositor2.address, "0");
         await tx.wait();
 
         await logBalance(depositor2.address, "> user2 Balance After Deposit");
@@ -169,13 +168,13 @@ describe.only("User story with", function () {
     });
 
     it("deposit3", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("45", 18);
 
         await logBalance(depositor3.address, "> user3 Balance Before Deposit");
 
         tx = await oneClickDeposit
             .connect(depositor3)
-            .deposit(amountWETH, "999000000000000000", depositor3.address, "0");
+            .deposit(amountWETH, "990000000000000000", depositor3.address, "0");
         await tx.wait();
         await logBalance(depositor3.address, "> user3 Balance After Deposit");
         console.log("> user3 Share After Deposit", await getERC20Balance(depositor3.address, Vault.address));
@@ -244,33 +243,33 @@ describe.only("User story with", function () {
     it("swap", async function () {
         await mineSomeBlocks(2216);
 
-         swapAmount = utils.parseUnits("40000", 18).toString();
-         await getWETH(swapAmount, contractHelper.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
-         tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+        //  swapAmount = utils.parseUnits("40000", 18).toString();
+        //  await getWETH(swapAmount, contractHelper.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
+        //  tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+        //  await tx.wait();
+
+        //  swapAmount = utils.parseUnits("1700", 18).toString();
+        //  await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
+        //  console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
+        //  console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+        //  tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
+        //  await tx.wait();
+
+         swapAmount = utils.parseUnits("33000000", 6).toString();
+         await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
+         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
+         console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
+         tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
          await tx.wait();
 
-         swapAmount = utils.parseUnits("1700", 18).toString();
-         await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
+         await logBlock();
+
+         swapAmount = utils.parseUnits("1500", 18).toString();
+         await getWETH(swapAmount, contractHelper.address);
          console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
          console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-         tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
+         tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
          await tx.wait();
-
-        // swapAmount = utils.parseUnits("33000000", 6).toString();
-        // await getUSDC(swapAmount, contractHelper.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
-        // console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        // console.log("> USDC before swap:", await getERC20Balance(contractHelper.address, usdcAddress));
-        // tx = await contractHelper.connect(swaper).swapUSDC_WETH(swapAmount);
-        // await tx.wait();
-
-        // await logBlock();
-
-        // swapAmount = utils.parseUnits("1500", 18).toString();
-        // await getWETH(swapAmount, contractHelper.address);
-        // console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
-        // console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
-        // tx = await contractHelper.connect(swaper).swapWETH_OSQTH(swapAmount);
-        // await tx.wait();
 
     });
 
