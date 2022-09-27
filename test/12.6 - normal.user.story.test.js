@@ -32,8 +32,8 @@ describe.only("User story with 5 swaps", function () {
         swaper = signers[11];
         depositor2 = signers[12];
         depositor3 = signers[13];
-        depositor4 = signers[13];
-        depositor5 = signers[13];
+        depositor4 = signers[14];
+        depositor5 = signers[15];
     });
 
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
@@ -71,7 +71,7 @@ describe.only("User story with 5 swaps", function () {
     });
 
     it("deposit1", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor1, amountWETH, oneClickDeposit.address);
         await logBalance(depositor1.address, "> user1 Balance Before Deposit");
 
@@ -113,7 +113,7 @@ describe.only("User story with 5 swaps", function () {
     });
 
     it("deposit2", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor2, amountWETH, oneClickDeposit.address);
         await logBalance(depositor2.address, "> user2 Balance Before Deposit");
 
@@ -126,44 +126,33 @@ describe.only("User story with 5 swaps", function () {
         console.log("> user2 Share After Deposit", await getERC20Balance(depositor2.address, Vault.address));
     });
 
-    it("2 swaps", async function () {
-        await mineSomeBlocks(2216);
+    // it("2 swaps", async function () {
+    //     await mineSomeBlocks(2216);
 
-        swapAmount = utils.parseUnits("100", 18).toString();
-        await getWETH(swapAmount, contractHelper.address);
-        tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
-        await tx.wait();
+    //     swapAmount = utils.parseUnits("10000", 18).toString();
+    //     await getWETH(swapAmount, contractHelper.address);
+    //     tx = await contractHelper.connect(swaper).swapWETH_USDC(swapAmount);
+    //     await tx.wait();
 
-        await mineSomeBlocks(554);
+    //     await mineSomeBlocks(554);
 
-        swapAmount = utils.parseUnits("30", 18).toString();
-        await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
-        tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
-        await tx.wait();
+    //     swapAmount = utils.parseUnits("30", 18).toString();
+    //     await getOSQTH(swapAmount, contractHelper.address, _biggestOSqthHolder);
+    //     tx = await contractHelper.connect(swaper).swapOSQTH_WETH(swapAmount);
+    //     await tx.wait();
 
-        await mineSomeBlocks(554);
-    });
+    //     await mineSomeBlocks(554);
+    // });
 
-    it("rebalance2", async function () {
-        await mineSomeBlocks(83622);
-        await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
-
-        console.log(await rebalancer.connect(governance).isQuickRebalance());
-        tx = await rebalancer.connect(governance).rebalance(0, 0);
-        await tx.wait();
-
-        await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
-    });
-
-    return;
+    
     it("deposit3", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor3, amountWETH, oneClickDeposit.address);
         await logBalance(depositor3.address, "> user3 Balance Before Deposit");
 
         tx = await oneClickDeposit
             .connect(depositor3)
-            .deposit(amountWETH, "995000000000000000", depositor3.address, "0");
+            .deposit(amountWETH, "999000000000000000", depositor3.address, "0");
         await tx.wait();
 
         await logBalance(depositor3.address, "> user3 Balance After Deposit");
@@ -188,20 +177,11 @@ describe.only("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance3", async function () {
-        await mineSomeBlocks(83622);
-        await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
-
-        tx = await rebalancer.connect(governance).rebalance(0, 0);
-        await tx.wait();
-
-        await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
-    });
-
     it("deposit4", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor4, amountWETH, oneClickDeposit.address);
         await logBalance(depositor4.address, "> user4 Balance Before Deposit");
+        console.log("> user4 Share Before Deposit", await getERC20Balance(depositor4.address, Vault.address));
 
         tx = await oneClickDeposit
             .connect(depositor4)
@@ -230,18 +210,8 @@ describe.only("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance4", async function () {
-        await mineSomeBlocks(83622);
-        await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
-
-        tx = await rebalancer.connect(governance).rebalance(0, 0);
-        await tx.wait();
-
-        await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
-    });
-
     it("deposit5", async function () {
-        const amountWETH = utils.parseUnits("5", 18);
+        const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor5, amountWETH, oneClickDeposit.address);
         await logBalance(depositor5.address, "> user5 Balance Before Deposit");
 
@@ -272,15 +242,6 @@ describe.only("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
-    it("rebalance5", async function () {
-        await mineSomeBlocks(83622);
-        await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
-
-        tx = await rebalancer.connect(governance).rebalance(0, 0);
-        await tx.wait();
-
-        await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
-    });
 
     it("withdraw1", async function () {
         await logBalance(depositor1.address, "> userq Balance Before Witdraw");
@@ -341,4 +302,17 @@ describe.only("User story with 5 swaps", function () {
         await logBalance(depositor5.address, "> user5 Balance After Witdraw");
         console.log("> user5 Share After Witdraw", await getERC20Balance(depositor5.address, Vault.address));
     });
+
+    // it("rebalance2", async function () {
+    //     await mineSomeBlocks(83622);
+    //     await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
+
+    //     console.log(await rebalancer.connect(governance).isQuickRebalance());
+    //     tx = await rebalancer.connect(governance).rebalance(0, 0);
+    //     await tx.wait();
+
+    //     await logBalance(rebalancer.address, "> Rebalancer Balance After rebalance");
+    // });
+
+    return;
 });
