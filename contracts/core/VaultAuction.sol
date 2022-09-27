@@ -64,6 +64,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 cachedValue,
                 cachedPrice
             );
+
+            IVaultStorage(vaultStorage).setDepositCount(0);
+
             emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
         } else {
             _executeAuction(
@@ -71,6 +74,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 auctionTriggerTime,
                 Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
             );
+
+            IVaultStorage(vaultStorage).setDepositCount(0);
 
             emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
         }
@@ -99,6 +104,8 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             auctionTriggerTime,
             Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
         );
+
+        IVaultStorage(vaultStorage).setDepositCount(0);
 
         emit SharedEvents.PriceRebalance(keeper, minAmountEth, minAmountUsdc, minAmountOsqth);
     }

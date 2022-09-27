@@ -74,6 +74,8 @@ contract VaultStorage is IVaultStorage, Faucet {
 
     bool public override isSystemPaused = false;
 
+    uint256 public override depositCount = 0;
+
     /**
      * @notice strategy constructor
        @param _cap max amount of wETH that strategy accepts for deposits
@@ -145,6 +147,13 @@ contract VaultStorage is IVaultStorage, Faucet {
      */
     function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
         protocolFee = _protocolFee;
+    }
+
+    /**
+     * @notice change deposit count
+     */
+    function setDepositCount(uint256 _depositCount) external override onlyVault {
+        depositCount = _depositCount;
     }
 
     /**

@@ -45,6 +45,10 @@ interface IVaultStorage {
 
     function minPriceMultiplier() external view returns (uint256);
 
+    function depositCount() external view returns (uint256);
+
+    function setDepositCount(uint256 _depositCount) external;
+
     function auctionTime() external view returns (uint256);
 
     function adjParam() external view returns (uint256);

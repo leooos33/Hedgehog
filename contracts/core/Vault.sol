@@ -116,6 +116,8 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
         //Check deposit cap
         require(totalSupply() <= IVaultStorage(vaultStorage).cap(), "C4");
 
+        IVaultStorage(vaultStorage).setDepositCount(IVaultStorage(vaultStorage).depositCount() + 1);
+
         emit SharedEvents.Deposit(to, _shares);
         return _shares;
     }
@@ -148,9 +150,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
         uint256 amountUsdc;
         uint256 amountOsqth;
 
-        if (
-            _getBalance(Constants.weth) <= 10 && _getBalance(Constants.usdc) <= 10 && _getBalance(Constants.osqth) <= 10
-        ) {
+        if (IVaultStorage(vaultStorage).depositCount() == 0) {
             uint256 amountEth0;
             (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthUsdc,
