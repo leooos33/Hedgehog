@@ -16,7 +16,7 @@ const {
 } = require("./helpers");
 const { deploymentParams, deployContract, hardhatDeploy } = require("./deploy");
 
-describe.only("Flash deposit", function () {
+describe("Flash deposit", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, OneClickDeposit;
 
