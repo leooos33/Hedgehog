@@ -7,14 +7,16 @@ const {
     resetFork,
     logBlock,
     getAndApprove2,
+    logBalance,
     getERC20Balance,
     getWETH,
     getOSQTH,
     getUSDC,
+    approveERC20,
 } = require("./helpers");
 const { deploymentParams, deployContract, hardhatDeploy } = require("./deploy");
 
-describe("Flash deposit", function () {
+describe.only("Flash deposit", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt, OneClickDeposit;
 
@@ -43,7 +45,12 @@ describe("Flash deposit", function () {
 
         OneClickDeposit = await deployContract("OneClickDeposit", [], false);
 
+        OneClickWithdraw = await deployContract("OneClickWithdraw", [], false);
+
         tx = await OneClickDeposit.setContracts(Vault.address);
+        await tx.wait();
+
+        tx = await OneClickWithdraw.setContracts(Vault.address);
         await tx.wait();
 
         await getAndApprove2(
@@ -61,10 +68,8 @@ describe("Flash deposit", function () {
             presets.depositor2.osqthInput
         );
 
-        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, wethAddress));
-        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, usdcAddress));
-        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
-        console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(depositor2.address, "> user2 Balance Before All");
+        console.log("> user2 Balance Before All Share", await getERC20Balance(depositor2.address, Vault.address));
     });
 
     it("deposit1", async function () {
@@ -79,11 +84,8 @@ describe("Flash deposit", function () {
         );
         await tx.wait();
 
-        // State
-        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, wethAddress));
-        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, usdcAddress));
-        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor1.address, osqthAddress));
-        console.log("> userShareAfterDeposit", await getERC20Balance(depositor1.address, Vault.address));
+        await logBalance(depositor2.address, "> user1 Balance After Deposit");
+        console.log("> user1 Balance After Deposit Share", await getERC20Balance(depositor2.address, Vault.address));
     });
 
     it("deposit2", async function () {
@@ -91,21 +93,28 @@ describe("Flash deposit", function () {
             utils.parseUnits("1", 18),
             utils.parseUnits("99", 16),
             depositor2.address,
-            "0",
-            "0",
             "0"
         );
         receipt = await tx.wait();
         console.log("> Gas used flashDepsoit: %s", receipt.gasUsed);
 
-        // State
-        console.log("> userEthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, wethAddress));
-        console.log("> userUsdcBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, usdcAddress));
-        console.log("> userOsqthBalanceAfterDeposit %s", await getERC20Balance(depositor2.address, osqthAddress));
-        console.log("> userShareAfterDeposit", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(depositor2.address, "> user2 Balance After Deposit");
+        console.log("> user2 Balance After Deposit Share", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(depositor2.address, "> OneClickDeposit balance weth afer deposit");
+    });
 
-        console.log("> balance weth afer deposit %s", await getERC20Balance(OneClickDeposit.address, wethAddress));
-        console.log("> balance usdc afer deposit %s", await getERC20Balance(OneClickDeposit.address, usdcAddress));
-        console.log("> balance osqth afer deposit %s", await getERC20Balance(OneClickDeposit.address, osqthAddress));
+    it("withdraw", async function () {
+        await logBalance(depositor2.address, "> user2 Balance Before Witdraw:");
+        console.log("> user2 Balance Before Witdraw: Share", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(OneClickWithdraw.address, "> OneClickWithdraw balance weth before witdraw:");
+
+        const allShares = await getERC20Balance(depositor2.address, Vault.address);
+        await approveERC20(depositor2, OneClickWithdraw.address, allShares, Vault.address);
+        tx = await OneClickWithdraw.connect(depositor2).withdraw(depositor2.address, allShares, "0", "0", "0");
+        await tx.wait();
+
+        await logBalance(depositor2.address, "> user2 Balance After Witdraw:");
+        console.log("> user2 Balance After Witdraw: Share", await getERC20Balance(depositor2.address, Vault.address));
+        await logBalance(OneClickWithdraw.address, "> OneClickWithdraw balance weth afer witdraw:");
     });
 });

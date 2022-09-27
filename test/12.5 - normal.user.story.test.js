@@ -17,7 +17,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe.only("User story with", function () {
+describe("User story with", function () {
     const getAndApproveWETH = async (owner, amount, toAddress) => {
         await getWETH(amount, owner.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
         await approveERC20(owner, toAddress, amount, wethAddress);

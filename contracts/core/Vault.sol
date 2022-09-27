@@ -47,7 +47,7 @@ import {VaultAuction} from "./VaultAuction.sol";
  * C22: Not a keeper
  */
 
-contract Vault is IVault, IERC20, ERC20, ReentrancyGuard, Faucet {
+contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
     using PRBMathUD60x18 for uint256;
     using SafeERC20 for IERC20;
 
