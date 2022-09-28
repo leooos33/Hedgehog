@@ -1,26 +1,24 @@
-//Link https://www.google.com/search?q=deploy+harhat+on+mainnet&oq=deploy+harhat+on+mainnet&aqs=chrome..69i57j33i10i160.4040j0j7&sourceid=chrome&ie=UTF-8#kpvalbx=_pfvXYtSVEqiF9u8Pj-ax0Ag14
-
 process.exit(0); // Block file in order to not accidentally deploy
 
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
 const {
-    _governanceAddress,
-    _vaultAddress,
-    _vaultAuctionAddress,
-    _vaultMathAddress,
-    _vaultTreasuryAddress,
-    _vaultStorageAddress,
-    _uniMathAddress,
+    _governanceAddressV2,
+    _keeperAddressV2,
+    _deployerAddressV2,
+    _vaultAddressV2,
+    _vaultAuctionAddressV2,
+    _vaultMathAddressV2,
+    _vaultTreasuryAddressV2,
+    _vaultStorageAddressV2,
+    _uniMathAddressV2,
 } = require("../test/common/index");
 const { deployContract } = require("./common");
 
-const governance = _governanceAddress;
-
 const mainnetDeploymentParams = [
     utils.parseUnits("100", 18),
-    BigNumber.from(43200),
+    BigNumber.from(172800),
     utils.parseUnits("0.1", 18),
     BigNumber.from("600"),
     BigNumber.from("950000000000000000"),
@@ -28,16 +26,16 @@ const mainnetDeploymentParams = [
     BigNumber.from("0"),
 ];
 
-const hardhatDeployContractsInParallel = async (governance, keeper, params) => {
+const hardhatDeployContractsInParallel = async () => {
     // const UniswapMath = await deployContract("UniswapMath", [], false); //? Omited due to its existing
     const Vault = await deployContract("Vault", [], false);
     const VaultAuction = await deployContract("VaultAuction", [], false);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
-    params.push(governance);
-    params.push(keeper);
-    const VaultStorage = await deployContract("VaultStorage", params, false);
+    mainnetDeploymentParams.push(_governanceAddressV2);
+    mainnetDeploymentParams.push(_keeperAddressV2);
+    const VaultStorage = await deployContract("VaultStorage", mainnetDeploymentParams, false);
 
     const arguments = [
         _uniMathAddress,
@@ -56,14 +54,14 @@ const hardhatDeployContractsInParallel = async (governance, keeper, params) => {
 };
 
 const hardhatInitializeContracts = async () => {
-    const Vault = await ethers.getContractAt("IFaucetHelper", _vaultAddress);
-    const VaultAuction = await ethers.getContractAt("IFaucetHelper", _vaultAuctionAddress);
-    const VaultMath = await ethers.getContractAt("IFaucetHelper", _vaultMathAddress);
-    const VaultTreasury = await ethers.getContractAt("IFaucetHelper", _vaultTreasuryAddress);
-    const VaultStorage = await ethers.getContractAt("IFaucetHelper", _vaultStorageAddress);
+    const Vault = await ethers.getContractAt("IFaucetHelper", _vaultAddressV2);
+    const VaultAuction = await ethers.getContractAt("IFaucetHelper", _vaultAuctionAddressV2);
+    const VaultMath = await ethers.getContractAt("IFaucetHelper", _vaultMathAddressV2);
+    const VaultTreasury = await ethers.getContractAt("IFaucetHelper", _vaultTreasuryAddressV2);
+    const VaultStorage = await ethers.getContractAt("IFaucetHelper", _vaultStorageAddressV2);
 
     const arguments = [
-        _uniMathAddress, // UniswapMath Address
+        _uniMathAddressV2, // UniswapMath Address
         Vault.address,
         VaultAuction.address,
         VaultMath.address,
@@ -90,7 +88,7 @@ const hardhatInitializeContracts = async () => {
     // await tx.wait();
 };
 
-hardhatInitializeContracts(governance, governance, mainnetDeploymentParams).catch((error) => {
+hardhatDeployContractsInParallel().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
