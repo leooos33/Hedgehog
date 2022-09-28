@@ -4,6 +4,7 @@ const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
 const { _governanceAddress, _harhatAccount1, _harhatAccount7 } = require("../test/common/index");
+const { deployContract } = require("./common");
 
 const governance = _governanceAddress;
 // const governance = _harhatAccount1;
@@ -21,7 +22,7 @@ const mainnetDeploymentParams = [
 
 mainnetDeploymentParams.map((i) => console.log(i.toString()));
 
-const hardhatDeploy = async (governance, params) => {
+const hardhatDeploy = async (governance, keeper, params) => {
     const UniswapMath = await deployContract("UniswapMath", []);
     const Vault = await deployContract("Vault", []);
     const VaultAuction = await deployContract("VaultAuction", []);
@@ -29,6 +30,7 @@ const hardhatDeploy = async (governance, params) => {
     const VaultTreasury = await deployContract("VaultTreasury", []);
 
     params.push(governance);
+    params.push(keeper);
     const VaultStorage = await deployContract("VaultStorage", params);
 
     const arguments = [
@@ -58,19 +60,9 @@ const hardhatDeploy = async (governance, params) => {
     await tx.wait();
 };
 
-const deployContract = async (name, params, deploy = true) => {
-    console.log("Deploying ->", name);
-    const Contract = await ethers.getContractFactory(name);
-    let contract = await Contract.deploy(...params);
-    if (deploy) {
-        await contract.deployed();
-    }
-    return contract;
-};
-
 // We recommend this pattern to be able to use async/await everywhere
 // and properly handle errors.
-hardhatDeploy(governance, mainnetDeploymentParams).catch((error) => {
+hardhatDeploy(governance, governance, mainnetDeploymentParams).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

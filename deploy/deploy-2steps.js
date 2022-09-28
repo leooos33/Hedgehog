@@ -14,6 +14,7 @@ const {
     _vaultStorageAddress,
     _uniMathAddress,
 } = require("../test/common/index");
+const { deployContract } = require("./common");
 
 const governance = _governanceAddress;
 
@@ -27,18 +28,19 @@ const mainnetDeploymentParams = [
     BigNumber.from("0"),
 ];
 
-const hardhatDeployContractsInParallel = async (governance, params) => {
-    const UniswapMath = await deployContract("UniswapMath", [], false);
-    const Vault = await deployContract("Vault", [], true);
-    const VaultAuction = await deployContract("VaultAuction", [], true);
+const hardhatDeployContractsInParallel = async (governance, keeper, params) => {
+    // const UniswapMath = await deployContract("UniswapMath", [], false); //? Omited due to its existing
+    const Vault = await deployContract("Vault", [], false);
+    const VaultAuction = await deployContract("VaultAuction", [], false);
     const VaultMath = await deployContract("VaultMath", [], false);
     const VaultTreasury = await deployContract("VaultTreasury", [], false);
 
     params.push(governance);
-    const VaultStorage = await deployContract("VaultStorage", params);
+    params.push(keeper);
+    const VaultStorage = await deployContract("VaultStorage", params, false);
 
     const arguments = [
-        UniswapMath.address,
+        _uniMathAddress,
         Vault.address,
         VaultAuction.address,
         VaultMath.address,
@@ -88,18 +90,7 @@ const hardhatInitializeContracts = async () => {
     // await tx.wait();
 };
 
-const deployContract = async (name, params, deploy = true) => {
-    console.log("Deploying ->", name);
-    const Contract = await ethers.getContractFactory(name);
-    let contract = await Contract.deploy(...params);
-    if (deploy) {
-        await contract.deployed();
-    }
-    return contract;
-};
-
-// hardhatInitializeContracts(governance, mainnetDeploymentParams).catch((error) => {
-hardhatDeployContractsInParallel(governance, mainnetDeploymentParams).catch((error) => {
+hardhatInitializeContracts(governance, governance, mainnetDeploymentParams).catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });

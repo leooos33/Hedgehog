@@ -4,7 +4,7 @@ const { wethAddress, usdcAddress, _biggestUSDCHolder } = require("./common");
 const { resetFork, logBlock, getUSDC, getERC20Balance, mineSomeBlocks } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("VaultMath", function () {
+describe.skip("VaultMath: isPriceRebalance", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();

@@ -48,14 +48,22 @@ const getERC20Balance = async (account, tokenAddress) => {
     return (await ERC20.balanceOf(account)).toString();
 };
 
-const approveERC20 = async (owner, account, amount, tokenAddress) => {
+const approveERC20 = async (owner, accountAddress, amount, tokenAddress) => {
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
-    await ERC20.connect(owner).approve(account, amount);
+    await ERC20.connect(owner).approve(
+        accountAddress,
+        amount
+        //TODO: change gas during tests
+        // {
+        //     gasLimit: 2500000,
+        //     gasPrice: 11000000000,
+        // }
+    );
 };
 
-const getERC20Allowance = async (owner, spender, tokenAddress) => {
+const getERC20Allowance = async (ownerAddress, spenderAddress, tokenAddress) => {
     const ERC20 = await ethers.getContractAt("IWETH", tokenAddress);
-    return (await ERC20.allowance(owner, spender)).toString();
+    return (await ERC20.allowance(ownerAddress, spenderAddress)).toString();
 };
 
 const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
@@ -69,8 +77,8 @@ const getAndApprove = async (actor, contractAddress, wethInput, usdcInput, osqth
 };
 
 const getAndApprove2 = async (actor, contractAddress, wethInput, usdcInput, osqthInput) => {
-    await getWETH(wethInput, actor.address);
-    await getUSDC(usdcInput, actor.address);
+    await getWETH(wethInput, actor.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
+    await getUSDC(usdcInput, actor.address, "0xf885bdd59e5652fe4940ca6b8c6ebb88e85a5a40");
     await getOSQTH(osqthInput, actor.address, _biggestOSqthHolder);
 
     await approveERC20(actor, contractAddress, wethInput, wethAddress);
@@ -78,7 +86,17 @@ const getAndApprove2 = async (actor, contractAddress, wethInput, usdcInput, osqt
     await approveERC20(actor, contractAddress, osqthInput, osqthAddress);
 };
 
+const getSnapshot = async (address) => {
+    return {
+        WETH: await getERC20Balance(address, wethAddress),
+        USDC: await getERC20Balance(address, usdcAddress),
+        oSQTH: await getERC20Balance(address, osqthAddress),
+        ETH: await ethers.provider.getBalance(address),
+    };
+};
+
 module.exports = {
+    getSnapshot,
     getAndApprove,
     getAndApprove2,
     getOSQTH,

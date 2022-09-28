@@ -10,6 +10,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
@@ -21,8 +22,9 @@ import "hardhat/console.sol";
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
-    address public addressAuction = 0xA9a68eA2746793F43af0f827EC3DbBb049359067;
-    address public addressMath = 0xfbcF638ea33A5F87D1e39509E7deF653958FA9C4;
+    address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
+    address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressTreasury = 0xDF374d19021831E785212F00837B5709820AA769;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
@@ -83,6 +85,8 @@ contract Rebalancer is Ownable {
 
         require(isTimeRebalance, "Not time");
 
+        IVaultTreasury(addressTreasury).externalPoke();
+
         (
             uint256 targetEth,
             uint256 targetUsdc,
@@ -90,7 +94,7 @@ contract Rebalancer is Ownable {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getAuctionParams(auctionTriggerTime);
+        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
         // console.log("targetEth %s", targetEth);
         // console.log("targetUsdc %s", targetUsdc);
@@ -191,6 +195,7 @@ contract Rebalancer is Ownable {
 
         uint256 ethBefore = IERC20(weth).balanceOf(address(this));
 
+        // console.log(data.type_of_arbitrage);
         if (data.type_of_arbitrage == 1) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(weth));
             borrowedDToken1.borrow(0, data.amount1);
@@ -499,6 +504,6 @@ contract Rebalancer is Ownable {
         console.log(">> profit USDC %s", IERC20(usdc).balanceOf(address(this)));
         console.log(">> profit oSQTH %s", IERC20(osqth).balanceOf(address(this)));
         require(IERC20(weth).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
-        revert("Success");
+        // revert("Success");
     }
 }

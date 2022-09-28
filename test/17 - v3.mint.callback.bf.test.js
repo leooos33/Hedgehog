@@ -18,7 +18,7 @@ const abi = ethers.utils.defaultAbiCoder;
 
 const ownable = require("./helpers/abi/ownable");
 
-describe.skip("Mainnet Infrustructure Test", function () {
+describe.skip("V3 mint callback check bf", function () {
     it("1 test", async function () {
         this.skip();
         await resetFork(15278550);

@@ -18,7 +18,7 @@ interface IAuction {
         uint256 minAmountOsqth
     ) external;
 
-    function getAuctionParams(uint256 _auctionTriggerTime)
+    function getParams(uint256 _auctionTriggerTime)
         external
         view
         returns (

@@ -4,8 +4,6 @@ pragma solidity =0.8.4;
 
 import {Constants} from "../libraries/Constants.sol";
 
-import "hardhat/console.sol";
-
 interface IVaultStorage {
     function orderEthUsdcLower() external view returns (int24);
 
@@ -47,6 +45,10 @@ interface IVaultStorage {
 
     function minPriceMultiplier() external view returns (uint256);
 
+    function depositCount() external view returns (uint256);
+
+    function setDepositCount(uint256 _depositCount) external;
+
     function auctionTime() external view returns (uint256);
 
     function adjParam() external view returns (uint256);
@@ -86,5 +88,9 @@ interface IVaultStorage {
 
     function governance() external view returns (address);
 
+    function keeper() external view returns (address);
+
     function setGovernance(address _governance) external;
+
+    function setKeeper(address _keeper) external;
 }

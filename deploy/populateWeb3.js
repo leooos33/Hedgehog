@@ -1,4 +1,4 @@
-// process.exit(0); // Block file in order to not accidentally deploy
+process.exit(0); // Block file in order to not accidentally deploy
 
 const Web3 = require("Web3");
 const { IFURA_MAINNET_URL } = require("../shared/config");

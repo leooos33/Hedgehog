@@ -8,6 +8,7 @@ pragma solidity =0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
 
 import "hardhat/console.sol";
@@ -18,6 +19,7 @@ contract MockRebalancer is Ownable {
     address public constant _addressAuction = 0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D;
     IAuction public constant vaultAuction = IAuction(_addressAuction);
     IVaultMath public constant vaultMath = IVaultMath(0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E);
+    IVaultTreasury public constant vaultTreasury = IVaultTreasury(0x7580708993de7CA120E957A62f26A5dDD4b3D8aC);
 
     struct MyCallbackData {
         uint256 type_of_arbitrage;
@@ -26,6 +28,10 @@ contract MockRebalancer is Ownable {
     }
 
     constructor() Ownable() {}
+
+    function poke() public {
+        vaultTreasury.externalPoke();
+    }
 
     function rebalance() public view onlyOwner returns (uint256) {
         (bool isTimeRebalance, uint256 auctionTriggerTime) = vaultMath.isTimeRebalance();
@@ -39,7 +45,7 @@ contract MockRebalancer is Ownable {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = vaultAuction.getAuctionParams(auctionTriggerTime);
+        ) = vaultAuction.getParams(auctionTriggerTime);
 
         if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
             console.log("type_of_arbitrage 1");

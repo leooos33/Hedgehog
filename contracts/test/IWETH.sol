@@ -23,6 +23,4 @@ interface IWETH {
         address to,
         uint256 value
     ) external returns (bool success);
-
-    function deposit() external;
 }

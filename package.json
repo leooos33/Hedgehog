@@ -14,7 +14,9 @@
     "deploy:mainnet": "npx hardhat run deploy/mainnet-deploy.js --network mainnet",
     "rebalance": "npx hardhat run deploy/rebalance.js --network mainnet",
     "verify": "npx hardhat verify <contract address> --network ropsten --constructor-args deploy/arguments.js",
-    "node": "npx hardhat node"
+    "node": "SIMULATION=true npx hardhat node",
+    "sim1": "SIMULATION=true npx hardhat run simulation/oneReb.js --network localhost",
+    "sim2": "SIMULATION=true npx hardhat run simulation/quickReb.js --network localhost"
   },
   "devDependencies": {
     "@nomiclabs/hardhat-etherscan": "^3.1.0",

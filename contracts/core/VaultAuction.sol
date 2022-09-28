@@ -17,8 +17,6 @@ import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 
-import "hardhat/console.sol";
-
 contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
@@ -50,13 +48,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //EthUsdc price at last rebalance
         uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
-
+        
         uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
-
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
         // no rebalance if the price change <= rebalanceThreshold
-
         if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0) {
             IVaultStorage(vaultStorage).setSnapshot(
                 IVaultStorage(vaultStorage).orderEthUsdcLower(),
@@ -68,7 +64,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 cachedValue,
                 cachedPrice
             );
-            console.log("no rebalance %s");
+
             emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
         } else {
             _executeAuction(
@@ -177,6 +173,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.totalValue,
             params.ethUsdcPrice
         );
+
+        IVaultStorage(vaultStorage).setDepositCount(0);
+
     }
 
     /**
@@ -210,7 +209,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             //scope to avoid stack too deep error
             //current implied volatility
             uint256 cIV = IVaultMath(vaultMath).getIV();
-
             //previous implied volatility
             uint256 pIV = IVaultStorage(vaultStorage).ivAtLastRebalance();
 
@@ -218,7 +216,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             bool isPosIVbump = cIV < pIV;
 
             priceMultiplier = IVaultMath(vaultMath).getPriceMultiplier(_auctionTriggerTime);
-
             //expected IV bump
             uint256 expIVbump;
             if (isPosIVbump) {
@@ -229,8 +226,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 weight = priceMultiplier.div(priceMultiplier + uint256(1e18)) - uint256(1e16).div(cIV);
             }
             uint256 cachedBump = expIVbump.mul(2e18).sub(2e18);
-            expIVbump = cachedBump > uint256(1e18) ? uint256(1e18) : cachedBump;
-
+            expIVbump = cachedBump > uint256(99e16) ? uint256(99e16) : cachedBump;
             //boundaries for auction prices (current price * multiplier)
             boundaries = _getBoundaries(
                 ethUsdcPrice.mul(priceMultiplier),
@@ -381,7 +377,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
      * @return usdcBalance current USDC balance
      * @return osqthBalance current Osqth balance
      */
-    function getAuctionParams(uint256 _auctionTriggerTime)
+    function getParams(uint256 _auctionTriggerTime)
         external
         view
         override

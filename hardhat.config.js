@@ -8,6 +8,7 @@ const {
     ETHERSCAN_KEY,
     ROPSTEN_DEPLOYMENT_KEY,
     IFURA_ROPSTEN_URL,
+    MAINNET_DEPLOYMENT_KEY_OLD,
     MAINNET_DEPLOYMENT_KEY,
     IFURA_MAINNET_URL,
 } = require("./shared/config");
@@ -22,17 +23,32 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
 });
 
 const CHAIN_IDS = {
-    hardhat: 31337,
+    hardhat: 1,
 };
+
+const test = {
+    allowUnlimitedContractSize: process.env.DEBUG ? true : false,
+    chainId: CHAIN_IDS.hardhat,
+    forking: getForkingParams(),
+    // gasLimit: 3000000,
+    // gas: 1800000,
+    // gasPrice: 18000000000,
+};
+
+const simulate = {
+    allowUnlimitedContractSize: true,
+    chainId: CHAIN_IDS.hardhat,
+    forking: getForkingParams(15534544),
+    gasPrice: 18000000000,
+    // mining: {
+    //     auto: true,
+    //     interval: 0,
+    // },
+};
+
 module.exports = {
     networks: {
-        hardhat: {
-            allowUnlimitedContractSize: process.env.DEBUG ? true : false,
-            chainId: CHAIN_IDS.hardhat,
-            forking: getForkingParams(),
-            // gasLimit: 2100000,
-            // gasPrice: 8000000000,
-        },
+        hardhat: process.env.SIMULATION ? simulate : test,
         ropsten: {
             url: IFURA_ROPSTEN_URL,
             accounts: [ROPSTEN_DEPLOYMENT_KEY],
@@ -40,8 +56,8 @@ module.exports = {
         },
         mainnet: {
             url: IFURA_MAINNET_URL,
-            accounts: [MAINNET_DEPLOYMENT_KEY],
-            gasPrice: 5000000000,
+            accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
+            gasPrice: 4000000000,
         },
     },
     solidity: {
@@ -52,6 +68,10 @@ module.exports = {
             },
             {
                 version: "0.8.4",
+                optimizer: { enabled: true, runs: 10000 },
+            },
+            {
+                version: "0.8.0",
                 optimizer: { enabled: true, runs: 10000 },
             },
         ],

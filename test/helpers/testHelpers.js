@@ -50,6 +50,7 @@ const assertWP = (a, b, pres = 4, num = 18) => {
 
     return false;
 };
+
 // console.log(assertWP("33111111", "33111111", 6, 6)); // true
 // console.log(assertWP("33111111", "33111112", 6, 6)); // false
 // console.log(assertWP("33111111", "33111112", 5, 6)); // true
@@ -75,10 +76,10 @@ const logBlock = async () => {
     console.log("> blockNumber:", blockNumBefore, "timestamp:", timestampBefore);
 };
 
-const logBalance = async (address) => {
-    console.log(await getERC20Balance(address, wethAddress));
-    console.log(await getERC20Balance(address, usdcAddress));
-    console.log(await getERC20Balance(address, osqthAddress));
+const logBalance = async (address, label = "") => {
+    console.log(label + " ETH", await getERC20Balance(address, wethAddress));
+    console.log(label + " USDC", await getERC20Balance(address, usdcAddress));
+    console.log(label + " oSQTH", await getERC20Balance(address, osqthAddress));
 };
 
 module.exports = {

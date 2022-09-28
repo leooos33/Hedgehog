@@ -9,10 +9,12 @@ import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
 import {Constants} from "../libraries/Constants.sol";
 import {Faucet} from "../libraries/Faucet.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
-import "hardhat/console.sol";
 
 contract VaultStorage is IVaultStorage, Faucet {
+    //@dev governance address
     address public override governance;
+    //@dev rebalancer address 
+    address public override keeper;
 
     //@dev Uniswap pools tick spacing
     int24 public override tickSpacing = 60;
@@ -24,7 +26,6 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override cap;
 
     //@dev lower and upper ticks in Uniswap pools
-    // Removed
     int24 public override orderEthUsdcLower;
     int24 public override orderEthUsdcUpper;
     int24 public override orderOsqthEthLower;
@@ -36,7 +37,7 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev ETH/USDC price when last rebalance executed
     uint256 public override ethPriceAtLastRebalance;
 
-    //@dev ETH/USDC price when last rebalance executed
+    //@dev min price change for initiating rebalance (1.69%)
     uint256 public override rebalanceThreshold = 10169e14;
 
     //@dev implied volatility when last rebalance executed
@@ -46,12 +47,12 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override rebalanceTimeThreshold;
     uint256 public override rebalancePriceThreshold;
 
-    //@dev iv adjustment parameter
-    uint256 public override adjParam = 100000000000000000;
+    //@dev iv adjustment parameter (0.05)
+    uint256 public override adjParam = 5e16;
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 900;
+    int24 public override baseThreshold = 1020;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
@@ -70,8 +71,12 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
     uint256 public override minPriceMultiplier;
     uint256 public override maxPriceMultiplier;
-
+    
+    //@dev system can be paused
     bool public override isSystemPaused = false;
+    
+    //@dev counts deposits between the rebalances (used in withdraw procedure) 
+    uint256 public override depositCount = 0;
 
     /**
      * @notice strategy constructor
@@ -82,6 +87,7 @@ contract VaultStorage is IVaultStorage, Faucet {
        @param _minPriceMultiplier minimum auction price multiplier (0.95*1e18 = min auction price is 95% of twap)
        @param _maxPriceMultiplier maximum auction price multiplier (1.05*1e18 = max auction price is 105% of twap)
        @param _governance governance address
+       @param _keeper keeper address
      */
     constructor(
         uint256 _cap,
@@ -91,7 +97,8 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _minPriceMultiplier,
         uint256 _maxPriceMultiplier,
         uint256 _protocolFee,
-        address _governance
+        address _governance,
+        address _keeper
     ) Faucet() {
         cap = _cap;
 
@@ -108,14 +115,23 @@ contract VaultStorage is IVaultStorage, Faucet {
         ivAtLastRebalance = 0;
 
         governance = _governance;
+        keeper = _keeper;
     }
 
     /**
-     * @notice owner can transfer his admin power to another address
+     * @notice governance can transfer his admin power to another address
      * @param _governance new governance address
      */
     function setGovernance(address _governance) external override onlyGovernance {
         governance = _governance;
+    }
+
+    /**
+     * @notice keeper can transfer his admin power to another address
+     * @param _keeper new keeper address
+     */
+    function setKeeper(address _keeper) external override onlyKeeper {
+        keeper = _keeper;
     }
 
     /**
@@ -133,6 +149,13 @@ contract VaultStorage is IVaultStorage, Faucet {
      */
     function setProtocolFee(uint256 _protocolFee) external onlyGovernance {
         protocolFee = _protocolFee;
+    }
+
+    /**
+     * @notice change deposit count
+     */
+    function setDepositCount(uint256 _depositCount) external override onlyVault {
+        depositCount = _depositCount;
     }
 
     /**
@@ -191,6 +214,10 @@ contract VaultStorage is IVaultStorage, Faucet {
         maxPriceMultiplier = _maxPriceMultiplier;
     }
 
+    /**
+     * @notice owner can set the min rebalance threshold after which time-based rebalance can be activated 
+     * @param _rebalanceThreshold the min rebalance threshold
+     */
     function setRebalanceThreshold(uint256 _rebalanceThreshold) external onlyGovernance {
         rebalanceThreshold = _rebalanceThreshold;
     }
@@ -205,7 +232,7 @@ contract VaultStorage is IVaultStorage, Faucet {
         uint256 _ivAtLastRebalance,
         uint256 _totalValue,
         uint256 _ethPriceAtLastRebalance
-    ) public override onlyVault {
+    ) external override onlyVault {
         orderEthUsdcLower = _orderEthUsdcLower;
         orderEthUsdcUpper = _orderEthUsdcUpper;
         orderOsqthEthLower = _orderOsqthEthLower;
@@ -258,29 +285,5 @@ contract VaultStorage is IVaultStorage, Faucet {
         isSystemPaused = _pause;
 
         emit SharedEvents.Paused(_pause);
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setTimeAtLastRebalance(uint256 _timeAtLastRebalance) public onlyGovernance {
-        timeAtLastRebalance = _timeAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setIvAtLastRebalance(uint256 _ivAtLastRebalance) public onlyGovernance {
-        ivAtLastRebalance = _ivAtLastRebalance;
-    }
-
-    /**
-     * Used to for unit testing
-     */
-    // TODO: remove on main
-    function setEthPriceAtLastRebalance(uint256 _ethPriceAtLastRebalance) public onlyGovernance {
-        ethPriceAtLastRebalance = _ethPriceAtLastRebalance;
     }
 }

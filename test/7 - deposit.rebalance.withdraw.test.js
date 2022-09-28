@@ -9,14 +9,13 @@ const {
     getERC20Balance,
     getAndApprove,
     assertWP,
+    mineSomeBlocks,
     logBlock,
     logBalance,
-    mineSomeBlocks,
 } = require("./helpers");
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 
-describe("Strategy rebalance sell", function () {
-    const gasSnapshot = {};
+describe.skip("Strategy rebalance, sell with comissions", function () {
     let swaper, depositor, keeper, governance;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -26,11 +25,12 @@ describe("Strategy rebalance sell", function () {
         swaper = signers[9];
     });
 
-    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx, receipt;
+    let Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage, tx;
     it("Should deploy contract", async function () {
         await resetFork();
 
         const params = [...deploymentParams];
+        params[6] = "10000";
         [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
         await logBlock();
         //14487789 1648646654
@@ -48,9 +48,9 @@ describe("Strategy rebalance sell", function () {
     });
 
     it("deposit", async function () {
-        const wethInput = "17630456391812729437";
+        const wethInput = "17630456391863397407";
         const usdcInput = "29892919002";
-        const osqthInput = "33072912442930906879";
+        const osqthInput = "33072912443025954753";
 
         await getAndApprove(depositor, Vault.address, wethInput, usdcInput, osqthInput);
 
@@ -59,10 +59,16 @@ describe("Strategy rebalance sell", function () {
         expect(await getERC20Balance(depositor.address, usdcAddress)).to.equal(usdcInput);
         expect(await getERC20Balance(depositor.address, osqthAddress)).to.equal(osqthInput);
 
-        tx = await Vault.connect(depositor).deposit(wethInput, usdcInput, osqthInput, depositor.address, "0", "0", "0");
-        receipt = await tx.wait();
-        console.log("> Gas used deposit: %s", receipt.gasUsed);
-        gasSnapshot.deposit = receipt.gasUsed.toString();
+        tx = await Vault.connect(depositor).deposit(
+            "17630456391863397407",
+            "29892919002",
+            "33072912443025954753",
+            depositor.address,
+            "0",
+            "0",
+            "0"
+        );
+        await tx.wait();
 
         // Balances
         const userEthBalanceAfterDeposit = await getERC20Balance(depositor.address, wethAddress);
@@ -75,17 +81,17 @@ describe("Strategy rebalance sell", function () {
         console.log("> userOsqthBalanceAfterDeposit %s", userOsqthBalanceAfterDeposit);
         console.log("> userShareAfterDeposit", userShareAfterDeposit);
 
-        expect(await userEthBalanceAfterDeposit).to.equal("38000978");
+        expect(await userEthBalanceAfterDeposit).to.equal("50667970");
         expect(await userUsdcBalanceAfterDeposit).to.equal("0");
-        expect(await userOsqthBalanceAfterDeposit).to.equal("71285904");
+        expect(await userOsqthBalanceAfterDeposit).to.equal("95047874");
 
         // Shares
-        expect(await userShareAfterDeposit).to.equal("35260912783549456917");
+        expect(await userShareAfterDeposit).to.equal("35260912783625458873");
     });
 
-    it("swap_before_rebalance", async function () {
+    it("swap", async function () {
         const testAmount = utils.parseUnits("1000", 18).toString();
-        console.log("> Swap %s ETH for USDC", testAmount / 1e18);
+        console.log(testAmount);
 
         await getWETH(testAmount, contractHelper.address);
 
@@ -94,6 +100,7 @@ describe("Strategy rebalance sell", function () {
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal(testAmount);
 
         amount = await contractHelper.connect(swaper).getTwap();
+        // console.log(amount);
 
         tx = await contractHelper.connect(swaper).swapWETH_USDC(testAmount);
         await tx.wait();
@@ -110,51 +117,27 @@ describe("Strategy rebalance sell", function () {
         // Balances
         expect(await getERC20Balance(contractHelper.address, wethAddress)).to.equal("0");
         expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
-
-        await mineSomeBlocks(83622);
-    });
-
-    it("rebalance with C21", async function () {
-        await mineSomeBlocks(83622);
-
-        let errored = false;
-        try {
-            tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, "23539257397739234184");
-            receipt = await tx.wait();
-        } catch (err) {
-            if (err.message == `VM Exception while processing transaction: reverted with reason string 'C21'`) {
-                errored = true;
-            } else console.error(err.message);
-        }
-
-        assert(errored, "No error due to C21");
     });
 
     it("rebalance", async function () {
+        await mineSomeBlocks(83622);
+        await mineSomeBlocks(83622);
+
         const wethInput = wethInputR;
         const usdcInput = usdcInputR;
         const osqthInput = osqthInputR;
 
         // Balances
-        const keeperEthBalanceBeforeRebalance = await getERC20Balance(keeper.address, wethAddress);
-        const keeperUsdcBalanceBeforeRebalance = await getERC20Balance(keeper.address, usdcAddress);
-        const keeperOsqthBalanceBeforeRebalance = await getERC20Balance(keeper.address, osqthAddress);
-
-        expect(keeperEthBalanceBeforeRebalance).to.equal(wethInput);
-        expect(keeperUsdcBalanceBeforeRebalance).to.equal(usdcInput);
-        expect(keeperOsqthBalanceBeforeRebalance).to.equal(osqthInput);
-
-        console.log("> Keeper ETH balance before rebalance %s", keeperEthBalanceBeforeRebalance);
-        console.log("> Keeper USDC balance before rebalance %s", keeperUsdcBalanceBeforeRebalance);
-        console.log("> Keeper oSQTH balance before rebalance %s", keeperOsqthBalanceBeforeRebalance);
+        expect(await getERC20Balance(keeper.address, wethAddress)).to.equal(wethInput);
+        expect(await getERC20Balance(keeper.address, usdcAddress)).to.equal(usdcInput);
+        expect(await getERC20Balance(keeper.address, osqthAddress)).to.equal(osqthInput);
 
         tx = await VaultAuction.connect(keeper).timeRebalance(keeper.address, 0, 0, 0);
         receipt = await tx.wait();
         console.log("> Gas used timeRebalance: %s", receipt.gasUsed);
-        gasSnapshot.timeRebalance = receipt.gasUsed.toString();
 
         // Balances
-        await logBalance(keeper.address);
+        //await logBalance(keeper.address);
 
         const ethAmountK = await getERC20Balance(keeper.address, wethAddress);
         const usdcAmountK = await getERC20Balance(keeper.address, usdcAddress);
@@ -163,19 +146,28 @@ describe("Strategy rebalance sell", function () {
         console.log("> Keeper USDC balance after rebalance %s", usdcAmountK);
         console.log("> Keeper oSQTH balance after rebalance %s", osqthAmountK);
 
-        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "1198102927555124878", 1, 18), "1!");
-        // assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "9044128865", 1, 6), "2!"); // Deffers between test runs significantly
-        // assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "36137303615812121037", 1, 18), "3!"); // Deffers between test runs significantly
+        await logBalance(keeper.address);
+        assert(assertWP(await getERC20Balance(keeper.address, wethAddress), "1198102697859594378", 1, 18), "1!");
+        //assert(assertWP(await getERC20Balance(keeper.address, usdcAddress), "3153007043", 1, 6), "2!"); // Deffers between test runs significantly
+        // assert(assertWP(await getERC20Balance(keeper.address, osqthAddress), "46080448846115023957", 4, 18), "3!"); // Deffers between test runs significantly
 
         const amount = await VaultMath.getTotalAmounts();
-        console.log("> Strategy ETH balance after rebalance %s", amount[0].toString());
-        console.log("> Strategy USDC balance after rebalance %s", amount[1].toString());
-        console.log("> Strategy oSQTH balance after rebalance %s", amount[2].toString());
+
+        const ethAmountS = amount[0].toString();
+        const usdcAmountS = amount[1].toString();
+        const osqthAmountS = amount[2].toString();
+        console.log("> Strategy ETH balance after rebalance %s", ethAmountS);
+        console.log("> Strategy USDC balance after rebalance %s", usdcAmountS);
+        console.log("> Strategy oSQTH balance after rebalance %s", osqthAmountS);
+
+        // assert(assertWP(ethAmountS, "17630824578622449990", 1, 18), "1!"); // Deffers between test runs significantly
+        // assert(assertWP(usdcAmountS, "41398580341", 1, 6), "2!"); // Deffers between test runs significantly
+        // assert(assertWP(osqthAmountS, "19533654925701341611", 4, 18), "3!"); // Deffers between test runs significantly
     });
 
-    it("swap_after_rebalance_USDC_to_ETH", async function () {
+    it("swap", async function () {
         const testAmount = utils.parseUnits("10", 12).toString();
-        console.log("> Swap %s USDC to ETH", testAmount / 1e6);
+        console.log(testAmount);
 
         await getUSDC(testAmount, contractHelper.address);
 
@@ -187,8 +179,7 @@ describe("Strategy rebalance sell", function () {
         // console.log(amount);
 
         tx = await contractHelper.connect(swaper).swapUSDC_WETH(testAmount);
-        receipt = await tx.wait();
-        // console.log("> Gas used:", receipt.gasUsed.toString());
+        await tx.wait();
 
         for (const i of Array(6)) {
             await hre.network.provider.request({
@@ -200,36 +191,46 @@ describe("Strategy rebalance sell", function () {
         // console.log(amount);
 
         // Balances
-        assert(
-            assertWP(await getERC20Balance(contractHelper.address, wethAddress), "2932061295511850885804", 2, 18),
-            "1!"
+        assert(assertWP(await getERC20Balance(contractHelper.address, wethAddress), "2932065821691604666588", 4, 18));
+        expect(await getERC20Balance(contractHelper.address, usdcAddress)).to.equal("3369149847107");
+
+        const amount = await VaultMath.getTotalAmounts();
+
+        console.log(
+            "Strategy ETH amount after second swap %s, USDC Amount %s, oSQTH amount %s",
+            amount[0],
+            amount[1],
+            amount[2]
         );
-        assert(assertWP(await getERC20Balance(contractHelper.address, usdcAddress), "3369149847107", 4, 6), "1!");
+
+        const amountDeposit = await Vault.calcSharesAndAmounts("1000000000000000000", 0, 0, 0, true);
+
+        console.log("> USDC to deposit %s, oSQTH to deposit %s", amountDeposit[0], amountDeposit[1]);
     });
 
     it("withdraw", async function () {
         // Shares
-        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("35260912783549456917");
+        expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("35260912783625458873");
 
-        tx = await Vault.connect(depositor).withdraw("35260912783549456917", "0", "0", "0");
-        receipt = await tx.wait();
-        console.log("> Gas used withdraw:", receipt.gasUsed.toString());
-        gasSnapshot.withdraw = receipt.gasUsed.toString();
+        tx = await Vault.connect(depositor).withdraw("35260912783625458873", "0", "0", "0");
+        await tx.wait();
 
         // Balances
-        //await logBalance(depositor.address);
+        const ethBalance = await getERC20Balance(depositor.address, wethAddress);
+        const usdcBalance = await getERC20Balance(depositor.address, usdcAddress);
+        const osqthBalance = await getERC20Balance(depositor.address, osqthAddress);
+        console.log("> Eth balance %s", ethBalance);
+        console.log("> USDC balance %s", usdcBalance);
+        console.log("> oSQTH balance %s", osqthBalance);
 
-        assert(assertWP(await getERC20Balance(depositor.address, wethAddress), "15338119863405932623", 1, 18), "1!");
-        // assert(assertWP(await getERC20Balance(depositor.address, usdcAddress), "45760137180", 1, 6), "2!"); // Deffers between test runs significantly
-        // assert(assertWP(await getERC20Balance(depositor.address, osqthAddress), "19533654925741070050", 1, 18), "3!"); // Deffers between test runs significantly
+        assert(assertWP(ethBalance, "15338120124891306475", 1, 18), "!");
+        // assert(assertWP(usdcBalance, "52810124174", 1, 6), "!"); // Deffers between test runs significantly
+        // assert(assertWP(osqthBalance, "9590509695533215004", 3, 18), "!"); // Deffers between test runs significantly
 
         // Shares
-        //console.log("> Shares after withdraw %s", await getERC20Balance(depositor.address, Vault.address));
         expect(await getERC20Balance(depositor.address, Vault.address)).to.equal("0");
 
         const amount = await VaultMath.getTotalAmounts();
         console.log("> Total amounts:", amount);
-
-        console.log(gasSnapshot);
     });
 });

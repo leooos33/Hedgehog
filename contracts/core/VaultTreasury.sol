@@ -18,8 +18,6 @@ import {IUniswapMath} from "../libraries/uniswap/IUniswapMath.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 import {Constants} from "../libraries/Constants.sol";
 
-import "hardhat/console.sol";
-
 contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallback, Faucet {
     using SafeERC20 for IERC20;
 
@@ -43,12 +41,33 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
     }
 
     /// @dev Wrapper around `IUniswapV3Pool.positions()`.
+    function _position(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper
+    )
+        internal
+        view
+        returns (
+            uint128,
+            uint256,
+            uint256,
+            uint128,
+            uint128
+        )
+    {
+        bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
+
+        return IUniswapV3Pool(pool).positions(positionKey);
+    }
+
+    /// @dev Wrapper around `IUniswapV3Pool.positions()`.
     function position(
         address pool,
         int24 tickLower,
         int24 tickUpper
     )
-        public
+        external
         view
         override
         onlyContracts
@@ -60,11 +79,10 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
             uint128
         )
     {
-        bytes32 positionKey = PositionKey.compute(address(this), tickLower, tickUpper);
-        return IUniswapV3Pool(pool).positions(positionKey);
+        return _position(pool, tickLower, tickUpper);
     }
 
-    /// @dev return amount of tokens in both pools
+    /// @dev return amount of tokens for specified liquidity
     function allAmountsForLiquidity(
         Constants.Boundaries memory boundaries,
         uint128 liquidityEthUsdc,
@@ -102,7 +120,17 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper,
         uint128 liquidity
-    ) public override onlyContracts returns (uint256, uint256) {
+    ) external override onlyContracts returns (uint256, uint256) {
+        return _burn(pool, tickLower, tickUpper, liquidity);
+    }
+
+    /// @dev wrapper around "IUniswapV3Pool(pool).burn"
+    function _burn(
+        address pool,
+        int24 tickLower,
+        int24 tickUpper,
+        uint128 liquidity
+    ) internal returns (uint256, uint256) {
         return IUniswapV3Pool(pool).burn(tickLower, tickUpper, liquidity);
     }
 
@@ -112,10 +140,8 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper
     ) external override onlyContracts returns (uint256 collect0, uint256 collect1) {
-        address recipient = address(this);
-
         (collect0, collect1) = IUniswapV3Pool(pool).collect(
-            recipient,
+            address(this),
             tickLower,
             tickUpper,
             type(uint128).max,
@@ -174,24 +200,20 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         int24 tickLower,
         int24 tickUpper
     ) internal {
-        (uint128 liquidity, , , , ) = position(pool, tickLower, tickUpper);
+        (uint128 liquidity, , , , ) = _position(pool, tickLower, tickUpper);
 
         if (liquidity > 0) {
-            burn(pool, tickLower, tickUpper, 0);
+            _burn(pool, tickLower, tickUpper, 0);
         }
     }
 
-    /// @dev poke for ETH-USDC pool
-    function pokeEthUsdc() external override onlyVault {
+    /// @dev poke for ETH-USDC & ETH-oSQTH pool
+    function _pokePools() internal {
         poke(
             address(Constants.poolEthUsdc),
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
         );
-    }
-
-    /// @dev poke for ETH-oSQTH pool
-    function pokeEthOsqth() external override onlyVault {
         poke(
             address(Constants.poolEthOsqth),
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
@@ -199,9 +221,19 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         );
     }
 
+    /// @dev poke pools
+    function pokePools() external override onlyVault {
+        _pokePools();
+    }
+
+    /// @dev external poke to be called by rebalancer to update fees and get precise amounts to exchange 
+    function externalPoke() external override onlyKeeper {
+        _pokePools();
+    }
+
     /// @dev liquidity of the position in the ETH-USDC pool
     function positionLiquidityEthUsdc() external view override onlyVault returns (uint128) {
-        (uint128 liquidityEthUsdc, , , , ) = position(
+        (uint128 liquidityEthUsdc, , , , ) = _position(
             Constants.poolEthUsdc,
             IVaultStorage(vaultStorage).orderEthUsdcLower(),
             IVaultStorage(vaultStorage).orderEthUsdcUpper()
@@ -212,7 +244,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
 
     /// @dev liquidity of the position in the ETH-oSQTH pool
     function positionLiquidityEthOsqth() external view override onlyVault returns (uint128) {
-        (uint128 liquidityEthOsqth, , , , ) = position(
+        (uint128 liquidityEthOsqth, , , , ) = _position(
             Constants.poolEthOsqth,
             IVaultStorage(vaultStorage).orderOsqthEthLower(),
             IVaultStorage(vaultStorage).orderOsqthEthUpper()

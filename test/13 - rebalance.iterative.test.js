@@ -22,7 +22,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe("Macro test mainnet", function () {
+describe("Rebalance iterative", function () {
     let swaper, depositor1, depositor2, depositor3, keeper, governance, swapAmount;
     it("Should set actors", async function () {
         const signers = await ethers.getSigners();
@@ -187,11 +187,11 @@ describe("Macro test mainnet", function () {
         console.log("> OSQTH before swap:", await getERC20Balance(contractHelper.address, osqthAddress));
         console.log("> WETH before swap:", await getERC20Balance(contractHelper.address, wethAddress));
 
-        await mineSomeBlocks(40420);
+        await mineSomeBlocks(40301);
     });
 
     it("rebalance iterative with real rebalance", async function () {
-        //this.skip();
+        this.skip();
         const log = {};
         const Rebalancer = await ethers.getContractFactory("Rebalancer");
         rebalancer = await Rebalancer.deploy();
@@ -230,8 +230,8 @@ describe("Macro test mainnet", function () {
     }).timeout(1000000);
 
     it("rebalance with flash loan", async function () {
-        this.skip();
-        const Rebalancer = await ethers.getContractFactory("Rebalancer");
+        // this.skip();
+        const Rebalancer = await ethers.getContractFactory("BigRebalancer");
         rebalancer = await Rebalancer.deploy();
         await rebalancer.deployed();
 
@@ -241,8 +241,8 @@ describe("Macro test mainnet", function () {
         );
         await tx.wait();
 
-        await mineSomeBlocks(60 * 2);
-        await mineSomeBlocks(83069);
+        await mineSomeBlocks(800);
+        //await mineSomeBlocks(83069);
 
         console.log("> rebalancer ETH %s", await getERC20Balance(rebalancer.address, wethAddress));
         console.log("> rebalancer USDC %s", await getERC20Balance(rebalancer.address, usdcAddress));
@@ -252,20 +252,21 @@ describe("Macro test mainnet", function () {
         receipt = await arbTx.wait();
         console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);
 
-        console.log("> rebalancer ETH %s", await getERC20Balance(rebalancer.address, wethAddress));
-        console.log("> rebalancer USDC %s", await getERC20Balance(rebalancer.address, usdcAddress));
-        console.log("> rebalancer oSQTH %s", await getERC20Balance(rebalancer.address, osqthAddress));
+        const ethBalance = await getERC20Balance(rebalancer.address, wethAddress);
+        console.log("> arb profit ETH %s", ethBalance);
+        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
 
-        await rebalancer.collectProtocol("700000000000000000", 0, 0, governance.address);
+        await rebalancer.collectProtocol(ethBalance, 0, 0, governance.address);
         await arbTx.wait();
 
-        console.log("> rebalancer ETH %s", await getERC20Balance(rebalancer.address, wethAddress));
-        console.log("> rebalancer USDC %s", await getERC20Balance(rebalancer.address, usdcAddress));
-        console.log("> rebalancer oSQTH %s", await getERC20Balance(rebalancer.address, osqthAddress));
+        expect(await getERC20Balance(rebalancer.address, wethAddress)).to.equal("0");
+        expect(await getERC20Balance(rebalancer.address, usdcAddress)).to.equal("0");
+        expect(await getERC20Balance(rebalancer.address, osqthAddress)).to.equal("0");
     });
 
     it("rebalance iterative", async function () {
-        // this.skip();
+        this.skip();
         const testHolder = {};
         const MockRebalancer = await ethers.getContractFactory("MockRebalancer");
         mockRebalancer = await MockRebalancer.deploy();
@@ -274,6 +275,8 @@ describe("Macro test mainnet", function () {
         await mineSomeBlocks(83069);
 
         for (let i = 0; i < 60; i++) {
+            const ts = await mockRebalancer.poke();
+            await ts.wait();
             const res = (await mockRebalancer.rebalance()).toString();
             if (!testHolder[res]) testHolder[res] = 0;
             testHolder[res]++;
