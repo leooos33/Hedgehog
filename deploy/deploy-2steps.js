@@ -38,7 +38,7 @@ const hardhatDeployContractsInParallel = async () => {
     const VaultStorage = await deployContract("VaultStorage", mainnetDeploymentParams, false);
 
     const arguments = [
-        _uniMathAddress,
+        _uniMathAddressV2,
         Vault.address,
         VaultAuction.address,
         VaultMath.address,
@@ -88,7 +88,7 @@ const hardhatInitializeContracts = async () => {
     // await tx.wait();
 };
 
-hardhatDeployContractsInParallel().catch((error) => {
+hardhatInitializeContracts().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
