@@ -77,7 +77,7 @@ describe("Rebalance test mainnet", function () {
     it("aditional actions", async function () {
         this.skip();
 
-        // console.log(await VaultAuction.getAuctionParams("1660983213"));
+        // console.log(await VaultAuction.getParams("1660983213"));
         // return;
 
         //----- Approves -----
@@ -171,7 +171,7 @@ describe("Rebalance test mainnet", function () {
 
         res = await VaultMath.connect(actor).isTimeRebalance();
         // console.log(">", res);
-        res = await VaultAuction.getAuctionParams(1660598164);
+        res = await VaultAuction.getParams(1660598164);
         console.log(">", res[0].sub(res[3]).toString());
         console.log(">", res[1].sub(res[4]).toString());
         console.log(">", res[2].sub(res[5]).toString());
