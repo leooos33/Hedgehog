@@ -144,6 +144,8 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
         _burn(msg.sender, shares);
 
         uint256 ratio = shares.div(_totalSupply);
+
+        //poke pools to update fees
         IVaultTreasury(vaultTreasury).pokePools();
 
         uint256 amountEth;
@@ -151,6 +153,7 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
         uint256 amountOsqth;
 
         if (IVaultStorage(vaultStorage).depositCount() == 0) {
+            //if there were no deposits after rebalance auction -> burn share of the liquidity belonged to the user
             uint256 amountEth0;
             (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthUsdc,
@@ -167,25 +170,32 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
             );
             amountEth = amountEth0 + amountEth1;
         } else {
-            (uint256 ethBalance, uint256 usdcBalance, uint256 osqthBalance) = IVaultMath(vaultMath).getTotalAmounts();
-            amountEth = ethBalance.mul(ratio);
-            amountUsdc = usdcBalance.mul(ratio);
-            amountOsqth = osqthBalance.mul(ratio);
+            //if there were some deposits -> burn liquidity and match it with tokens that weren't provided to the pool yet
+            uint256 bETH = (_getBalance(Constants.weth).sub(IVaultStorage(vaultStorage).accruedFeesEth())).mul(ratio);
+            uint256 bUSDC = (_getBalance(Constants.usdc).sub(IVaultStorage(vaultStorage).accruedFeesUsdc())).mul(ratio);
+            uint256 bOSQTH = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStorage).accruedFeesOsqth())).mul(ratio);
 
-            IVaultMath(vaultMath).burnLiquidityShare(
+            uint256 amountEth0;
+            (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthUsdc,
                 IVaultStorage(vaultStorage).orderEthUsdcLower(),
                 IVaultStorage(vaultStorage).orderEthUsdcUpper(),
                 ratio
             );
-            IVaultMath(vaultMath).burnLiquidityShare(
+            uint256 amountEth1;
+            (amountEth1, amountOsqth) = IVaultMath(vaultMath).burnLiquidityShare(
                 Constants.poolEthOsqth,
                 IVaultStorage(vaultStorage).orderOsqthEthLower(),
                 IVaultStorage(vaultStorage).orderOsqthEthUpper(),
                 ratio
             );
-        }
 
+            amountEth = amountEth0.add(amountEth1).add(bETH);
+            amountUsdc = amountUsdc.add(bUSDC);
+            amountOsqth = amountOsqth.add(bOSQTH);  
+
+        }
+        
         require(amountEth != 0 || amountUsdc != 0 || amountOsqth != 0, "C6");
 
         require(amountEth >= amountEthMin, "C7");

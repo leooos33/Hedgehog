@@ -48,11 +48,11 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //EthUsdc price at last rebalance
         uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
+        
         uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
         // no rebalance if the price change <= rebalanceThreshold
-
         if (ratio <= IVaultStorage(vaultStorage).rebalanceThreshold() && cachedValue != 0) {
             IVaultStorage(vaultStorage).setSnapshot(
                 IVaultStorage(vaultStorage).orderEthUsdcLower(),
@@ -65,8 +65,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 cachedPrice
             );
 
-            IVaultStorage(vaultStorage).setDepositCount(0);
-
             emit SharedEvents.NoRebalance(keeper, auctionTriggerTime, ratio);
         } else {
             _executeAuction(
@@ -74,8 +72,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
                 auctionTriggerTime,
                 Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
             );
-
-            IVaultStorage(vaultStorage).setDepositCount(0);
 
             emit SharedEvents.TimeRebalance(keeper, auctionTriggerTime, minAmountEth, minAmountUsdc, minAmountOsqth);
         }
@@ -104,8 +100,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             auctionTriggerTime,
             Constants.AuctionMinAmounts(minAmountEth, minAmountUsdc, minAmountOsqth)
         );
-
-        IVaultStorage(vaultStorage).setDepositCount(0);
 
         emit SharedEvents.PriceRebalance(keeper, minAmountEth, minAmountUsdc, minAmountOsqth);
     }
@@ -179,6 +173,9 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
             params.totalValue,
             params.ethUsdcPrice
         );
+
+        IVaultStorage(vaultStorage).setDepositCount(0);
+
     }
 
     /**

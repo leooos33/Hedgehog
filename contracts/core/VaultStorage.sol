@@ -11,8 +11,9 @@ import {Faucet} from "../libraries/Faucet.sol";
 import {SharedEvents} from "../libraries/SharedEvents.sol";
 
 contract VaultStorage is IVaultStorage, Faucet {
+    //@dev governance address
     address public override governance;
-
+    //@dev rebalancer address 
     address public override keeper;
 
     //@dev Uniswap pools tick spacing
@@ -25,7 +26,6 @@ contract VaultStorage is IVaultStorage, Faucet {
     uint256 public override cap;
 
     //@dev lower and upper ticks in Uniswap pools
-    // Removed
     int24 public override orderEthUsdcLower;
     int24 public override orderEthUsdcUpper;
     int24 public override orderOsqthEthLower;
@@ -52,7 +52,7 @@ contract VaultStorage is IVaultStorage, Faucet {
 
     //@dev ticks thresholds for boundaries calculation
     //values for tests
-    int24 public override baseThreshold = 1440;
+    int24 public override baseThreshold = 1020;
 
     //@dev protocol fee expressed as multiple of 1e-6
     uint256 public override protocolFee;
@@ -71,9 +71,11 @@ contract VaultStorage is IVaultStorage, Faucet {
     //@dev start auction price multiplier for rebalance buy auction and reserve price for rebalance sell auction (scaled 1e18)
     uint256 public override minPriceMultiplier;
     uint256 public override maxPriceMultiplier;
-
+    
+    //@dev system can be paused
     bool public override isSystemPaused = false;
-
+    
+    //@dev counts deposits between the rebalances (used in withdraw procedure) 
     uint256 public override depositCount = 0;
 
     /**
@@ -212,6 +214,10 @@ contract VaultStorage is IVaultStorage, Faucet {
         maxPriceMultiplier = _maxPriceMultiplier;
     }
 
+    /**
+     * @notice owner can set the min rebalance threshold after which time-based rebalance can be activated 
+     * @param _rebalanceThreshold the min rebalance threshold
+     */
     function setRebalanceThreshold(uint256 _rebalanceThreshold) external onlyGovernance {
         rebalanceThreshold = _rebalanceThreshold;
     }

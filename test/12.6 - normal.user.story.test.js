@@ -102,6 +102,7 @@ describe.only("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
+
     it("rebalance1", async function () {
         await mineSomeBlocks(83622);
         await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
@@ -242,7 +243,6 @@ describe.only("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
-
     it("withdraw1", async function () {
         await logBalance(depositor1.address, "> userq Balance Before Witdraw");
         const allShares = await getERC20Balance(depositor1.address, Vault.address);
@@ -301,6 +301,8 @@ describe.only("User story with 5 swaps", function () {
 
         await logBalance(depositor5.address, "> user5 Balance After Witdraw");
         console.log("> user5 Share After Witdraw", await getERC20Balance(depositor5.address, Vault.address));
+        
+        await logBalance(VaultTreasury.address, "balances after %s");
     });
 
     // it("rebalance2", async function () {
