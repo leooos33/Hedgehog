@@ -31,11 +31,11 @@ const maxUint256 = "115792089237316195423570985008687907853269984665640564039457
 
 // Second deploy
 
-const _vaultAddressV2 = "";
-const _vaultAuctionAddressV2 = "";
-const _vaultMathAddressV2 = "";
-const _vaultTreasuryAddressV2 = "";
-const _vaultStorageAddressV2 = "";
+const _vaultAddressV2 = "0x6d4CA1177087924edfE0908ef655169EA766FDc3";
+const _vaultAuctionAddressV2 = "0x2f1D08D53d04559933dBF436a5cD15182a190110";
+const _vaultMathAddressV2 = "0x40B22821f694f1F3b226b57B5852d7832e2B5f3f";
+const _vaultTreasuryAddressV2 = "0x12804580C15F4050dda61D44AFC94623198848bC";
+const _vaultStorageAddressV2 = "0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a";
 const _uniMathAddressV2 = _uniMathAddress;
 
 const _governanceAddressV2 = "0x2f0b98eF1093B41897a99b76956Fb69025F1682b";
