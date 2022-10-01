@@ -32,10 +32,10 @@ describe.only("Rebalance test mainnet", function () {
     let actorAddress = _governanceAddress;
 
     it("Should deploy contract", async function () {
-        await resetFork(15651622);
+        await resetFork(15652267);
 
-        const signers = await ethers.getSigners();
-        deployer = signers[0];
+        // const signers = await ethers.getSigners();
+        // deployer = signers[0];
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -44,11 +44,11 @@ describe.only("Rebalance test mainnet", function () {
 
         hedgehogRebalancerDeployerV2 = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
 
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [_governanceAddressV2],
-        });
-        governance = await ethers.getSigner(_governanceAddressV2);
+        // await hre.network.provider.request({
+        //     method: "hardhat_impersonateAccount",
+        //     params: [_governanceAddressV2],
+        // });
+        // governance = await ethers.getSigner(_governanceAddressV2);
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
@@ -77,14 +77,14 @@ describe.only("Rebalance test mainnet", function () {
         console.log("addressAuction:", await Rebalancer.addressAuction());
         console.log("addressMath:", await Rebalancer.addressMath());
 
-        await getETH(governance.address, ethers.utils.parseEther("1.0"));
+        // await getETH(governance.address, ethers.utils.parseEther("1.0"));
         await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("1.0"));
 
-        tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
-        await tx.wait();
+        // tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
+        // await tx.wait();
 
-        tx = await VaultStorage.connect(hedgehogRebalancerDeployerV2).setKeeper(Rebalancer.address);
-        await tx.wait();
+        // tx = await VaultStorage.connect(hedgehogRebalancerDeployerV2).setKeeper(Rebalancer.address);
+        // await tx.wait();
     });
 
     it("mine some blocks", async function () {
