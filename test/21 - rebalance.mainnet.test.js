@@ -32,10 +32,7 @@ describe.only("Rebalance test mainnet", function () {
     let actorAddress = _governanceAddress;
 
     it("Should deploy contract", async function () {
-        await resetFork(15652267);
-
-        // const signers = await ethers.getSigners();
-        // deployer = signers[0];
+        await resetFork(15654730 - 1);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -43,12 +40,6 @@ describe.only("Rebalance test mainnet", function () {
         });
 
         hedgehogRebalancerDeployerV2 = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
-
-        // await hre.network.provider.request({
-        //     method: "hardhat_impersonateAccount",
-        //     params: [_governanceAddressV2],
-        // });
-        // governance = await ethers.getSigner(_governanceAddressV2);
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
@@ -78,7 +69,7 @@ describe.only("Rebalance test mainnet", function () {
         console.log("addressMath:", await Rebalancer.addressMath());
 
         // await getETH(governance.address, ethers.utils.parseEther("1.0"));
-        await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("1.0"));
+        // await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("1.0"));
 
         // tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
         // await tx.wait();
@@ -115,33 +106,18 @@ describe.only("Rebalance test mainnet", function () {
     it("rebalance with BigRebalancer", async function () {
         // this.skip();
 
-        //-- clean contracts
-        // const [owner, randomChad] = await ethers.getSigners();
-        // await owner.sendTransaction({
-        //     to: actor.address,
-        //     value: ethers.utils.parseEther("1.0"),
-        // });
+        console.log(await VaultMath.isTimeRebalance());
+        console.log(await VaultAuction.getParams("1664602992"));
 
-        // tx = await Rebalancer.connect(actor).collectProtocol(
-        //     await getERC20Balance(Rebalancer.address, wethAddress),
-        //     await getERC20Balance(Rebalancer.address, usdcAddress),
-        //     await getERC20Balance(Rebalancer.address, osqthAddress),
-        //     actor.address
-        // );
-        // await tx.wait();
-
-        // await transferAll(actor, randomChad.address, wethAddress);
-        // await transferAll(actor, randomChad.address, usdcAddress);
-        // await transferAll(actor, randomChad.address, osqthAddress);
-
-        //-- clean contracts
-
-        // await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
+        // await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("1.0"));
 
         await logBalance(Rebalancer.address, "> Rebalancer ");
         await logBalance(hedgehogRebalancerDeployerV2.address, "> actor ");
 
-        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).rebalance(0, 0);
+        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).rebalance(0, 0, {
+            gasPrice: 9000000000,
+            gasLimit: 3000000,
+        });
 
         receipt = await tx.wait();
         console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);

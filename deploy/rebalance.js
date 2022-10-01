@@ -13,7 +13,10 @@ const deposit = async () => {
     console.log("addressAuction:", await Rebalancer.addressAuction());
     console.log("addressMath:", await Rebalancer.addressMath());
 
-    tx = await Rebalancer.rebalance(0, 0, { nonce: 5 });
+    tx = await Rebalancer.rebalance(0, 0, {
+        gasPrice: 4000000000,
+        gasLimit: 3000000,
+    });
     await tx.wait();
 };
 
