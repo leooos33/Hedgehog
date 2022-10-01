@@ -110,6 +110,10 @@ contract BigRebalancer is Ownable {
         IERC20(WETH).approve(addressAuction, type(uint256).max);
     }
 
+    function setKeeper(address to) external onlyOwner {
+        IVaultStorage(addressStorage).setKeeper(to);
+    }
+
     function collectProtocol(
         uint256 amountEth,
         uint256 amountUsdc,

@@ -40,14 +40,16 @@ const _uniMathAddressV2 = _uniMathAddress;
 
 const _oneClickDepositAddressV2 = "0x468363E262999046BAFC5EA954768920ee349358";
 const _oneClickWithdrawAddressV2 = "0xeD14d82a2D3435571646dA537A52AbBC113F5140";
-const _bigRebalancerV2 = "0x9833c803b909ac02249B99c474CAFa2352CF18f9";
+const _bigRebalancerV2 = "0xc7F7A2a9267C5c59c81499c6D6FdCF257bA99f96";
 
 const _governanceAddressV2 = "0x2f0b98eF1093B41897a99b76956Fb69025F1682b";
-const _keeperAddressV2 = "0x4530DA167C5a751e48f35b2aa08F44570C03B7dd"; // this should bee
+const _hedgehogDeployerV2 = "0x4530DA167C5a751e48f35b2aa08F44570C03B7dd"; // this should bee
 const _deployerAddressV2 = "0x8f69766b870C45339E02A68ca8298861fDA8A563";
+const _keeperAddressV2 = _hedgehogDeployerV2;
 
 module.exports = {
     _bigRebalancerV2,
+    _hedgehogDeployerV2,
     _oneClickDepositAddressV2,
     _oneClickWithdrawAddressV2,
     _vaultAddressV2,
