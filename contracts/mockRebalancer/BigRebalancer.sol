@@ -18,8 +18,6 @@ import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
-
 // Rebalance flow
 
 // branch 1 (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance)
