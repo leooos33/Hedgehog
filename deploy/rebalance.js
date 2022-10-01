@@ -1,4 +1,4 @@
-// process.exit(0); // Block file in order to not accidentally deploy
+process.exit(0); // Block file in order to not accidentally deploy
 
 const { ethers } = require("hardhat");
 const { utils } = ethers;
@@ -13,7 +13,7 @@ const deposit = async () => {
     console.log("addressAuction:", await Rebalancer.addressAuction());
     console.log("addressMath:", await Rebalancer.addressMath());
 
-    tx = await Rebalancer.rebalance(0, 0);
+    tx = await Rebalancer.rebalance(0, 0, { nonce: 5 });
     await tx.wait();
 };
 
