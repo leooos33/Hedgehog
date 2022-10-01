@@ -10,7 +10,8 @@ const {
     _vaultMathAddressV2,
     _vaultStorageAddressV2,
     _governanceAddressV2,
-    _keeperAddressV2,
+    _bigRebalancerV2,
+    _hedgehogRebalancerDeployerV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -31,29 +32,23 @@ describe.only("Rebalance test mainnet", function () {
     let actorAddress = _governanceAddress;
 
     it("Should deploy contract", async function () {
-        await resetFork(15651395);
+        await resetFork(15651622);
 
         const signers = await ethers.getSigners();
         deployer = signers[0];
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
-            params: [actorAddress],
+            params: [_hedgehogRebalancerDeployerV2],
         });
 
-        actor = await ethers.getSigner(actorAddress);
+        hedgehogRebalancerDeployerV2 = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
             params: [_governanceAddressV2],
         });
         governance = await ethers.getSigner(_governanceAddressV2);
-
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [_keeperAddressV2],
-        });
-        keeper = await ethers.getSigner(_keeperAddressV2);
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
@@ -66,15 +61,15 @@ describe.only("Rebalance test mainnet", function () {
 
         //----- choose rebalancer -----
 
-        // MyContract = await ethers.getContractFactory("BigRebalancer");
-        // Rebalancer = await MyContract.attach(_rebalancerBigAddress);
+        MyContract = await ethers.getContractFactory("BigRebalancer");
+        Rebalancer = await MyContract.attach(_bigRebalancerV2);
 
         // MyContract = await ethers.getContractFactory("Rebalancer");
         // Rebalancer = await MyContract.attach("0x09b1937d89646b7745377f0fcc8604c179c06af5");
 
-        MyContract = await ethers.getContractFactory("BigRebalancer");
-        Rebalancer = await MyContract.deploy();
-        await Rebalancer.deployed();
+        // MyContract = await ethers.getContractFactory("BigRebalancer");
+        // Rebalancer = await MyContract.deploy();
+        // await Rebalancer.deployed();
 
         //----- choose rebalancer -----
 
@@ -83,14 +78,13 @@ describe.only("Rebalance test mainnet", function () {
         console.log("addressMath:", await Rebalancer.addressMath());
 
         await getETH(governance.address, ethers.utils.parseEther("1.0"));
+        await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("1.0"));
 
-        await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
+        tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
+        await tx.wait();
 
-        await getETH(keeper.address, ethers.utils.parseEther("1.0"));
-
-        await VaultStorage.connect(keeper).setKeeper(Rebalancer.address);
-
-        // await getETH(actor.address, ethers.utils.parseEther("1.0"));
+        tx = await VaultStorage.connect(hedgehogRebalancerDeployerV2).setKeeper(Rebalancer.address);
+        await tx.wait();
     });
 
     it("mine some blocks", async function () {
@@ -145,15 +139,15 @@ describe.only("Rebalance test mainnet", function () {
         // await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
 
         await logBalance(Rebalancer.address, "> Rebalancer ");
-        await logBalance(deployer.address, "> actor ");
+        await logBalance(hedgehogRebalancerDeployerV2.address, "> actor ");
 
-        tx = await Rebalancer.connect(deployer).rebalance(0, 0);
+        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).rebalance(0, 0);
 
         receipt = await tx.wait();
         console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);
 
         await logBalance(Rebalancer.address, "> Rebalancer ");
-        await logBalance(deployer.address, "> actor ");
+        await logBalance(hedgehogRebalancerDeployerV2.address, "> actor ");
     });
 
     it("rebalance manual using private liquidity", async function () {
