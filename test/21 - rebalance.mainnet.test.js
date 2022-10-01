@@ -5,11 +5,12 @@ const {
     wethAddress,
     osqthAddress,
     usdcAddress,
-    _vaultAuctionAddress,
-    _vaultMathAddress,
-    _biggestOSqthHolder,
-    _rebalancerBigAddress,
     _governanceAddress,
+    _vaultAuctionAddressV2,
+    _vaultMathAddressV2,
+    _vaultStorageAddressV2,
+    _governanceAddressV2,
+    _keeperAddressV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -21,19 +22,19 @@ const {
     logBlock,
     getERC20Allowance,
     approveERC20,
+    logBalance,
 } = require("./helpers");
 
-describe("Rebalance test mainnet", function () {
+describe.only("Rebalance test mainnet", function () {
     let tx, receipt, Rebalancer, MyContract;
     let actor;
     let actorAddress = _governanceAddress;
 
     it("Should deploy contract", async function () {
-        await resetFork(15373344 - 10);
-        // 	15379702 <- add 150 or 6
-        // 	15376522 <- add 200 or 6
-        //  15373344 <- working
-        //  15373161 <- working
+        await resetFork(15651395);
+
+        const signers = await ethers.getSigners();
+        deployer = signers[0];
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -41,13 +42,27 @@ describe("Rebalance test mainnet", function () {
         });
 
         actor = await ethers.getSigner(actorAddress);
-        console.log("actor:", actor.address);
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [_governanceAddressV2],
+        });
+        governance = await ethers.getSigner(_governanceAddressV2);
+
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [_keeperAddressV2],
+        });
+        keeper = await ethers.getSigner(_keeperAddressV2);
 
         MyContract = await ethers.getContractFactory("VaultAuction");
-        VaultAuction = await MyContract.attach(_vaultAuctionAddress);
+        VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
+
+        MyContract = await ethers.getContractFactory("VaultStorage");
+        VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
         MyContract = await ethers.getContractFactory("VaultMath");
-        VaultMath = await MyContract.attach(_vaultMathAddress);
+        VaultMath = await MyContract.attach(_vaultMathAddressV2);
 
         //----- choose rebalancer -----
 
@@ -66,9 +81,20 @@ describe("Rebalance test mainnet", function () {
         console.log("Owner:", await Rebalancer.owner());
         console.log("addressAuction:", await Rebalancer.addressAuction());
         console.log("addressMath:", await Rebalancer.addressMath());
+
+        await getETH(governance.address, ethers.utils.parseEther("1.0"));
+
+        await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
+
+        await getETH(keeper.address, ethers.utils.parseEther("1.0"));
+
+        await VaultStorage.connect(keeper).setKeeper(Rebalancer.address);
+
+        // await getETH(actor.address, ethers.utils.parseEther("1.0"));
     });
 
     it("mine some blocks", async function () {
+        this.skip();
         await mineSomeBlocks(1);
 
         console.log(await VaultMath.isTimeRebalance());
@@ -96,49 +122,38 @@ describe("Rebalance test mainnet", function () {
         // this.skip();
 
         //-- clean contracts
-        const [owner, randomChad] = await ethers.getSigners();
-        await owner.sendTransaction({
-            to: actor.address,
-            value: ethers.utils.parseEther("1.0"),
-        });
+        // const [owner, randomChad] = await ethers.getSigners();
+        // await owner.sendTransaction({
+        //     to: actor.address,
+        //     value: ethers.utils.parseEther("1.0"),
+        // });
 
-        tx = await Rebalancer.connect(actor).collectProtocol(
-            await getERC20Balance(Rebalancer.address, wethAddress),
-            await getERC20Balance(Rebalancer.address, usdcAddress),
-            await getERC20Balance(Rebalancer.address, osqthAddress),
-            actor.address
-        );
-        await tx.wait();
+        // tx = await Rebalancer.connect(actor).collectProtocol(
+        //     await getERC20Balance(Rebalancer.address, wethAddress),
+        //     await getERC20Balance(Rebalancer.address, usdcAddress),
+        //     await getERC20Balance(Rebalancer.address, osqthAddress),
+        //     actor.address
+        // );
+        // await tx.wait();
 
-        await transferAll(actor, randomChad.address, wethAddress);
-        await transferAll(actor, randomChad.address, usdcAddress);
-        await transferAll(actor, randomChad.address, osqthAddress);
+        // await transferAll(actor, randomChad.address, wethAddress);
+        // await transferAll(actor, randomChad.address, usdcAddress);
+        // await transferAll(actor, randomChad.address, osqthAddress);
 
         //-- clean contracts
 
-        await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
+        // await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
 
-        console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
-        console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
-        console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
+        await logBalance(Rebalancer.address, "> Rebalancer ");
+        await logBalance(deployer.address, "> actor ");
 
-        console.log("> actor WETH %s", await getERC20Balance(actor.address, wethAddress));
-        console.log("> actor USDC %s", await getERC20Balance(actor.address, usdcAddress));
-        console.log("> actor oSQTH %s", await getERC20Balance(actor.address, osqthAddress));
-
-        // tx = await Rebalancer.connect(actor).rebalance(0);
-        tx = await Rebalancer.connect(actor).rebalance2();
+        tx = await Rebalancer.connect(deployer).rebalance(0, 0);
 
         receipt = await tx.wait();
         console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);
 
-        console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
-        console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
-        console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
-
-        console.log("> actor WETH %s", await getERC20Balance(actor.address, wethAddress));
-        console.log("> actor USDC %s", await getERC20Balance(actor.address, usdcAddress));
-        console.log("> actor oSQTH %s", await getERC20Balance(actor.address, osqthAddress));
+        await logBalance(Rebalancer.address, "> Rebalancer ");
+        await logBalance(deployer.address, "> actor ");
     });
 
     it("rebalance manual using private liquidity", async function () {
@@ -192,5 +207,13 @@ describe("Rebalance test mainnet", function () {
     const transferAll = async (from, to, token) => {
         const ERC20 = await ethers.getContractAt("IWETH", token);
         await ERC20.connect(from).transfer(to, await getERC20Balance(from.address, token));
+    };
+
+    const getETH = async (toAddress, eth) => {
+        const [owner, randomChad] = await ethers.getSigners();
+        await owner.sendTransaction({
+            to: toAddress,
+            value: eth,
+        });
     };
 });
