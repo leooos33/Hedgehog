@@ -7,15 +7,17 @@ const {
     _governanceAddress,
     _vaultStorageAddress,
     _vaultMathAddress,
+    _vaultAddress,
 } = require("./common");
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.skip("Snapshot Mainnet", function () {
+describe.only("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
-        await resetFork(15560400);
+        await resetFork(15658288);
 
-        const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
+        // const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
+        // const Vault = await ethers.getContractAt("Vault", _vaultAddress); 
 
         const orderEthUsdcLower = await VaultStorage.orderEthUsdcLower();
         const orderEthUsdcUpper = await VaultStorage.orderEthUsdcUpper();
@@ -24,6 +26,7 @@ describe.skip("Snapshot Mainnet", function () {
         const timeAtLastRebalance = await VaultStorage.timeAtLastRebalance();
         const ivAtLastRebalance = await VaultStorage.ivAtLastRebalance();
         const totalValue = await VaultStorage.totalValue();
+        const totalSupply = await Vault.totalSupply();
         const ethPriceAtLastRebalance = await VaultStorage.ethPriceAtLastRebalance();
 
         console.log("orderEthUsdcLower:", orderEthUsdcLower.toString());
@@ -33,6 +36,7 @@ describe.skip("Snapshot Mainnet", function () {
         console.log("timeAtLastRebalance:", timeAtLastRebalance.toString());
         console.log("ivAtLastRebalance:", ivAtLastRebalance.toString());
         console.log("totalValue:", totalValue.toString());
+        console.log("totalSupply %s", totalSupply);
         console.log("ethPriceAtLastRebalance:", ethPriceAtLastRebalance.toString());
 
         const VaultMath = await ethers.getContractAt("VaultMath", _vaultMathAddress);
@@ -47,5 +51,7 @@ describe.skip("Snapshot Mainnet", function () {
 
         const value = await VaultMath.getValue(amounts[0], amounts[1], amounts[2], prices[0], prices[1]);
         console.log("Total ETH value %s", value);
+        console.log("sharePrice %s", value/totalSupply);
+
     });
 });
