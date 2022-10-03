@@ -10,6 +10,7 @@ const {
     IFURA_ROPSTEN_URL,
     HEDGEHOG_DEPLOYER_V2,
     HEDGEHOG_REBALANCER_V2,
+    HEDGEHOG_GOVERNANCE_V2,
     IFURA_MAINNET_URL,
 } = require("./shared/config");
 const { getForkingParams } = require("./hardhat.helpers");
@@ -56,8 +57,8 @@ module.exports = {
         },
         mainnet: {
             url: IFURA_MAINNET_URL,
-            accounts: [HEDGEHOG_REBALANCER_V2],
-            gasPrice: 4000000000,
+            accounts: [HEDGEHOG_GOVERNANCE_V2],
+            gasPrice: 15000000000,
         },
     },
     solidity: {
