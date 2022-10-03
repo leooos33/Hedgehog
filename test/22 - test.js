@@ -66,16 +66,19 @@ describe.only("-", function () {
 
     it("getParams", async function () {
         // this.skip();
-
-        res = await VaultMath.isTimeRebalance();
-        res = await VaultAuction.getParams(1660598164);
-        console.log(res);
+        console.log(await logBlock());
+        console.log("isTimeRebalance: %s", await VaultMath.isTimeRebalance());
+        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(1660598164));
+        console.log(await VaultAuction.getParams(1660598164));
 
         tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(172800);
         await tx.wait();
+        await mineSomeBlocks(112670+300);
 
-        res = await VaultMath.isTimeRebalance();
-        res = await VaultAuction.getParams(1660598164);
-        console.log(res);
+        console.log(await logBlock());
+        console.log("isTimeRebalance: %s", await VaultMath.isTimeRebalance());
+        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(1664888763));
+        console.log(await VaultAuction.getParams(1664888763));
+
     });
 });
