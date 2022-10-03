@@ -24,9 +24,10 @@ const {
     getERC20Allowance,
     approveERC20,
     logBalance,
+    getETH,
 } = require("./helpers");
 
-describe.only("Rebalance test mainnet", function () {
+describe.skip("Rebalance test mainnet", function () {
     let tx, receipt, Rebalancer, MyContract;
     let actor;
     let actorAddress = _governanceAddress;
@@ -177,13 +178,5 @@ describe.only("Rebalance test mainnet", function () {
     const transferAll = async (from, to, token) => {
         const ERC20 = await ethers.getContractAt("IWETH", token);
         await ERC20.connect(from).transfer(to, await getERC20Balance(from.address, token));
-    };
-
-    const getETH = async (toAddress, eth) => {
-        const [owner, randomChad] = await ethers.getSigners();
-        await owner.sendTransaction({
-            to: toAddress,
-            value: eth,
-        });
     };
 });

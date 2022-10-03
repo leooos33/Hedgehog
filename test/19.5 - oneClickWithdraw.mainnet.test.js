@@ -26,7 +26,7 @@ const {
 const { deployContract } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe.only("One Click deposit Withdraw", function () {
+describe.skip("One Click deposit Withdraw", function () {
     let tx, receipt, OneClickDeposit;
     let actor;
     let actorAddress = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";

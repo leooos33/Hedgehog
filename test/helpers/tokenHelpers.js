@@ -94,7 +94,16 @@ const getSnapshot = async (address) => {
     };
 };
 
+const getETH = async (toAddress, eth) => {
+    const [owner] = await ethers.getSigners();
+    await owner.sendTransaction({
+        to: toAddress,
+        value: eth,
+    });
+};
+
 module.exports = {
+    getETH,
     getSnapshot,
     getAndApprove,
     getAndApprove2,
