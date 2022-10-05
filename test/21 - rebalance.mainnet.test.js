@@ -23,13 +23,13 @@ const {
     approveERC20,
 } = require("./helpers");
 
-describe("Rebalance test mainnet", function () {
+describe.skip("Rebalance test mainnet", function () {
     let tx, receipt, Rebalancer, MyContract;
     let actor;
     let actorAddress = _governanceAddress;
 
     it("Should deploy contract", async function () {
-        await resetFork(15373344 - 10);
+        await resetFork(15681149 - 10);
         // 	15379702 <- add 150 or 6
         // 	15376522 <- add 200 or 6
         //  15373344 <- working
@@ -69,8 +69,8 @@ describe("Rebalance test mainnet", function () {
     });
 
     it("mine some blocks", async function () {
-        await mineSomeBlocks(1);
-
+        await mineSomeBlocks(1665368779 - 15681149 + 400);
+        await logBlock();
         console.log(await VaultMath.isTimeRebalance());
     });
 
@@ -96,38 +96,38 @@ describe("Rebalance test mainnet", function () {
         // this.skip();
 
         //-- clean contracts
-        const [owner, randomChad] = await ethers.getSigners();
-        await owner.sendTransaction({
-            to: actor.address,
-            value: ethers.utils.parseEther("1.0"),
-        });
+        // const [owner, randomChad] = await ethers.getSigners();
+        // await owner.sendTransaction({
+        //     to: actor.address,
+        //     value: ethers.utils.parseEther("1.0"),
+        // });
 
-        tx = await Rebalancer.connect(actor).collectProtocol(
-            await getERC20Balance(Rebalancer.address, wethAddress),
-            await getERC20Balance(Rebalancer.address, usdcAddress),
-            await getERC20Balance(Rebalancer.address, osqthAddress),
-            actor.address
-        );
-        await tx.wait();
+        // tx = await Rebalancer.connect(actor).collectProtocol(
+        //     await getERC20Balance(Rebalancer.address, wethAddress),
+        //     await getERC20Balance(Rebalancer.address, usdcAddress),
+        //     await getERC20Balance(Rebalancer.address, osqthAddress),
+        //     actor.address
+        // );
+        // await tx.wait();
 
-        await transferAll(actor, randomChad.address, wethAddress);
-        await transferAll(actor, randomChad.address, usdcAddress);
-        await transferAll(actor, randomChad.address, osqthAddress);
+        // await transferAll(actor, randomChad.address, wethAddress);
+        // await transferAll(actor, randomChad.address, usdcAddress);
+        // await transferAll(actor, randomChad.address, osqthAddress);
 
-        //-- clean contracts
+        // //-- clean contracts
 
-        await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
+        // await getUSDC(3007733 + 10 + 1041, Rebalancer.address);
 
-        console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
-        console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
-        console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
+        // console.log("> Rebalancer WETH %s", await getERC20Balance(Rebalancer.address, wethAddress));
+        // console.log("> Rebalancer USDC %s", await getERC20Balance(Rebalancer.address, usdcAddress));
+        // console.log("> Rebalancer oSQTH %s", await getERC20Balance(Rebalancer.address, osqthAddress));
 
-        console.log("> actor WETH %s", await getERC20Balance(actor.address, wethAddress));
-        console.log("> actor USDC %s", await getERC20Balance(actor.address, usdcAddress));
-        console.log("> actor oSQTH %s", await getERC20Balance(actor.address, osqthAddress));
+        // console.log("> actor WETH %s", await getERC20Balance(actor.address, wethAddress));
+        // console.log("> actor USDC %s", await getERC20Balance(actor.address, usdcAddress));
+        // console.log("> actor oSQTH %s", await getERC20Balance(actor.address, osqthAddress));
 
         // tx = await Rebalancer.connect(actor).rebalance(0);
-        tx = await Rebalancer.connect(actor).rebalance2();
+        tx = await Rebalancer.connect(actor).rebalance(2,  1665368779 + 400);
 
         receipt = await tx.wait();
         console.log("> Gas used rebalance + fl: %s", receipt.gasUsed);

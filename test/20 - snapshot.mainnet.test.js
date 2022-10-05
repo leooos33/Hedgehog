@@ -8,38 +8,30 @@ const {
     _vaultStorageAddress,
     _vaultMathAddress,
     _vaultAddress,
+    _vaultTreasuryAddress,
 } = require("./common");
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
 describe.only("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
-        await resetFork(15658288);
+        await resetFork(15682341);
 
-        // const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
-        // const Vault = await ethers.getContractAt("Vault", _vaultAddress); 
-
-        const orderEthUsdcLower = await VaultStorage.orderEthUsdcLower();
-        const orderEthUsdcUpper = await VaultStorage.orderEthUsdcUpper();
-        const orderOsqthEthLower = await VaultStorage.orderOsqthEthLower();
-        const orderOsqthEthUpper = await VaultStorage.orderOsqthEthUpper();
-        const timeAtLastRebalance = await VaultStorage.timeAtLastRebalance();
-        const ivAtLastRebalance = await VaultStorage.ivAtLastRebalance();
-        const totalValue = await VaultStorage.totalValue();
-        const totalSupply = await Vault.totalSupply();
-        const ethPriceAtLastRebalance = await VaultStorage.ethPriceAtLastRebalance();
-
-        console.log("orderEthUsdcLower:", orderEthUsdcLower.toString());
-        console.log("orderEthUsdcUpper:", orderEthUsdcUpper.toString());
-        console.log("orderOsqthEthLower:", orderOsqthEthLower.toString());
-        console.log("orderOsqthEthUpper:", orderOsqthEthUpper.toString());
-        console.log("timeAtLastRebalance:", timeAtLastRebalance.toString());
-        console.log("ivAtLastRebalance:", ivAtLastRebalance.toString());
-        console.log("totalValue:", totalValue.toString());
-        console.log("totalSupply %s", totalSupply);
-        console.log("ethPriceAtLastRebalance:", ethPriceAtLastRebalance.toString());
-
+        const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
+        const Vault = await ethers.getContractAt("Vault", _vaultAddress);
         const VaultMath = await ethers.getContractAt("VaultMath", _vaultMathAddress);
+        const VaultTreasury = await ethers.getContractAt("VaultTreasury", _vaultTreasuryAddress);
+
+        const totalSupply = await Vault.totalSupply();
+
+        console.log("orderEthUsdcLower:", (await VaultStorage.orderEthUsdcLower()).toString());
+        console.log("orderEthUsdcUpper:", (await VaultStorage.orderEthUsdcUpper()).toString());
+        console.log("orderOsqthEthLower:", (await VaultStorage.orderOsqthEthLower()).toString());
+        console.log("orderOsqthEthUpper:", (await VaultStorage.orderOsqthEthUpper()).toString());
+        console.log("timeAtLastRebalance:", (await VaultStorage.timeAtLastRebalance()).toString());
+        console.log("ivAtLastRebalance:", (await VaultStorage.ivAtLastRebalance()).toString());
+
+        console.log("ethPriceAtLastRebalance:", (await VaultStorage.ethPriceAtLastRebalance()).toString());
 
         const prices = await VaultMath.getPrices();
         console.log("ETH/USDC price %s", prices[0]);
