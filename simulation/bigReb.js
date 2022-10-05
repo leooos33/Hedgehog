@@ -109,7 +109,11 @@ const bigSwap = async () => {
 
 const init = async () => {
     const params = [...deploymentParams];
-    [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(governance, params);
+    [Vault, VaultAuction, VaultMath, VaultTreasury, VaultStorage] = await hardhatDeploy(
+        governance,
+        params,
+        "0x06b3244b086cecC40F1e5A826f736Ded68068a0F"
+    );
 
     Factory = await ethers.getContractFactory("V3Helper");
     v3Helper = await Factory.deploy();
@@ -131,6 +135,7 @@ const init = async () => {
     await rebalancer.deployed();
 
     console.log("rebalancer", rebalancer.address);
+    console.log("rebalancer owner", await rebalancer.owner());
 
     tx = await rebalancer.setContracts(VaultAuction.address, VaultMath.address, VaultTreasury.address);
     await tx.wait();

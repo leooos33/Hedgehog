@@ -15,7 +15,7 @@
     "rebalance": "npx hardhat run deploy/rebalance.js --network mainnet",
     "verify": "npx hardhat verify <contract address> --network ropsten --constructor-args deploy/arguments.js",
     "node": "SIMULATION=true npx hardhat node",
-    "sim1": "SIMULATION=true npx hardhat run simulation/oneReb.js --network localhost",
+    "sim1": "SIMULATION=true npx hardhat run simulation/bigReb.js --network localhost",
     "sim2": "SIMULATION=true npx hardhat run simulation/quickReb.js --network localhost"
   },
   "devDependencies": {
