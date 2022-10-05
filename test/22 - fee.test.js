@@ -12,6 +12,7 @@ const {
     _governanceAddressV2,
     _bigRebalancerV2,
     _hedgehogRebalancerDeployerV2,
+    _vaultTreasuryAddressV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -58,33 +59,34 @@ describe.only("Fee test", function () {
 
         MyContract = await ethers.getContractFactory("BigRebalancer");
         Rebalancer = await MyContract.attach(_bigRebalancerV2);
-    });
 
-    it("mine some blocks", async function () {
-        // this.skip();
-        await mineSomeBlocks(1);
-
-        console.log(await VaultMath.isTimeRebalance());
+        MyContract = await ethers.getContractFactory("VaultTreasury");
+        Treasury = await MyContract.attach(_vaultTreasuryAddressV2);
     });
 
     it("getParams", async function () {
         // this.skip();
 
         await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("2.0"));
-        await getETH(governance.address, ethers.utils.parseEther("1.0"));
+        await getETH(governance.address, ethers.utils.parseEther("2.0"));
 
         tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).setKeeper(governance.address);
         await tx.wait();
 
-        // tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
-        // await tx.wait();
+        const amounts0 = await VaultMath.getTotalAmounts();
 
-        console.log(await logBlock());
-        let _isTimeRebalance = await VaultMath.isTimeRebalance();
-        console.log("isTimeRebalance: %s", _isTimeRebalance);
-        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(_isTimeRebalance[1]));
-        console.log("getParams:", await VaultAuction.getParams(_isTimeRebalance[1]));
+        tx = await Treasury.connect(governance).externalPoke();
+        await tx.wait();
 
-        // await mineSomeBlocks(112670 + 300);
+        const amounts1 = await VaultMath.getTotalAmounts();
+
+        const ethDiff = (amounts1[0] - amounts0[0]).toString();
+        const usdcDiff = (amounts1[1] - amounts0[1]).toString();
+        const osqthDiff = (amounts1[2] - amounts0[2]).toString();
+
+        const prices = await VaultMath.getPrices();
+        const feeValue = await VaultMath.getValue(ethDiff, usdcDiff, osqthDiff, prices[0], prices[1]);
+        console.log("accrude fee in USD %s", feeValue * prices[0] / 1e36);
+        
     });
 });
