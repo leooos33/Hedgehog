@@ -9,6 +9,7 @@ const {
     getAndApprove,
     getAndApprove2,
     getSnapshot,
+    getETH,
 } = require("./tokenHelpers");
 
 const { toWEIS, toWEI, loadTestDataset, assertWP, resetFork, logBlock, logBalance } = require("./testHelpers");
@@ -21,6 +22,7 @@ const mineSomeBlocks = async (blocksToMine) => {
 };
 
 module.exports = {
+    getETH,
     getSnapshot,
     mineSomeBlocks,
     logBalance,

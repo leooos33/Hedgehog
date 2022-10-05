@@ -8,8 +8,9 @@ const {
     ETHERSCAN_KEY,
     ROPSTEN_DEPLOYMENT_KEY,
     IFURA_ROPSTEN_URL,
-    MAINNET_DEPLOYMENT_KEY_OLD,
-    MAINNET_DEPLOYMENT_KEY,
+    HEDGEHOG_DEPLOYER_V2,
+    HEDGEHOG_REBALANCER_V2,
+    HEDGEHOG_GOVERNANCE_V2,
     IFURA_MAINNET_URL,
 } = require("./shared/config");
 const { getForkingParams } = require("./hardhat.helpers");
@@ -56,8 +57,8 @@ module.exports = {
         },
         mainnet: {
             url: IFURA_MAINNET_URL,
-            accounts: [MAINNET_DEPLOYMENT_KEY_OLD],
-            gasPrice: 4000000000,
+            accounts: [HEDGEHOG_REBALANCER_V2],
+            gasPrice: 7000000000,
         },
     },
     solidity: {

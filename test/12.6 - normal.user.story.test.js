@@ -17,7 +17,7 @@ const {
 const { hardhatDeploy, deploymentParams } = require("./deploy");
 const { BigNumber } = require("ethers");
 
-describe.skip("User story with 5 swaps", function () {
+describe("User story with 5 swaps", function () {
     const getAndApproveWETH = async (owner, amount, toAddress) => {
         await getWETH(amount, owner.address, "0x06920c9fc643de77b99cb7670a944ad31eaaa260");
         await approveERC20(owner, toAddress, amount, wethAddress);
@@ -102,7 +102,6 @@ describe.skip("User story with 5 swaps", function () {
         await mineSomeBlocks(554);
     });
 
-
     it("rebalance1", async function () {
         await mineSomeBlocks(83622);
         await logBalance(rebalancer.address, "> Rebalancer Balance Before rebalance");
@@ -145,7 +144,6 @@ describe.skip("User story with 5 swaps", function () {
     //     await mineSomeBlocks(554);
     // });
 
-    
     it("deposit3", async function () {
         const amountWETH = utils.parseUnits("1", 18);
         await getAndApproveWETH(depositor3, amountWETH, oneClickDeposit.address);
@@ -301,7 +299,7 @@ describe.skip("User story with 5 swaps", function () {
 
         await logBalance(depositor5.address, "> user5 Balance After Witdraw");
         console.log("> user5 Share After Witdraw", await getERC20Balance(depositor5.address, Vault.address));
-        
+
         await logBalance(VaultTreasury.address, "balances after %s");
     });
 

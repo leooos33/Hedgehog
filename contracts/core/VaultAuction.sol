@@ -48,7 +48,7 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
 
         //EthUsdc price at last rebalance
         uint256 cachedPrice = IVaultStorage(vaultStorage).ethPriceAtLastRebalance();
-        
+
         uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
         uint256 cachedValue = IVaultStorage(vaultStorage).totalValue();
 
@@ -175,7 +175,6 @@ contract VaultAuction is IAuction, Faucet, ReentrancyGuard {
         );
 
         IVaultStorage(vaultStorage).setDepositCount(0);
-
     }
 
     /**

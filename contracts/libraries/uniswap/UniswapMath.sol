@@ -6,8 +6,6 @@ pragma abicoder v2;
 import {TickMath} from "@uniswap/v3-core/contracts/libraries/TickMath.sol";
 import {LiquidityAmounts} from "@uniswap/v3-periphery/contracts/libraries/LiquidityAmounts.sol";
 
-import "hardhat/console.sol";
-
 contract UniswapMath {
     function getTickAtSqrtRatio(uint160 sqrtPriceX96) external pure returns (int24 tick) {
         return TickMath.getTickAtSqrtRatio(sqrtPriceX96);

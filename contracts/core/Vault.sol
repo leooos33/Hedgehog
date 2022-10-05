@@ -173,7 +173,9 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
             //if there were some deposits -> burn liquidity and match it with tokens that weren't provided to the pool yet
             uint256 bETH = (_getBalance(Constants.weth).sub(IVaultStorage(vaultStorage).accruedFeesEth())).mul(ratio);
             uint256 bUSDC = (_getBalance(Constants.usdc).sub(IVaultStorage(vaultStorage).accruedFeesUsdc())).mul(ratio);
-            uint256 bOSQTH = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStorage).accruedFeesOsqth())).mul(ratio);
+            uint256 bOSQTH = (_getBalance(Constants.osqth).sub(IVaultStorage(vaultStorage).accruedFeesOsqth())).mul(
+                ratio
+            );
 
             uint256 amountEth0;
             (amountUsdc, amountEth0) = IVaultMath(vaultMath).burnLiquidityShare(
@@ -192,10 +194,9 @@ contract Vault is IVault, ERC20, ReentrancyGuard, Faucet {
 
             amountEth = amountEth0.add(amountEth1).add(bETH);
             amountUsdc = amountUsdc.add(bUSDC);
-            amountOsqth = amountOsqth.add(bOSQTH);  
-
+            amountOsqth = amountOsqth.add(bOSQTH);
         }
-        
+
         require(amountEth != 0 || amountUsdc != 0 || amountOsqth != 0, "C6");
 
         require(amountEth >= amountEthMin, "C7");

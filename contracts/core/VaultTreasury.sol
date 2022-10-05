@@ -226,7 +226,7 @@ contract VaultTreasury is IVaultTreasury, ReentrancyGuard, IUniswapV3MintCallbac
         _pokePools();
     }
 
-    /// @dev external poke to be called by rebalancer to update fees and get precise amounts to exchange 
+    /// @dev external poke to be called by rebalancer to update fees and get precise amounts to exchange
     function externalPoke() external override onlyKeeper {
         _pokePools();
     }

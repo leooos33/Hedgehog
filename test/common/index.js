@@ -29,7 +29,38 @@ const _oneClickDepositAddress = "0xe10DA9A08F32d1DCeF5A253C94D1c966Ac440FD3";
 
 const maxUint256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
 
+// Second deploy
+
+const _vaultAddressV2 = "0x6d4CA1177087924edfE0908ef655169EA766FDc3";
+const _vaultAuctionAddressV2 = "0x2f1D08D53d04559933dBF436a5cD15182a190110";
+const _vaultMathAddressV2 = "0x40B22821f694f1F3b226b57B5852d7832e2B5f3f";
+const _vaultTreasuryAddressV2 = "0x12804580C15F4050dda61D44AFC94623198848bC";
+const _vaultStorageAddressV2 = "0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a";
+const _uniMathAddressV2 = _uniMathAddress;
+
+const _oneClickDepositAddressV2 = "0x468363E262999046BAFC5EA954768920ee349358";
+const _oneClickWithdrawAddressV2 = "0xeD14d82a2D3435571646dA537A52AbBC113F5140";
+const _bigRebalancerV2 = "0x86345a7f1D77F6056E2ff83e1b1071238AEf1483";
+
+const _governanceAddressV2 = "0x2f0b98eF1093B41897a99b76956Fb69025F1682b";
+const _hedgehogRebalancerDeployerV2 = "0x4530DA167C5a751e48f35b2aa08F44570C03B7dd";
+const _deployerAddressV2 = "0x8f69766b870C45339E02A68ca8298861fDA8A563";
+const _keeperAddressV2 = _hedgehogRebalancerDeployerV2;
+
 module.exports = {
+    _bigRebalancerV2,
+    _hedgehogRebalancerDeployerV2,
+    _oneClickDepositAddressV2,
+    _oneClickWithdrawAddressV2,
+    _vaultAddressV2,
+    _vaultAuctionAddressV2,
+    _vaultMathAddressV2,
+    _vaultTreasuryAddressV2,
+    _vaultStorageAddressV2,
+    _uniMathAddressV2,
+    _governanceAddressV2,
+    _keeperAddressV2,
+    _deployerAddressV2,
     _rescueAddress,
     _rebalancerBigAddress,
     _oneClickDepositAddress,

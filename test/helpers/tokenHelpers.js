@@ -53,7 +53,6 @@ const approveERC20 = async (owner, accountAddress, amount, tokenAddress) => {
     await ERC20.connect(owner).approve(
         accountAddress,
         amount
-        //TODO: change gas during tests
         // {
         //     gasLimit: 2500000,
         //     gasPrice: 11000000000,
@@ -95,7 +94,16 @@ const getSnapshot = async (address) => {
     };
 };
 
+const getETH = async (toAddress, eth) => {
+    const [owner] = await ethers.getSigners();
+    await owner.sendTransaction({
+        to: toAddress,
+        value: eth,
+    });
+};
+
 module.exports = {
+    getETH,
     getSnapshot,
     getAndApprove,
     getAndApprove2,
