@@ -27,11 +27,11 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.only("-", function () {
+describe.only("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
-        await resetFork(15665637);
+        await resetFork(15683124);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -40,7 +40,12 @@ describe.only("-", function () {
 
         governance = await ethers.getSigner(_governanceAddressV2);
 
-        await getETH(governance.address, ethers.utils.parseEther("1.0"));
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [_hedgehogRebalancerDeployerV2],
+        });
+
+        hedgehogRebalancerDeployerV2 = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
@@ -51,14 +56,12 @@ describe.only("-", function () {
         MyContract = await ethers.getContractFactory("VaultMath");
         VaultMath = await MyContract.attach(_vaultMathAddressV2);
 
-        //----- choose rebalancer -----
-
-        // MyContract = await ethers.getContractFactory("BigRebalancer");
-        // Rebalancer = await MyContract.attach(_bigRebalancerV2);
+        MyContract = await ethers.getContractFactory("BigRebalancer");
+        Rebalancer = await MyContract.attach(_bigRebalancerV2);
     });
 
     it("mine some blocks", async function () {
-        this.skip();
+        // this.skip();
         await mineSomeBlocks(1);
 
         console.log(await VaultMath.isTimeRebalance());
@@ -66,19 +69,22 @@ describe.only("-", function () {
 
     it("getParams", async function () {
         // this.skip();
-        console.log(await logBlock());
-        console.log("isTimeRebalance: %s", await VaultMath.isTimeRebalance());
-        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(1660598164));
-        console.log(await VaultAuction.getParams(1660598164));
 
-        tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(172800);
+        await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("2.0"));
+        await getETH(governance.address, ethers.utils.parseEther("1.0"));
+
+        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).setKeeper(governance.address);
         await tx.wait();
-        await mineSomeBlocks(112670+300);
+
+        // tx = await VaultStorage.connect(governance).setRebalanceTimeThreshold(1);
+        // await tx.wait();
 
         console.log(await logBlock());
-        console.log("isTimeRebalance: %s", await VaultMath.isTimeRebalance());
-        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(1664888763));
-        console.log(await VaultAuction.getParams(1664888763));
+        let _isTimeRebalance = await VaultMath.isTimeRebalance();
+        console.log("isTimeRebalance: %s", _isTimeRebalance);
+        console.log("PriceMultiplier %s", await VaultMath.getPriceMultiplier(_isTimeRebalance[1]));
+        console.log("getParams:", await VaultAuction.getParams(_isTimeRebalance[1]));
 
+        // await mineSomeBlocks(112670 + 300);
     });
 });

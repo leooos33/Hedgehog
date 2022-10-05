@@ -486,6 +486,7 @@ contract BigRebalancer is Ownable {
         require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
     }
 
+    //TODO: chage library and test this sheet to work properly
     function isQuickRebalance() public view returns (bool) {
         (uint256 ethUsdcPrice, ) = IVaultMath(addressMath).getPrices();
         uint256 cachedPrice = IVaultStorage(addressStorage).ethPriceAtLastRebalance();
