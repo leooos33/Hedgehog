@@ -4,7 +4,6 @@ pragma solidity =0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
-import "hardhat/console.sol";
 
 interface IVaultStorage {
     function timeAtLastRebalance() external view returns (uint256);

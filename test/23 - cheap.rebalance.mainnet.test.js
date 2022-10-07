@@ -86,7 +86,6 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 3", async function () {
-        this.skip();
         tx = await CheapRebalancer.returnOwner(_hedgehogRebalancerDeployerV2);
         await tx.wait();
 
