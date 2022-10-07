@@ -3,14 +3,22 @@ pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
+import "hardhat/console.sol";
 
 interface IVaultStorage {
     function timeAtLastRebalance() external view returns (uint256);
 
+    function auctionTime() external view returns (uint256);
+    
+    function maxPriceMultiplier() external view returns (uint256);
+    
+    function minPriceMultiplier() external view returns (uint256); 
+
     function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external;
 
     function setGovernance(address _governance) external;
+
 }
 
 interface IBigRebalancer {
@@ -20,14 +28,18 @@ interface IBigRebalancer {
 
     function rebalance(uint256 threshold, uint256 triggerTime) external;
 
+    function collectProtocol(uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth, address to) external;
+
     function transferOwnership(address newOwner) external;
 }
 
 contract CheapRebalancer is Ownable {
-    using SafeMath for uint256;
+    using PRBMathUD60x18 for uint256;
 
     address public bigRebalancer = 0x86345a7f1D77F6056E2ff83e1b1071238AEf1483;
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
+    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+    address constant OSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
 
     constructor() Ownable() {}
 
@@ -43,19 +55,34 @@ contract CheapRebalancer is Ownable {
         IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage()).setGovernance(to);
     }
 
-    function rebalance(uint256 threshold, uint256 priceMultiplier) public onlyOwner {
+    // function collectProtocol(
+    //     uint256 amountEth,
+    //     uint256 amountUsdc,
+    //     uint256 amountOsqth,
+    //     address to
+    // ) external onlyOwner {
+    //     if (amountEth > 0) IERC20(WETH).transfer(to, amountEth);
+    //     if (amountUsdc > 0) IERC20(USDC).transfer(to, amountUsdc);
+    //     if (amountOsqth > 0) IERC20(OSQTH).transfer(to, amountOsqth);
+    // }
+
+    function rebalance(uint256 threshold, uint256 newPM) public onlyOwner {
         IVaultStorage VaultStorage = IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage());
 
-        uint256 timeAtLastRebalance = VaultStorage.timeAtLastRebalance();
+        uint256 maxPM = VaultStorage.maxPriceMultiplier();
+        uint256 minPM = VaultStorage.minPriceMultiplier();
 
-        uint256 rebalanceTimeThreshold = timeAtLastRebalance - block.timestamp + priceMultiplier;
-
-        VaultStorage.setRebalanceTimeThreshold(rebalanceTimeThreshold);
-
+        VaultStorage.setRebalanceTimeThreshold(block.timestamp.sub(VaultStorage.timeAtLastRebalance()).sub((VaultStorage.auctionTime()).mul(maxPM.sub(newPM).div(maxPM.sub(minPM)))));
+        
         IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
 
-        IERC20(WETH).transfer(IBigRebalancer(bigRebalancer).addressTreasury(), IERC20(WETH).balanceOf(address(this)));
+        // IBigRebalancer(bigRebalancer).collectProtocol(
+        //     IERC20(WETH).balanceOf(bigRebalancer), 
+        //     IERC20(USDC).balanceOf(bigRebalancer), 
+        //     IERC20(OSQTH).balanceOf(bigRebalancer), 
+        //     IBigRebalancer(bigRebalancer).addressTreasury()
+        // );
 
-        VaultStorage.setRebalanceTimeThreshold(35000); //TODO: change here to smth mngtfull
+        VaultStorage.setRebalanceTimeThreshold(500000); 
     }
 }

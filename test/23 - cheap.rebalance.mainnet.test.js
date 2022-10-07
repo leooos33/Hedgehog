@@ -29,7 +29,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15654730 - 1);
+        await resetFork(15697595);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -50,7 +50,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         });
 
         governanceActor = await ethers.getSigner(_governanceAddressV2);
-        await getETH(governanceActor.address, ethers.utils.parseEther("1.0"));
+        await getETH(governanceActor.address, ethers.utils.parseEther("2.0"));
 
         tx = await VaultStorage.connect(governanceActor).setGovernance(CheapRebalancer.address);
         await tx.wait();
@@ -61,7 +61,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         });
 
         hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
-        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("1.0"));
+        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("2.0"));
 
         tx = await Rebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         await tx.wait();
@@ -71,8 +71,10 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 2", async function () {
-        tx = await CheapRebalancer.rebalance(100, 0);
+        tx = await CheapRebalancer.rebalance("0", "999000000000000000");
         await tx.wait();
+
+        tx = await CheapRebalancer.collectProtocol()
     });
 
     it("Phase 3", async function () {
