@@ -82,6 +82,6 @@ contract CheapRebalancer is Ownable {
 
         IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
 
-        VaultStorage.setRebalanceTimeThreshold(500000);
+        VaultStorage.setRebalanceTimeThreshold(604800);
     }
 }
