@@ -12,6 +12,7 @@ const {
     _governanceAddressV2,
     _bigRebalancerV2,
     _hedgehogRebalancerDeployerV2,
+    _vaultTreasuryAddressV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -74,10 +75,18 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         tx = await CheapRebalancer.rebalance("0", "999000000000000000");
         await tx.wait();
 
-        tx = await CheapRebalancer.collectProtocol()
+        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
+        await logBalance(Rebalancer.address, "Rebalancer before");
+
+        tx = await CheapRebalancer.collectProtocol("18571599630580068", 0, 0, _vaultTreasuryAddressV2);
+        await tx.wait();
+
+        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
+        await logBalance(Rebalancer.address, "Rebalancer after");
     });
 
     it("Phase 3", async function () {
+        this.skip();
         tx = await CheapRebalancer.returnOwner(_hedgehogRebalancerDeployerV2);
         await tx.wait();
 

@@ -10,15 +10,14 @@ interface IVaultStorage {
     function timeAtLastRebalance() external view returns (uint256);
 
     function auctionTime() external view returns (uint256);
-    
+
     function maxPriceMultiplier() external view returns (uint256);
-    
-    function minPriceMultiplier() external view returns (uint256); 
+
+    function minPriceMultiplier() external view returns (uint256);
 
     function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external;
 
     function setGovernance(address _governance) external;
-
 }
 
 interface IBigRebalancer {
@@ -28,7 +27,12 @@ interface IBigRebalancer {
 
     function rebalance(uint256 threshold, uint256 triggerTime) external;
 
-    function collectProtocol(uint256 amountEth, uint256 amountUsdc, uint256 amountOsqth, address to) external;
+    function collectProtocol(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        address to
+    ) external;
 
     function transferOwnership(address newOwner) external;
 }
@@ -55,16 +59,14 @@ contract CheapRebalancer is Ownable {
         IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage()).setGovernance(to);
     }
 
-    // function collectProtocol(
-    //     uint256 amountEth,
-    //     uint256 amountUsdc,
-    //     uint256 amountOsqth,
-    //     address to
-    // ) external onlyOwner {
-    //     if (amountEth > 0) IERC20(WETH).transfer(to, amountEth);
-    //     if (amountUsdc > 0) IERC20(USDC).transfer(to, amountUsdc);
-    //     if (amountOsqth > 0) IERC20(OSQTH).transfer(to, amountOsqth);
-    // }
+    function collectProtocol(
+        uint256 amountEth,
+        uint256 amountUsdc,
+        uint256 amountOsqth,
+        address to
+    ) external onlyOwner {
+        IBigRebalancer(bigRebalancer).collectProtocol(amountEth, amountUsdc, amountOsqth, to);
+    }
 
     function rebalance(uint256 threshold, uint256 newPM) public onlyOwner {
         IVaultStorage VaultStorage = IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage());
@@ -72,17 +74,14 @@ contract CheapRebalancer is Ownable {
         uint256 maxPM = VaultStorage.maxPriceMultiplier();
         uint256 minPM = VaultStorage.minPriceMultiplier();
 
-        VaultStorage.setRebalanceTimeThreshold(block.timestamp.sub(VaultStorage.timeAtLastRebalance()).sub((VaultStorage.auctionTime()).mul(maxPM.sub(newPM).div(maxPM.sub(minPM)))));
-        
+        VaultStorage.setRebalanceTimeThreshold(
+            block.timestamp.sub(VaultStorage.timeAtLastRebalance()).sub(
+                (VaultStorage.auctionTime()).mul(maxPM.sub(newPM).div(maxPM.sub(minPM)))
+            )
+        );
+
         IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
 
-        // IBigRebalancer(bigRebalancer).collectProtocol(
-        //     IERC20(WETH).balanceOf(bigRebalancer), 
-        //     IERC20(USDC).balanceOf(bigRebalancer), 
-        //     IERC20(OSQTH).balanceOf(bigRebalancer), 
-        //     IBigRebalancer(bigRebalancer).addressTreasury()
-        // );
-
-        VaultStorage.setRebalanceTimeThreshold(500000); 
+        VaultStorage.setRebalanceTimeThreshold(500000);
     }
 }
