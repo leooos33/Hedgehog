@@ -28,7 +28,7 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.only("Fee test", function () {
+describe("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
@@ -86,7 +86,6 @@ describe.only("Fee test", function () {
 
         const prices = await VaultMath.getPrices();
         const feeValue = await VaultMath.getValue(ethDiff, usdcDiff, osqthDiff, prices[0], prices[1]);
-        console.log("accrude fee in USD %s", feeValue * prices[0] / 1e36);
-        
+        console.log("accrude fee in USD %s", (feeValue * prices[0]) / 1e36);
     });
 });

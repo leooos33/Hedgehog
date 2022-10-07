@@ -13,7 +13,7 @@ const {
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Snapshot Mainnet", function () {
+describe("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
         await resetFork(15682341);
 
@@ -43,7 +43,6 @@ describe.only("Snapshot Mainnet", function () {
 
         const value = await VaultMath.getValue(amounts[0], amounts[1], amounts[2], prices[0], prices[1]);
         console.log("Total ETH value %s", value);
-        console.log("sharePrice %s", value/totalSupply);
-
+        console.log("sharePrice %s", value / totalSupply);
     });
 });
