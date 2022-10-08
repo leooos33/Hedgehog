@@ -81,7 +81,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         await logBalance(Rebalancer.address, "Rebalancer before");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
-            "12987376991825782",
+            "11819780392420671",
             0,
             0,
             _vaultTreasuryAddressV2
