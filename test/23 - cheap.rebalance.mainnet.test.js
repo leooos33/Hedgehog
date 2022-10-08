@@ -31,7 +31,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15701779);
+        await resetFork(15701869);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -81,7 +81,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         await logBalance(Rebalancer.address, "Rebalancer before");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
-            "11819780392420671",
+            "14125013337746421",
             0,
             0,
             _vaultTreasuryAddressV2
