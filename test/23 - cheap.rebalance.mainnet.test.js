@@ -31,7 +31,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15701453);
+        await resetFork(15701779);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -42,19 +42,21 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         MyContract = await ethers.getContractFactory("CheapRebalancer");
         CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
-        console.log("Rebalancer.owner:", await Rebalancer.owner());
-        console.log("VaultStorage.governance:", await VaultStorage.governance());
+        //? All ownership is already transferred
 
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [_governanceAddressV2],
-        });
+        // console.log("Rebalancer.owner:", await Rebalancer.owner());
+        // console.log("VaultStorage.governance:", await VaultStorage.governance());
 
-        governanceActor = await ethers.getSigner(_governanceAddressV2);
-        await getETH(governanceActor.address, ethers.utils.parseEther("2.0"));
+        // await hre.network.provider.request({
+        //     method: "hardhat_impersonateAccount",
+        //     params: [_governanceAddressV2],
+        // });
 
-        tx = await VaultStorage.connect(governanceActor).setGovernance(CheapRebalancer.address);
-        await tx.wait();
+        // governanceActor = await ethers.getSigner(_governanceAddressV2);
+        // await getETH(governanceActor.address, ethers.utils.parseEther("2.0"));
+
+        // tx = await VaultStorage.connect(governanceActor).setGovernance(CheapRebalancer.address);
+        // await tx.wait();
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -64,8 +66,8 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("2.0"));
 
-        tx = await Rebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
-        await tx.wait();
+        // tx = await Rebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
+        // await tx.wait();
 
         console.log("Rebalancer.owner:", await Rebalancer.owner());
         console.log("VaultStorage.governance:", await VaultStorage.governance());

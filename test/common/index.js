@@ -41,12 +41,12 @@ const _uniMathAddressV2 = _uniMathAddress;
 const _oneClickDepositAddressV2 = "0x468363E262999046BAFC5EA954768920ee349358";
 const _oneClickWithdrawAddressV2 = "0xeD14d82a2D3435571646dA537A52AbBC113F5140";
 const _bigRebalancerV2 = "0x86345a7f1D77F6056E2ff83e1b1071238AEf1483";
+const _cheapRebalancerV2 = "0x17e8a3e01A73c754052cdCdee29E5804300c5406";
 
 const _governanceAddressV2 = "0x2f0b98eF1093B41897a99b76956Fb69025F1682b";
 const _hedgehogRebalancerDeployerV2 = "0x4530DA167C5a751e48f35b2aa08F44570C03B7dd";
 const _deployerAddressV2 = "0x8f69766b870C45339E02A68ca8298861fDA8A563";
 const _keeperAddressV2 = _hedgehogRebalancerDeployerV2;
-const _cheapRebalancerV2 = "0x17e8a3e01A73c754052cdCdee29E5804300c5406";
 
 module.exports = {
     _cheapRebalancerV2,

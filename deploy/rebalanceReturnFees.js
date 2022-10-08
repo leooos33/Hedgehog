@@ -1,7 +1,7 @@
 process.exit(0); // Block file in order to not accidentally deploy
 
 const { ethers } = require("hardhat");
-const { _bigRebalancerV2 } = require("../test/common/index");
+const { _bigRebalancerV2, _cheapRebalancerV2 } = require("../test/common/index");
 
 const deposit = async () => {
     let tx;
@@ -10,6 +10,9 @@ const deposit = async () => {
 
     tx = await Rebalancer.collectProtocol("186708919967578312", 0, 0, "0x12804580C15F4050dda61D44AFC94623198848bC");
     await tx.wait();
+
+    // tx = await Rebalancer.transferOwnership(_cheapRebalancerV2);
+    // await tx.wait();
 };
 
 deposit().catch((error) => {
