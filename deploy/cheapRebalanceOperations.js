@@ -7,7 +7,10 @@ const deposit = async () => {
     let MyContract = await ethers.getContractFactory("CheapRebalancer");
     const ChepRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
-    tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
+    // tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
+
+    tx = await ChepRebalancer.callStatic.rebalance("0", "999000000000000000");
+    console.log(tx);
 };
 
 deposit().catch((error) => {
