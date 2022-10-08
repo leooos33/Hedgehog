@@ -13,6 +13,7 @@ const {
     _bigRebalancerV2,
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
+    _cheapRebalancerV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -30,7 +31,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15697595);
+        await resetFork(15701453);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -39,8 +40,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         Rebalancer = await MyContract.attach(_bigRebalancerV2);
 
         MyContract = await ethers.getContractFactory("CheapRebalancer");
-        CheapRebalancer = await MyContract.deploy();
-        await CheapRebalancer.deployed();
+        CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
         console.log("Rebalancer.owner:", await Rebalancer.owner());
         console.log("VaultStorage.governance:", await VaultStorage.governance());
@@ -72,13 +72,18 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 2", async function () {
-        tx = await CheapRebalancer.rebalance("0", "999000000000000000");
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "999000000000000000");
         await tx.wait();
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
         await logBalance(Rebalancer.address, "Rebalancer before");
 
-        tx = await CheapRebalancer.collectProtocol("18571599630580068", 0, 0, _vaultTreasuryAddressV2);
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
+            "12987376991825782",
+            0,
+            0,
+            _vaultTreasuryAddressV2
+        );
         await tx.wait();
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury after");
@@ -86,10 +91,10 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 3", async function () {
-        tx = await CheapRebalancer.returnOwner(_hedgehogRebalancerDeployerV2);
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(_hedgehogRebalancerDeployerV2);
         await tx.wait();
 
-        tx = await CheapRebalancer.returnGovernance(_governanceAddressV2);
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(_governanceAddressV2);
         await tx.wait();
 
         console.log("Rebalancer.owner:", await Rebalancer.owner());
