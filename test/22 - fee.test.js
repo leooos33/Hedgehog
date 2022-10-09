@@ -13,6 +13,7 @@ const {
     _bigRebalancerV2,
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
+    _cheapRebalancerV2,
 } = require("./common");
 const {
     mineSomeBlocks,
@@ -28,11 +29,11 @@ const {
     getETH,
 } = require("./helpers");
 
-describe("Fee test", function () {
+describe.only("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
-        await resetFork(15683124);
+        await resetFork(15708864);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -47,6 +48,19 @@ describe("Fee test", function () {
         });
 
         hedgehogRebalancerDeployerV2 = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
+
+        MyContract = await ethers.getContractFactory("CheapRebalancer");
+        CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
+
+        await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("2.0"));
+
+        tx = await CheapRebalancer.connect(hedgehogRebalancerDeployerV2).returnGovernance(governance.address);
+        await tx.wait();
+
+        tx = await CheapRebalancer.connect(hedgehogRebalancerDeployerV2).returnOwner(
+            hedgehogRebalancerDeployerV2.address
+        );
+        await tx.wait();
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
