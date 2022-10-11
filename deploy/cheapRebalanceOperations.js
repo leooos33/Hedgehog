@@ -9,7 +9,9 @@ const deposit = async () => {
 
     // tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
 
-    tx = await ChepRebalancer.callStatic.rebalance("0", "999000000000000000");
+    tx = await ChepRebalancer.rebalance("0", "996500000000000000", {
+        gasLimit: 4000000,
+    });
     console.log(tx);
 };
 

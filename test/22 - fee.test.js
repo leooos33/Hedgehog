@@ -29,7 +29,7 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.only("Fee test", function () {
+describe.skip("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
