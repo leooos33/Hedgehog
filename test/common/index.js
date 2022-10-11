@@ -11,11 +11,11 @@ const poolEthOsqth = "0x82c427AdFDf2d245Ec51D8046b41c4ee87F0d29C";
 const _governanceAddress = "0x42B1299fCcA091A83C08C24915Be6E6d63906b1a";
 const _harhatAccount1 = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
 const _harhatAccount7 = "0x14dc79964da2c08b23698b3d3cc7ca32193d9955";
-const _vaultAddress = "0x6d4CA1177087924edfE0908ef655169EA766FDc3";
-const _vaultAuctionAddress = "0x2f1D08D53d04559933dBF436a5cD15182a190110";
-const _vaultMathAddress = "0x40B22821f694f1F3b226b57B5852d7832e2B5f3f";
-const _vaultTreasuryAddress = "0x12804580C15F4050dda61D44AFC94623198848bC";
-const _vaultStorageAddress = "0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a";
+const _vaultAddress = "0x001eb0D277d5B24A306582387Cfc16Fa37a1375C";
+const _vaultAuctionAddress = "0x399dD7Fd6EF179Af39b67cE38821107d36678b5D";
+const _vaultMathAddress = "0xdf374d19021831e785212f00837b5709820aa769";
+const _vaultTreasuryAddress = "0xdbcc892041558e3057d20303389624364863026b";
+const _vaultStorageAddress = "0x0973b2d95236964e59a9ce95ace22b07fa87c26a";
 const _uniMathAddress = "0x61d3312e32f3f6f69ae5629d717f318bc4656abd";
 
 const _vaultAuctionAddressHardhat = "0x9Fcca440F19c62CDF7f973eB6DDF218B15d4C71D";
