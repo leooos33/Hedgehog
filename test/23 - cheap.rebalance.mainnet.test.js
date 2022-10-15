@@ -29,7 +29,7 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.only("Cheap Rebalancer test mainnet", function () {
+describe("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
         await resetFork(15717155);
 
