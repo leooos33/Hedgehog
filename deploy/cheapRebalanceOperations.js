@@ -1,7 +1,12 @@
 process.exit(0); // Block file in order to not accidentally deploy
 
 const { ethers } = require("hardhat");
-const { _cheapRebalancerV2, _governanceAddressV2, _vaultTreasuryAddressV2 } = require("../test/common/index");
+const {
+    _cheapRebalancerV2,
+    _governanceAddressV2,
+    _vaultTreasuryAddressV2,
+    _hedgehogRebalancerDeployerV2,
+} = require("../test/common/index");
 
 const deposit = async () => {
     let MyContract = await ethers.getContractFactory("CheapRebalancer");
@@ -9,12 +14,16 @@ const deposit = async () => {
 
     // tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
 
-    // tx = await ChepRebalancer.rebalance("0", "950000000000000000", {
-    //     nonce: 18,
-    //     gasLimit: 4000000,
-    // });
+    tx = await ChepRebalancer.rebalance("0", "998000000000000000", {
+        gasLimit: 4000000,
+        gasPrice: 9000000000,
+    });
+    console.log(tx);
 
-    // tx = await ChepRebalancer.collectProtocol("1483167730391756966", "0", "0", _vaultTreasuryAddressV2);
+    // tx = await ChepRebalancer.collectProtocol("100000000000000000", "0", "0", _hedgehogRebalancerDeployerV2, {
+    //     gasLimit: 60000,
+    //     gasPrice: 10000000000,
+    // });
     // console.log(tx);
 };
 
