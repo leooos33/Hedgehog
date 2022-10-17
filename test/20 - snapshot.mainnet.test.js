@@ -4,25 +4,26 @@ const {
     wethAddress,
     osqthAddress,
     usdcAddress,
-    _governanceAddress,
-    _vaultStorageAddress,
-    _vaultMathAddress,
-    _vaultAddress,
-    _vaultTreasuryAddress,
+    _governanceAddressV2,
+    _vaultStorageAddressV2,
+    _vaultMathAddressV2,
+    _vaultAddressV2,
+    _vaultTreasuryAddressV2,
 } = require("./common");
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe("Snapshot Mainnet", function () {
+describe.only("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
-        await resetFork(15682341);
+        await resetFork(15747520);
 
-        const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddress);
-        const Vault = await ethers.getContractAt("Vault", _vaultAddress);
-        const VaultMath = await ethers.getContractAt("VaultMath", _vaultMathAddress);
-        const VaultTreasury = await ethers.getContractAt("VaultTreasury", _vaultTreasuryAddress);
+        const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddressV2);
+        const Vault = await ethers.getContractAt("Vault", _vaultAddressV2);
+        const VaultMath = await ethers.getContractAt("VaultMath", _vaultMathAddressV2);
+        const VaultTreasury = await ethers.getContractAt("VaultTreasury", _vaultTreasuryAddressV2);
 
         const totalSupply = await Vault.totalSupply();
+        console.log("totalSupply %s", totalSupply);
 
         console.log("orderEthUsdcLower:", (await VaultStorage.orderEthUsdcLower()).toString());
         console.log("orderEthUsdcUpper:", (await VaultStorage.orderEthUsdcUpper()).toString());
