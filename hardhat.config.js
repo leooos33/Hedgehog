@@ -50,16 +50,16 @@ const simulate = {
 module.exports = {
     networks: {
         hardhat: process.env.SIMULATION ? simulate : test,
-        // ropsten: {
-        //     url: IFURA_ROPSTEN_URL,
-        //     accounts: [ROPSTEN_DEPLOYMENT_KEY],
-        //     gasPrice: 5000000000,
-        // },
-        // mainnet: {
-        //     url: IFURA_MAINNET_URL,
-        //     accounts: [HEDGEHOG_REBALANCER_V2],
-        //     gasPrice: 3000000000,
-        // },
+        ropsten: {
+            url: IFURA_ROPSTEN_URL,
+            accounts: [ROPSTEN_DEPLOYMENT_KEY],
+            gasPrice: 5000000000,
+        },
+        mainnet: {
+            url: IFURA_MAINNET_URL,
+            accounts: [HEDGEHOG_REBALANCER_V2],
+            gasPrice: 3000000000,
+        },
     },
     solidity: {
         compilers: [

@@ -29,9 +29,9 @@ const {
     getETH,
 } = require("./helpers");
 
-describe("Cheap Rebalancer test mainnet", function () {
+describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15717155);
+        await resetFork(15809535);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -74,6 +74,15 @@ describe("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 2", async function () {
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(hedgehogRebalancerActor.address);
+        await tx.wait();
+
+        tx = await VaultStorage.connect(hedgehogRebalancerActor).setRebalanceTimeThreshold(604800);
+        await tx.wait();
+
+        tx = await VaultStorage.connect(hedgehogRebalancerActor).setGovernance(CheapRebalancer.address);
+        await tx.wait();
+
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "996500000000000000");
         recipt = await tx.wait();
         console.log("Gas used", recipt.gasUsed.toString());
@@ -81,19 +90,20 @@ describe("Cheap Rebalancer test mainnet", function () {
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
         await logBalance(Rebalancer.address, "Rebalancer before");
 
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
-            "98636306506939157",
-            0,
-            0,
-            _vaultTreasuryAddressV2
-        );
-        await tx.wait();
+        // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
+        //     "98636306506939157",
+        //     0,
+        //     0,
+        //     _vaultTreasuryAddressV2
+        // );
+        // await tx.wait();
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury after");
         await logBalance(Rebalancer.address, "Rebalancer after");
     });
 
     it("Phase 3", async function () {
+        this.skip();
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(_hedgehogRebalancerDeployerV2);
         await tx.wait();
 
