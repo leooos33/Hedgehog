@@ -31,7 +31,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15809535);
+        await resetFork(15810319);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -74,14 +74,18 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 2", async function () {
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(hedgehogRebalancerActor.address);
-        await tx.wait();
+        // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(hedgehogRebalancerActor.address);
+        // await tx.wait();
 
-        tx = await VaultStorage.connect(hedgehogRebalancerActor).setRebalanceTimeThreshold(604800);
-        await tx.wait();
+        // tx = await VaultStorage.connect(hedgehogRebalancerActor).setRebalanceTimeThreshold(604800);
+        // await tx.wait();
 
-        tx = await VaultStorage.connect(hedgehogRebalancerActor).setGovernance(CheapRebalancer.address);
-        await tx.wait();
+        // tx = await VaultStorage.connect(hedgehogRebalancerActor).setGovernance(CheapRebalancer.address);
+        // await tx.wait();
+
+        await getWETH("1000000000000000000", _bigRebalancerV2);
+        await getUSDC("1000000000000", _bigRebalancerV2);
+        await getOSQTH("1000000000000000000", _bigRebalancerV2, "0x8d5acf995dae10bdbbada2044c7217ac99edf5bf");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "996500000000000000");
         recipt = await tx.wait();
