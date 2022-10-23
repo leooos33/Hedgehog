@@ -83,16 +83,16 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         // tx = await VaultStorage.connect(hedgehogRebalancerActor).setGovernance(CheapRebalancer.address);
         // await tx.wait();
 
-        await getWETH("1000000000000000000", _bigRebalancerV2);
-        await getUSDC("1000000000000", _bigRebalancerV2);
-        await getOSQTH("1000000000000000000", _bigRebalancerV2, "0x8d5acf995dae10bdbbada2044c7217ac99edf5bf");
+        // await getWETH("1000000000000000000", _bigRebalancerV2);
+        // await getUSDC("1000000000000", _bigRebalancerV2);
+        // await getOSQTH("1000000000000000000", _bigRebalancerV2, "0x8d5acf995dae10bdbbada2044c7217ac99edf5bf");
+
+        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
+        await logBalance(Rebalancer.address, "Rebalancer before");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "996500000000000000");
         recipt = await tx.wait();
         console.log("Gas used", recipt.gasUsed.toString());
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(Rebalancer.address, "Rebalancer before");
 
         // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
         //     "98636306506939157",
