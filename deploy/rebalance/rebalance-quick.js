@@ -3,7 +3,7 @@ process.exit(0); // Block file in order to not accidentally deploy
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
-const { _rebalancerAddress, _vaultAuctionAddress, _vaultMathAddress } = require("../test/common/index");
+const { _rebalancerAddress, _vaultAuctionAddress, _vaultMathAddress } = require("../../test/common/index");
 
 const deposit = async () => {
     let tx;

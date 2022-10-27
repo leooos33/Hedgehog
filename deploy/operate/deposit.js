@@ -10,8 +10,8 @@ const {
     usdcAddress,
     osqthAddress,
     maxUint256,
-} = require("../test/common/index");
-const { getERC20Allowance } = require("../test/helpers");
+} = require("../../test/common/index");
+const { getERC20Allowance } = require("../../test/helpers");
 
 const deposit = async () => {
     let MyContract = await ethers.getContractFactory("Vault");
