@@ -31,7 +31,7 @@ const {
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15810319);
+        await resetFork(15830925);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -64,7 +64,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         });
 
         hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
-        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("2.0"));
+        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
 
         // tx = await Rebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         // await tx.wait();
@@ -89,10 +89,11 @@ describe.only("Cheap Rebalancer test mainnet", function () {
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
         await logBalance(Rebalancer.address, "Rebalancer before");
+        await logBalance(_hedgehogRebalancerDeployerV2, "_hedgehogRebalancerDeployerV2 before");
 
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "996500000000000000");
-        recipt = await tx.wait();
-        console.log("Gas used", recipt.gasUsed.toString());
+        // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "997500000000000000");
+        // recipt = await tx.wait();
+        // console.log("Gas used", recipt.gasUsed.toString());
 
         // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
         //     "98636306506939157",
@@ -102,8 +103,8 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         // );
         // await tx.wait();
 
-        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        await logBalance(Rebalancer.address, "Rebalancer after");
+        // await logBalance(_vaultTreasuryAddressV2, "Treasury after");
+        // await logBalance(Rebalancer.address, "Rebalancer after");
     });
 
     it("Phase 3", async function () {

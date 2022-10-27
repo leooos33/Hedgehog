@@ -14,15 +14,15 @@ const deposit = async () => {
 
     // tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
 
-    tx = await ChepRebalancer.rebalance("0", "998000000000000000", {
-        gasLimit: 4000000,
-        gasPrice: 9000000000,
-    });
-    console.log(tx);
+    // tx = await ChepRebalancer.rebalance("0", "996500000000000000", {
+    //     gasLimit: 4000000,
+    //     gasPrice: 13000000000,
+    // });
+    // console.log(tx);
 
-    // tx = await ChepRebalancer.collectProtocol("100000000000000000", "0", "0", _hedgehogRebalancerDeployerV2, {
+    // tx = await ChepRebalancer.collectProtocol("62419207589797136", "0", "0", _vaultTreasuryAddressV2, {
     //     gasLimit: 60000,
-    //     gasPrice: 10000000000,
+    //     gasPrice: 12000000000,
     // });
     // console.log(tx);
 };
