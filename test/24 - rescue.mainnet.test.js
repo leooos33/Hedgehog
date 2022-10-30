@@ -3,12 +3,12 @@ const { BigNumber } = ethers;
 const { _governanceAddress, _rescueAddress, _rebalancerBigAddress, _vaultStorageAddress } = require("./common");
 const { resetFork, logBalance, getETH, getWETH, getOSQTH, getUSDC, mineSomeBlocks } = require("./helpers");
 
-describe("Rescue test mainnet", function () {
+describe.only("Rescue test mainnet", function () {
     let tx, receipt, MyContract, governance, RescueTeam;
 
     let gas = BigNumber.from(0);
     it("Should deploy contract", async function () {
-        await resetFork(15755275);
+        await resetFork(15862636);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -21,27 +21,27 @@ describe("Rescue test mainnet", function () {
         const Contract = await ethers.getContractFactory("RescueTeam");
         RescueTeam = await Contract.attach(_rescueAddress);
 
-        MyContract = await ethers.getContractFactory("VaultStorage");
-        VaultStorage = await MyContract.attach(_vaultStorageAddress);
+        // MyContract = await ethers.getContractFactory("VaultStorage");
+        // VaultStorage = await MyContract.attach(_vaultStorageAddress);
 
-        MyContract = await ethers.getContractFactory("BigRebalancer");
-        BigRebalancer = await MyContract.attach(_rebalancerBigAddress);
+        // MyContract = await ethers.getContractFactory("BigRebalancer");
+        // BigRebalancer = await MyContract.attach(_rebalancerBigAddress);
 
         //!
         //! Change ownership
         //!
 
-        await getETH(governance.address, ethers.utils.parseEther("2.0"));
+        await getETH(governance.address, ethers.utils.parseEther("1.0"));
 
-        tx = await BigRebalancer.connect(governance).transferOwnership(RescueTeam.address);
-        await tx.wait();
+        // tx = await BigRebalancer.connect(governance).transferOwnership(RescueTeam.address);
+        // await tx.wait();
 
-        console.log("VaultStorage.governance", await VaultStorage.governance());
-        console.log("BigRebalancer.owner", await BigRebalancer.owner());
+        // console.log("VaultStorage.governance", await VaultStorage.governance());
+        // console.log("BigRebalancer.owner", await BigRebalancer.owner());
     });
 
     it("rebalance with flash loan", async function () {
-        await getWETH("100000000000000000", RescueTeam.address);
+        // await getWETH(ethers.utils.parseEther("0.00001"), RescueTeam.address);
         // await getUSDC("1000000", RescueTeam.address);
         // await getOSQTH("1000000000000000000", RescueTeam.address);
 
@@ -50,21 +50,21 @@ describe("Rescue test mainnet", function () {
 
         tx = await RescueTeam.connect(governance).timeRebalance();
         gas = gas.add((await tx.wait()).gasUsed);
-        console.log("Gas:", gas.toString());
 
-        await logBalance(_rebalancerBigAddress, "> Rebalancer after");
-        await logBalance(_rescueAddress, "> Rescue after");
+        // await logBalance(_rebalancerBigAddress, "> Rebalancer after");
+        // await logBalance(_rescueAddress, "> Rescue after");
 
-        await mineSomeBlocks(3);
-        tx = await RescueTeam.connect(governance).timeRebalance();
-        await tx.wait();
+        // await mineSomeBlocks(3);
+        // tx = await RescueTeam.connect(governance).timeRebalance();
+        // gas = gas.add((await tx.wait()).gasUsed);
 
-        await logBalance(_rescueAddress, "> Rescue after 2");
+        // await logBalance(_rescueAddress, "> Rescue after 2");
 
-        await mineSomeBlocks(3);
-        tx = await RescueTeam.connect(governance).timeRebalance();
-        await tx.wait();
+        // await mineSomeBlocks(3);
+        // tx = await RescueTeam.connect(governance).timeRebalance();
+        // gas = gas.add((await tx.wait()).gasUsed);
 
         await logBalance(_rescueAddress, "> Rescue after 3");
+        console.log("Total Gas:", gas.toString());
     });
 });
