@@ -1,6 +1,6 @@
 # Description
 
-Hedging divergence losses automated strategy that provides liquidity in the Uni V3 ETH-USDC pool and hedges it with LP for the oSQTH-ETH pool.
+Automated on-chain vault that provides liquidity on Uniswap V3 and hedges its impermanent losses with Squeeth.
 
 # Project structure
 
@@ -10,6 +10,8 @@ Hedging divergence losses automated strategy that provides liquidity in the Uni 
 |──────── core/ # the main contratcs
 |──────── interfaces/ # project interfaces
 |──────── libraries/ # external libraries
+|──────── peripherals/ # peripheral contracts
+|──────── rebalancers/ # contracts for executing rebalancing auctions
 |──────── IWETH.sol # contract for hardhat testing
 |──────── v3Helper.sol # uniswap emulator for hardhat testing
 ├──  test/ # test cases
