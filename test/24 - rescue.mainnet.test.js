@@ -8,7 +8,7 @@ describe.only("Rescue test mainnet", function () {
 
     let gas = BigNumber.from(0);
     it("Should deploy contract", async function () {
-        await resetFork(15862636);
+        await resetFork(15863264);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -45,11 +45,11 @@ describe.only("Rescue test mainnet", function () {
         // await getUSDC("1000000", RescueTeam.address);
         // await getOSQTH("1000000000000000000", RescueTeam.address);
 
-        await logBalance(_rebalancerBigAddress, "> Rebalancer before");
-        await logBalance(_rescueAddress, "> Rescue before");
+        // await logBalance(_rebalancerBigAddress, "> Rebalancer before");
+        // await logBalance(_rescueAddress, "> Rescue before");
 
-        tx = await RescueTeam.connect(governance).timeRebalance();
-        gas = gas.add((await tx.wait()).gasUsed);
+        // tx = await RescueTeam.connect(governance).timeRebalance();
+        // gas = gas.add((await tx.wait()).gasUsed);
 
         // await logBalance(_rebalancerBigAddress, "> Rebalancer after");
         // await logBalance(_rescueAddress, "> Rescue after");

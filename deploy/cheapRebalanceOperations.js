@@ -14,9 +14,9 @@ const deposit = async () => {
 
     // tx = await ChepRebalancer.returnGovernance(_governanceAddressV2);
 
-    // tx = await ChepRebalancer.rebalance("0", "996500000000000000", {
+    // tx = await ChepRebalancer.rebalance("0", "998000000000000000", {
     //     gasLimit: 4000000,
-    //     gasPrice: 13000000000,
+    //     gasPrice: 6000000000,
     // });
     // console.log(tx);
 
