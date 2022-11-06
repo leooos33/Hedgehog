@@ -1,6 +1,13 @@
 const { ethers } = require("hardhat");
 const { BigNumber } = ethers;
-const { _governanceAddress, _rescueAddress, _rebalancerBigAddress, _vaultStorageAddress } = require("./common");
+const {
+    _governanceAddress,
+    _rescueAddress,
+    _rebalancerBigAddress,
+    _vaultStorageAddress,
+    _hedgehogRebalancerDeployerV2,
+    _bigRebalancerV2,
+} = require("./common");
 const { resetFork, logBalance, getETH, getWETH, getOSQTH, getUSDC, mineSomeBlocks } = require("./helpers");
 
 describe.only("Rescue test mainnet", function () {
@@ -8,7 +15,7 @@ describe.only("Rescue test mainnet", function () {
 
     let gas = BigNumber.from(0);
     it("Should deploy contract", async function () {
-        await resetFork(15863264);
+        await resetFork(15897539);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -64,7 +71,7 @@ describe.only("Rescue test mainnet", function () {
         // tx = await RescueTeam.connect(governance).timeRebalance();
         // gas = gas.add((await tx.wait()).gasUsed);
 
-        await logBalance(_rescueAddress, "> Rescue after 3");
+        await logBalance(_bigRebalancerV2, "> Rescue after 3");
         console.log("Total Gas:", gas.toString());
     });
 });
