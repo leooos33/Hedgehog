@@ -13,7 +13,7 @@ const {
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Snapshot Mainnet", function () {
+describe.skip("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
         await resetFork(15747520);
 

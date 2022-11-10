@@ -10,12 +10,12 @@ const {
 } = require("./common");
 const { resetFork, logBalance, getETH, getWETH, getOSQTH, getUSDC, mineSomeBlocks } = require("./helpers");
 
-describe.only("Rescue test mainnet", function () {
+describe.skip("Rescue test mainnet", function () {
     let tx, receipt, MyContract, governance, RescueTeam;
 
     let gas = BigNumber.from(0);
     it("Should deploy contract", async function () {
-        await resetFork(15897539);
+        await resetFork(15931304);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
