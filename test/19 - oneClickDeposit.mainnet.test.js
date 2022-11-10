@@ -33,7 +33,7 @@ describe.only("One Click deposit Mainnet", function () {
     let actorAddress = _hedgehogRebalancerDeployerV2;
 
     it("Should set actors", async function () {
-        await resetFork(15938860);
+        await resetFork(15939326);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -43,19 +43,19 @@ describe.only("One Click deposit Mainnet", function () {
         actor = await ethers.getSigner(actorAddress);
         console.log("actor:", actor.address);
 
-        // MyContract = await ethers.getContractFactory("OneClickDeposit");
-        // OneClickDeposit = await MyContract.attach(_oneClickDepositAddressV2);
-
         MyContract = await ethers.getContractFactory("OneClickDeposit");
-        OneClickDeposit = await MyContract.deploy();
-        await OneClickDeposit.deployed();
+        OneClickDeposit = await MyContract.attach(_oneClickDepositAddressV2);
+
+        // MyContract = await ethers.getContractFactory("OneClickDeposit");
+        // OneClickDeposit = await MyContract.deploy();
+        // await OneClickDeposit.deployed();
     });
 
     it("flash deposit real (mode = 0)", async function () {
         // this.skip();
 
-        await getETH(actorAddress, ethers.utils.parseEther("50.0"));
-        await approveERC20(actor, OneClickDeposit.address, ethers.utils.parseEther("1"), wethAddress);
+        // await getETH(actorAddress, ethers.utils.parseEther("50.0"));
+        // await approveERC20(actor, OneClickDeposit.address, ethers.utils.parseEther("1"), wethAddress);
         // await getWETH(ethers.utils.parseEther("4.0"), actorAddress);
 
         await logBalance(actorAddress, "> actorAddress");
@@ -66,7 +66,7 @@ describe.only("One Click deposit Mainnet", function () {
 
         await logBalance(OneClickDeposit.address, "> Contract");
 
-        const slippage = "950000000000000000";
+        const slippage = "995000000000000000";
         const amountETH = ethers.utils.parseEther("0.01");
 
         console.log("> amount wETH to deposit %s", amountETH);
@@ -77,14 +77,14 @@ describe.only("One Click deposit Mainnet", function () {
 
         tx = await OneClickDeposit.connect(actor).deposit(amountETH, slippage, actorAddress, "0", {
             gasLimit: 2700000,
-            gasPrice: 24 * 10 ** 9,
+            gasPrice: 26 * 10 ** 9,
         });
 
         receipt = await tx.wait();
-        // console.log("> deposit()");
-        // console.log("> Gas used: %s", receipt.gasUsed);
+        console.log("> deposit()");
+        console.log("> Gas used: %s", receipt.gasUsed);
 
-        // await logBalance(actor.address, "> user");
+        await logBalance(actorAddress, "> actorAddress");
     });
 
     it("flash deposit real (mode = 1)", async function () {

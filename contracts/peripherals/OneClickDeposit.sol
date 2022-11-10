@@ -14,7 +14,7 @@ import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/Transfer
 contract OneClickDeposit is Ownable, ReentrancyGuard {
     using PRBMathUD60x18 for uint256;
 
-    address public addressVault = 0x001eb0D277d5B24A306582387Cfc16Fa37a1375C;
+    address public addressVault = 0x6d4CA1177087924edfE0908ef655169EA766FDc3;
 
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
 
