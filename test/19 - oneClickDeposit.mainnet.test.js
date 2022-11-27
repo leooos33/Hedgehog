@@ -9,6 +9,8 @@ const {
     _oneClickDepositAddress,
     _vaultAddress,
     _biggestOSqthHolder,
+    _vaultAuctionAddressV2,
+    _cheapRebalancerV2,
     maxUint256,
     _oneClickDepositAddressV2,
     _hedgehogRebalancerDeployerV2,
@@ -23,6 +25,7 @@ const {
     getOSQTH,
     logBalance,
     getETH,
+    mineSomeBlocks,
 } = require("./helpers");
 const { deployContract } = require("./deploy");
 const { BigNumber } = require("ethers");
@@ -33,7 +36,7 @@ describe.only("One Click deposit Mainnet", function () {
     let actorAddress = _hedgehogRebalancerDeployerV2;
 
     it("Should set actors", async function () {
-        await resetFork(15939326);
+        await resetFork(15940465);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -43,20 +46,34 @@ describe.only("One Click deposit Mainnet", function () {
         actor = await ethers.getSigner(actorAddress);
         console.log("actor:", actor.address);
 
+        await getETH(actorAddress, ethers.utils.parseEther("20.0"));
+
         MyContract = await ethers.getContractFactory("OneClickDeposit");
         OneClickDeposit = await MyContract.attach(_oneClickDepositAddressV2);
 
         // MyContract = await ethers.getContractFactory("OneClickDeposit");
         // OneClickDeposit = await MyContract.deploy();
         // await OneClickDeposit.deployed();
+
+        MyContract = await ethers.getContractFactory("CheapRebalancer");
+        CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
+
+        tx = await CheapRebalancer.connect(actor).rebalance("0", "995000000000000000");
+        await tx.wait();
+
+        // MyContract = await ethers.getContractFactory("VaultAuction");
+        // VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
+        // tx = await VaultAuction.connect(actor).timeRebalance(_hedgehogRebalancerDeployerV2, "0", "0", "0");
+        // await tx.wait();
     });
 
     it("flash deposit real (mode = 0)", async function () {
         // this.skip();
 
-        // await getETH(actorAddress, ethers.utils.parseEther("50.0"));
         // await approveERC20(actor, OneClickDeposit.address, ethers.utils.parseEther("1"), wethAddress);
         // await getWETH(ethers.utils.parseEther("4.0"), actorAddress);
+
+        await mineSomeBlocks(20);
 
         await logBalance(actorAddress, "> actorAddress");
 
