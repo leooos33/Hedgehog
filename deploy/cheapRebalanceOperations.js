@@ -20,8 +20,10 @@ const operation = async () => {
     WETH = await ethers.getContractAt("IWETH", wethAddress);
 
     // await governanceOperations();
+
     // await rebalanceOperations();
     // await collectToTreasuryOperations();
+    // await collectToAddress();
 
     if (tx) console.log(tx);
 };
@@ -34,12 +36,16 @@ const governanceOperations = async () => {
 };
 
 const rebalanceOperations = async () => {
-    const mul = "995000000000000000";
+    let amount = await WETH.balanceOf(_bigRebalancerV2);
+    console.log("Total", amount.toString());
+
+    // const mul = "995000000000000000";
+    const mul = "997500000000000000";
     // const mul = "990000000000000000";
     // const mul = "950000000000000000";
-    tx = await ChepRebalancer.callStatic.rebalance("0", mul, {
+    tx = await ChepRebalancer.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 10 * 10 ** 9,
+        gasPrice: 11 * 10 ** 9,
     });
 };
 
@@ -47,13 +53,24 @@ const collectToTreasuryOperations = async () => {
     let amount = await WETH.balanceOf(_bigRebalancerV2);
     console.log("Total", amount.toString());
 
+    // let was = BigNumber.from("75070710000000000");
     let was = utils.parseUnits("0", 18);
-    let fee = utils.parseUnits("0.02502623", 18).mul(2);
+    let fee = utils.parseUnits("0.02501825", 18);
     let partToSend = amount.sub(was).sub(fee);
 
     console.log("Send ", partToSend.toString());
 
-    tx = await ChepRebalancer.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
+    tx = await ChepRebalancer.callStatic.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
+        gasLimit: 80000,
+        gasPrice: 12 * 10 ** 9,
+    });
+};
+
+const collectToAddress = async () => {
+    let amount = await WETH.balanceOf(_bigRebalancerV2);
+    console.log("All", amount.toString());
+
+    tx = await ChepRebalancer.callStatic.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
         gasLimit: 80000,
         gasPrice: 11 * 10 ** 9,
     });
