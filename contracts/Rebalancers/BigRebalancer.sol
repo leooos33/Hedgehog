@@ -7,7 +7,8 @@ pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
+
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 
 import {IAuction} from "../interfaces/IAuction.sol";
 import {IVaultMath} from "../interfaces/IVaultMath.sol";
@@ -57,7 +58,7 @@ import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/Transfer
 // 4) return usdc
 
 contract BigRebalancer is Ownable {
-    using SafeMath for uint256;
+    using PRBMathUD60x18 for uint256;
 
     address public addressAuction = 0x2f1D08D53d04559933dBF436a5cD15182a190110;
     address public addressMath = 0x40B22821f694f1F3b226b57B5852d7832e2B5f3f;
@@ -486,7 +487,6 @@ contract BigRebalancer is Ownable {
         require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
     }
 
-    //TODO: chage library and test this sheet to work properly
     function isQuickRebalance() public view returns (bool) {
         (uint256 ethUsdcPrice, ) = IVaultMath(addressMath).getPrices();
         uint256 cachedPrice = IVaultStorage(addressStorage).ethPriceAtLastRebalance();
