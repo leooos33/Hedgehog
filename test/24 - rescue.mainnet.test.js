@@ -10,7 +10,7 @@ const {
 } = require("./common");
 const { resetFork, logBalance, getETH, getWETH, getOSQTH, getUSDC, mineSomeBlocks } = require("./helpers");
 
-describe.only("Rescue test mainnet", function () {
+describe.skip("Rescue test mainnet", function () {
     let tx, receipt, MyContract, governance, RescueTeam;
 
     let gas = BigNumber.from(0);

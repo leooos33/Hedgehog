@@ -29,9 +29,9 @@ const {
     getETH,
 } = require("./helpers");
 
-describe("Cheap Rebalancer test mainnet", function () {
+describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 1", async function () {
-        await resetFork(15830925);
+        await resetFork(16148070);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -91,9 +91,9 @@ describe("Cheap Rebalancer test mainnet", function () {
         await logBalance(Rebalancer.address, "Rebalancer before");
         await logBalance(_hedgehogRebalancerDeployerV2, "_hedgehogRebalancerDeployerV2 before");
 
-        // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "997500000000000000");
-        // recipt = await tx.wait();
-        // console.log("Gas used", recipt.gasUsed.toString());
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "999900000000000000");
+        recipt = await tx.wait();
+        console.log("Gas used", recipt.gasUsed.toString());
 
         // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
         //     "98636306506939157",
