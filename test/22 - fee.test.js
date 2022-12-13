@@ -29,11 +29,11 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.skip("Fee test", function () {
+describe.only("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
-        await resetFork(15708864);
+        await resetFork(16175520);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
