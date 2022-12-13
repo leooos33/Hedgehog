@@ -50,12 +50,14 @@ contract CheapRebalancer is Ownable {
         bigRebalancer = _bigRebalancer;
     }
 
-    function returnOwner(address to) external onlyOwner {
-        IBigRebalancer(bigRebalancer).transferOwnership(to);
+    function returnOwner() external onlyOwner {
+        IBigRebalancer(bigRebalancer).transferOwnership(0x2f0b98eF1093B41897a99b76956Fb69025F1682b);
     }
 
-    function returnGovernance(address to) external onlyOwner {
-        IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage()).setGovernance(to);
+    function returnGovernance() external onlyOwner {
+        IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage()).setGovernance(
+            0x2f0b98eF1093B41897a99b76956Fb69025F1682b
+        );
     }
 
     function collectProtocol(
