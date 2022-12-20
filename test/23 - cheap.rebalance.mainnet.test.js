@@ -28,11 +28,22 @@ const {
     logBalance,
     getETH,
 } = require("./helpers");
+const { deployContract } = require("./deploy");
 
-describe.skip("Cheap Rebalancer test mainnet", function () {
-    it("Phase 1", async function () {
-        await resetFork(16148070);
+describe.only("Cheap Rebalancer test mainnet", function () {
+    it("Phase 0", async function () {
+        await resetFork(16225257);
+        // await resetFork(16211005);
 
+        await hre.network.provider.request({
+            method: "hardhat_impersonateAccount",
+            params: [_hedgehogRebalancerDeployerV2],
+        });
+
+        hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
+        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
+    });
+    it("Phase 1 A", async function () {
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
@@ -42,38 +53,48 @@ describe.skip("Cheap Rebalancer test mainnet", function () {
         MyContract = await ethers.getContractFactory("CheapRebalancer");
         CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
-        //? All ownership is already transferred
+        console.log("Rebalancer.owner:", (await Rebalancer.owner()) == _cheapRebalancerV2);
+        console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == _hedgehogRebalancerDeployerV2);
+        console.log("VaultStorage.governance:", (await VaultStorage.governance()) == _cheapRebalancerV2);
+        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == _bigRebalancerV2);
+    });
 
-        // console.log("Rebalancer.owner:", await Rebalancer.owner());
-        // console.log("VaultStorage.governance:", await VaultStorage.governance());
+    it("Phase 1 B", async function () {
+        this.skip();
 
-        // await hre.network.provider.request({
-        //     method: "hardhat_impersonateAccount",
-        //     params: [_governanceAddressV2],
-        // });
+        MyContract = await ethers.getContractFactory("VaultStorage");
+        VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
-        // governanceActor = await ethers.getSigner(_governanceAddressV2);
-        // await getETH(governanceActor.address, ethers.utils.parseEther("2.0"));
+        CheapRebalancer = await deployContract("CheapRebalancer", [], false);
+        tx = await CheapRebalancer.transferOwnership(_hedgehogRebalancerDeployerV2);
+        await tx.wait();
 
-        // tx = await VaultStorage.connect(governanceActor).setGovernance(CheapRebalancer.address);
+        BigRebalancer = await deployContract("BigRebalancer", [], false);
+        tx = await BigRebalancer.transferOwnership(CheapRebalancer.address);
+        await tx.wait();
+
+        MyContract = await ethers.getContractFactory("BigRebalancer");
+        _Rebalancer = await MyContract.attach(_bigRebalancerV2);
+
+        MyContract = await ethers.getContractFactory("CheapRebalancer");
+        _CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
+
+        // tx = await _Rebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancer.address);
         // await tx.wait();
 
-        await hre.network.provider.request({
-            method: "hardhat_impersonateAccount",
-            params: [_hedgehogRebalancerDeployerV2],
-        });
-
-        hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
-        await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
-
-        // tx = await Rebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
+        // tx = await _Rebalancer.connect(hedgehogRebalancerActor).returnGovernance(_CheapRebalancer.address);
         // await tx.wait();
 
-        console.log("Rebalancer.owner:", await Rebalancer.owner());
-        console.log("VaultStorage.governance:", await VaultStorage.governance());
+        // console.log("Rebalancer.owner:", (await Rebalancer.owner()) == CheapRebalancer.address);
+        // console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == _hedgehogRebalancerDeployerV2);
+        // console.log("VaultStorage.governance:", (await VaultStorage.governance()) == CheapRebalancer.address);
+        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == BigRebalancer.address);
+
+        console.log("-:", await _Rebalancer.owner());
     });
 
     it("Phase 2", async function () {
+        this.skip();
         // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(hedgehogRebalancerActor.address);
         // await tx.wait();
 
@@ -91,7 +112,7 @@ describe.skip("Cheap Rebalancer test mainnet", function () {
         await logBalance(Rebalancer.address, "Rebalancer before");
         await logBalance(_hedgehogRebalancerDeployerV2, "_hedgehogRebalancerDeployerV2 before");
 
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "999900000000000000");
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "950000000000000000");
         recipt = await tx.wait();
         console.log("Gas used", recipt.gasUsed.toString());
 
