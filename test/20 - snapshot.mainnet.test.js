@@ -11,7 +11,6 @@ const {
     _vaultTreasuryAddressV2,
 } = require("./common");
 const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
-const { deployContract } = require("./deploy");
 
 describe.skip("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {

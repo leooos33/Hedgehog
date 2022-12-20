@@ -1,30 +1,6 @@
 const { ethers } = require("hardhat");
-const { utils } = ethers;
-const { expect, assert } = require("chai");
-const {
-    wethAddress,
-    osqthAddress,
-    usdcAddress,
-    _governanceAddress,
-    _oneClickDepositAddress,
-    _vaultAddress,
-    _biggestOSqthHolder,
-    maxUint256,
-    _oneClickDepositAddressV2,
-    _oneClickWithdrawAddressV2,
-} = require("./common");
-const {
-    resetFork,
-    getERC20Balance,
-    approveERC20,
-    getERC20Allowance,
-    getUSDC,
-    getWETH,
-    getOSQTH,
-    logBalance,
-} = require("./helpers");
-const { deployContract } = require("./deploy");
-const { BigNumber } = require("ethers");
+const { _oneClickWithdrawAddressV2 } = require("./common");
+const { resetFork, logBalance } = require("./helpers");
 
 describe.skip("One Click deposit Withdraw", function () {
     let tx, receipt, OneClickDeposit;
