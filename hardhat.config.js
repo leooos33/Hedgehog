@@ -4,13 +4,7 @@ require("hardhat-gas-reporter");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-ethers");
 
-const {
-    ETHERSCAN_KEY,
-    ROPSTEN_DEPLOYMENT_KEY,
-    IFURA_ROPSTEN_URL,
-    HEDGEHOG_REBALANCER_V2,
-    IFURA_MAINNET_URL,
-} = require("./shared/config");
+const { ETHERSCAN_KEY, HEDGEHOG_REBALANCER_V2, IFURA_MAINNET_URL } = require("./shared/config");
 const { getForkingParams } = require("./hardhat.helpers");
 
 task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
@@ -48,11 +42,6 @@ const simulate = {
 module.exports = {
     networks: {
         hardhat: process.env.SIMULATION ? simulate : test,
-        ropsten: {
-            url: IFURA_ROPSTEN_URL,
-            accounts: [ROPSTEN_DEPLOYMENT_KEY],
-            gasPrice: 5000000000,
-        },
         mainnet: {
             url: IFURA_MAINNET_URL,
             accounts: [HEDGEHOG_REBALANCER_V2],

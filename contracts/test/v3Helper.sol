@@ -63,6 +63,22 @@ contract V3Helper {
         swapRouter.exactInputSingle(params);
     }
 
+    function swapUSDC_WETH_v2(uint256 amount) public {
+        // sell weth for usdc
+        TransferHelper.safeApprove(address(usdc), address(swapRouter), amount);
+        ISwapRouter.ExactOutputSingleParams memory params = ISwapRouter.ExactOutputSingleParams({
+            tokenIn: address(usdc),
+            tokenOut: address(weth),
+            fee: 3000,
+            recipient: address(this),
+            deadline: block.timestamp,
+            amountOut: amount,
+            amountInMaximum: 2**256 - 1,
+            sqrtPriceLimitX96: 0
+        });
+        swapRouter.exactOutputSingle(params);
+    }
+
     function swapOSQTH_WETH(uint256 amount) public {
         // sell weth for usdc
         TransferHelper.safeApprove(address(osqth), address(swapRouter), amount);
