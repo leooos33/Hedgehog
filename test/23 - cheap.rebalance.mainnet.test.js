@@ -30,20 +30,22 @@ const {
 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Cheap Rebalancer test mainnet", function () {
+describe.skip("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
         await resetFork(16225257);
         // await resetFork(16211005);
 
+        hedgehogRebalancer = _hedgehogRebalancerDeployerV2;
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
-            params: [_hedgehogRebalancerDeployerV2],
+            params: [hedgehogRebalancer],
         });
 
-        hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
+        hedgehogRebalancerActor = await ethers.getSigner(hedgehogRebalancer);
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
     });
     it("Phase 1 A", async function () {
+        this.skip();
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
@@ -54,14 +56,12 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
         console.log("Rebalancer.owner:", (await Rebalancer.owner()) == _cheapRebalancerV2);
-        console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == _hedgehogRebalancerDeployerV2);
+        console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == hedgehogRebalancer);
         console.log("VaultStorage.governance:", (await VaultStorage.governance()) == _cheapRebalancerV2);
         console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == _bigRebalancerV2);
     });
 
     it("Phase 1 B", async function () {
-        this.skip();
-
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
@@ -79,8 +79,11 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         MyContract = await ethers.getContractFactory("CheapRebalancer");
         _CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
-        // tx = await _Rebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancer.address);
-        // await tx.wait();
+        tx = await _CheapRebalancer.connect(hedgehogRebalancer).returnOwner(hedgehogRebalancer);
+        await tx.wait();
+
+        tx = await _Rebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancer.address);
+        await tx.wait();
 
         // tx = await _Rebalancer.connect(hedgehogRebalancerActor).returnGovernance(_CheapRebalancer.address);
         // await tx.wait();
