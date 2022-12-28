@@ -1,4 +1,4 @@
-process.exit(0); // Block file in order to not accidentally deploy
+// process.exit(0); // Block file in order to not accidentally deploy
 
 const { util } = require("chai");
 const { BigNumber, utils } = require("ethers");
@@ -26,7 +26,7 @@ const operation = async () => {
     // await governanceOperations();
     // await rebalanceOperations();
     // await collectToTreasuryOperations();
-    // await collectToAddress();
+    await collectToAddress();
 
     if (tx) console.log(tx);
 };
@@ -56,12 +56,12 @@ const rebalanceOperations = async () => {
 
     // const mul = "999900000000000000";
     // const mul = "999000000000000000";
-    // const mul = "990000000000000000";
     // const mul = "998500000000000000";
     // const mul = "998000000000000000";
-    const mul = "997500000000000000";
+    // const mul = "997500000000000000";
     // const mul = "997000000000000000";
     // const mul = "995000000000000000";
+    // const mul = "990000000000000000";
     // const mul = "950000000000000000";
     tx = await ChepRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
@@ -79,16 +79,12 @@ const collectToTreasuryOperations = async () => {
     let amount = await WETH.balanceOf(_bigRebalancerV2);
     console.log("Total", amount.toString());
 
-    // let was = BigNumber.from("25018250000000000");
-    let was = utils.parseUnits("95096739547670720", 18);
-    let fee = utils.parseUnits("0.03784263", 18);
-    let partToSend = amount.sub(was).sub(fee);
-
+    let partToSend = utils.parseUnits("0.35", 18);
     console.log("Send ", partToSend.toString());
 
-    tx = await ChepRebalancer.callStatic.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
+    tx = await ChepRebalancer.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
         gasLimit: 80000,
-        gasPrice: 14 * 10 ** 9,
+        gasPrice: 13 * 10 ** 9,
     });
 };
 
