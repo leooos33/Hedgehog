@@ -103,8 +103,8 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == hedgehogRebalancerActor.address);
         console.log("VaultStorage.governance:", (await VaultStorage.governance()) == CheapRebalancer.address);
         console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == RebalanceModule.address);
-
-        // console.log("-:", await _Rebalancer.owner());
+        console.log(await VaultStorage.keeper());
+        console.log(RebalanceModule.address);
     });
 
     it("Phase 2", async function () {

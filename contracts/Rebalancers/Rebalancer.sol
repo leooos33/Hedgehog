@@ -22,9 +22,9 @@ import "hardhat/console.sol";
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
-    address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
-    address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
-    address public addressTreasury = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressAuction = 0x2f1D08D53d04559933dBF436a5cD15182a190110;
+    address public addressMath = 0x40B22821f694f1F3b226b57B5852d7832e2B5f3f;
+    address public addressTreasury = 0x12804580C15F4050dda61D44AFC94623198848bC;
     address public addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
 
     // univ3
@@ -86,7 +86,9 @@ contract Rebalancer is Ownable {
 
         require(isTimeRebalance, "Not time");
 
+        console.log("1");
         IVaultTreasury(addressTreasury).externalPoke();
+        console.log("2");
 
         (
             uint256 targetEth,
