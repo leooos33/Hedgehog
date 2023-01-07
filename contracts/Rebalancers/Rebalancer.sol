@@ -25,6 +25,7 @@ contract Rebalancer is Ownable {
     address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
     address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
     address public addressTreasury = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);

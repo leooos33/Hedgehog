@@ -107,25 +107,10 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         // console.log("-:", await _Rebalancer.owner());
     });
 
-    return;
     it("Phase 2", async function () {
-        this.skip();
-        // tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(hedgehogRebalancerActor.address);
-        // await tx.wait();
-
-        // tx = await VaultStorage.connect(hedgehogRebalancerActor).setRebalanceTimeThreshold(604800);
-        // await tx.wait();
-
-        // tx = await VaultStorage.connect(hedgehogRebalancerActor).setGovernance(CheapRebalancer.address);
-        // await tx.wait();
-
-        // await getWETH("1000000000000000000", _rebalanceModuleV2);
-        // await getUSDC("1000000000000", _rebalanceModuleV2);
-        // await getOSQTH("1000000000000000000", _rebalanceModuleV2, "0x8d5acf995dae10bdbbada2044c7217ac99edf5bf");
-
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(Rebalancer.address, "Rebalancer before");
-        await logBalance(_hedgehogRebalancerDeployerV2, "_hedgehogRebalancerDeployerV2 before");
+        await logBalance(RebalanceModule.address, "RebalanceModule before");
+        await logBalance(hedgehogRebalancerActor.address, "hedgehogRebalancerActor.address before");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "950000000000000000");
         recipt = await tx.wait();
@@ -139,10 +124,11 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         // );
         // await tx.wait();
 
-        // await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        // await logBalance(Rebalancer.address, "Rebalancer after");
+        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
+        await logBalance(RebalanceModule.address, "RebalanceModule after");
     });
 
+    return;
     it("Phase 3", async function () {
         this.skip();
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(_hedgehogRebalancerDeployerV2);

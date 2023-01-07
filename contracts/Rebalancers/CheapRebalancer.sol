@@ -24,7 +24,7 @@ interface IBigRebalancer {
 
     function addressTreasury() external view returns (address);
 
-    function rebalance(uint256 threshold, uint256 triggerTime) external;
+    function rebalance(uint256 threshold) external;
 
     function collectProtocol(
         uint256 amountEth,
@@ -79,7 +79,7 @@ contract CheapRebalancer is Ownable {
             )
         );
 
-        IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
+        IBigRebalancer(bigRebalancer).rebalance(threshold);
 
         VaultStorage.setRebalanceTimeThreshold(604800);
     }
