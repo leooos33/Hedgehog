@@ -93,4 +93,6 @@ interface IVaultStorage {
     function setGovernance(address _governance) external;
 
     function setKeeper(address _keeper) external;
+
+    function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external;
 }

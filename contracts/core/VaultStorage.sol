@@ -162,7 +162,7 @@ contract VaultStorage is IVaultStorage, Faucet {
      * @notice owner can set the hedge time threshold in seconds that determines how often the strategy can be hedged
      * @param _rebalanceTimeThreshold the rebalance time threshold, in seconds
      */
-    function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external onlyGovernance {
+    function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external override onlyGovernance {
         rebalanceTimeThreshold = _rebalanceTimeThreshold;
     }
 

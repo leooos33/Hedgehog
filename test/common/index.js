@@ -24,7 +24,6 @@ const _vaultMathAddressHardhat = "0x01E21d7B8c39dc4C764c19b308Bd8b14B1ba139E";
 const _rescueAddress = "0xecd38cE98F785cDF3cB02c1BC13e133A790a50a9";
 const _rebalancerBigAddress = "0x412afcc7a3ee9589bdc883cb8f2dee7e41cf0b14";
 const _rebalancerAddress = "0x09b1937D89646b7745377f0fcc8604c179c06aF5";
-const _rebalancerAddressOld = "0xD3ed5915AAA27dB7a3646bf926dB6C98243d5c40";
 const _oneClickDepositAddress = "0xe10DA9A08F32d1DCeF5A253C94D1c966Ac440FD3";
 
 const maxUint256 = "115792089237316195423570985008687907853269984665640564039457584007913129639935";
@@ -70,7 +69,6 @@ module.exports = {
     _vaultAuctionAddressHardhat,
     _vaultMathAddressHardhat,
     maxUint256,
-    _rebalancerAddressOld,
     _biggestOSqthHolder,
     _biggestUSDCHolder,
     _rebalancerAddress,

@@ -9,9 +9,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-import {IAuction} from "../interfaces/IAuction.sol";
-import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
-import {IVaultMath} from "../interfaces/IVaultMath.sol";
+import {IAuction} from "../../interfaces/IAuction.sol";
+import {IVaultTreasury} from "../../interfaces/IVaultTreasury.sol";
+import {IVaultMath} from "../../interfaces/IVaultMath.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
@@ -22,10 +22,9 @@ import "hardhat/console.sol";
 contract Rebalancer is Ownable {
     using SafeMath for uint256;
 
-    address public addressAuction = 0x2f1D08D53d04559933dBF436a5cD15182a190110;
-    address public addressMath = 0x40B22821f694f1F3b226b57B5852d7832e2B5f3f;
-    address public addressTreasury = 0x12804580C15F4050dda61D44AFC94623198848bC;
-    address public addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
+    address public addressAuction = 0x399dD7Fd6EF179Af39b67cE38821107d36678b5D;
+    address public addressMath = 0xDF374d19021831E785212F00837B5709820AA769;
+    address public addressTreasury = 0xDF374d19021831E785212F00837B5709820AA769;
 
     // univ3
     ISwapRouter constant swapRouter = ISwapRouter(0xE592427A0AEce92De3Edee1F18E0157C05861564);
