@@ -10,7 +10,7 @@ const {
     _vaultMathAddressV2,
     _vaultStorageAddressV2,
     _governanceAddressV2,
-    _bigRebalancerV2,
+    _rebalanceModuleV2,
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
     _cheapRebalancerV2,
@@ -72,7 +72,7 @@ describe.skip("Fee test", function () {
         VaultMath = await MyContract.attach(_vaultMathAddressV2);
 
         MyContract = await ethers.getContractFactory("BigRebalancer");
-        Rebalancer = await MyContract.attach(_bigRebalancerV2);
+        Rebalancer = await MyContract.attach(_rebalanceModuleV2);
 
         MyContract = await ethers.getContractFactory("VaultTreasury");
         Treasury = await MyContract.attach(_vaultTreasuryAddressV2);

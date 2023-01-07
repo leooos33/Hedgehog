@@ -10,7 +10,7 @@ const {
     _vaultMathAddressV2,
     _vaultStorageAddressV2,
     _governanceAddressV2,
-    _bigRebalancerV2,
+    _rebalanceModuleV2,
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
     _cheapRebalancerV2,
@@ -31,7 +31,7 @@ const {
     getETH,
 } = require("./helpers");
 
-describe.only("Cheap Rebalancer test mainnet", function () {
+describe.skip("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
         await resetFork(16241222);
 
@@ -54,7 +54,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
         MyContract = await ethers.getContractFactory("BigRebalancer");
-        Rebalancer = await MyContract.attach(_bigRebalancerV2);
+        Rebalancer = await MyContract.attach(_rebalanceModuleV2);
 
         MyContract = await ethers.getContractFactory("CheapRebalancer");
         CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
@@ -64,7 +64,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         console.log("Rebalancer.owner:", (await Rebalancer.owner()) == _cheapRebalancerV2);
         console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == hedgehogRebalancer);
         console.log("VaultStorage.governance:", (await VaultStorage.governance()) == _cheapRebalancerV2);
-        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == _bigRebalancerV2);
+        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == _rebalanceModuleV2);
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).collectProtocol(
             "487626799805538458",

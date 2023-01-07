@@ -10,7 +10,7 @@ const {
     _vaultMathAddressV2,
     _vaultStorageAddressV2,
     _governanceAddressV2,
-    _bigRebalancerV2,
+    _rebalanceModuleV2,
     _hedgehogRebalancerDeployerV2,
 } = require("./common");
 const {
@@ -54,7 +54,7 @@ describe.skip("Rebalance test mainnet", function () {
         //----- choose rebalancer -----
 
         MyContract = await ethers.getContractFactory("BigRebalancer");
-        Rebalancer = await MyContract.attach(_bigRebalancerV2);
+        Rebalancer = await MyContract.attach(_rebalanceModuleV2);
 
         // MyContract = await ethers.getContractFactory("Rebalancer");
         // Rebalancer = await MyContract.attach("0x09b1937d89646b7745377f0fcc8604c179c06af5");

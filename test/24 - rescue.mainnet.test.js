@@ -6,7 +6,7 @@ const {
     _rebalancerBigAddress,
     _vaultStorageAddress,
     _hedgehogRebalancerDeployerV2,
-    _bigRebalancerV2,
+    _rebalanceModuleV2,
 } = require("./common");
 const { resetFork, logBalance, getETH, getWETH, getOSQTH, getUSDC, mineSomeBlocks } = require("./helpers");
 
@@ -71,7 +71,7 @@ describe.skip("Rescue test mainnet", function () {
         // tx = await RescueTeam.connect(governance).timeRebalance();
         // gas = gas.add((await tx.wait()).gasUsed);
 
-        await logBalance(_bigRebalancerV2, "> Rescue after 3");
+        await logBalance(_rebalanceModuleV2, "> Rescue after 3");
         console.log("Total Gas:", gas.toString());
     });
 });

@@ -3,12 +3,12 @@ process.exit(0); // Block file in order to not accidentally deploy
 const { ethers } = require("hardhat");
 const { utils } = ethers;
 const { BigNumber } = require("ethers");
-const { _bigRebalancerV2 } = require("../test/common/index");
+const { _rebalanceModuleV2 } = require("../test/common/index");
 
 const deposit = async () => {
     let tx;
     let MyContract = await ethers.getContractFactory("BigRebalancer");
-    const Rebalancer = await MyContract.attach(_bigRebalancerV2);
+    const Rebalancer = await MyContract.attach(_rebalanceModuleV2);
 
     console.log("addressAuction:", await Rebalancer.addressAuction());
     console.log("addressMath:", await Rebalancer.addressMath());
