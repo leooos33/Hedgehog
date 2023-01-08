@@ -15,28 +15,18 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     }
 });
 
-const CHAIN_IDS = {
-    hardhat: 1,
-};
-
 const test = {
     allowUnlimitedContractSize: process.env.DEBUG ? true : false,
-    chainId: CHAIN_IDS.hardhat,
+    chainId: 1,
     forking: getForkingParams(),
-    // gasLimit: 3000000,
-    // gas: 1800000,
-    // gasPrice: 18000000000,
+    gasPrice: 18 * 10 ** 9,
 };
 
 const simulate = {
     allowUnlimitedContractSize: true,
-    chainId: CHAIN_IDS.hardhat,
+    chainId: 1,
     forking: getForkingParams(15534544),
-    gasPrice: 18000000000,
-    // mining: {
-    //     auto: true,
-    //     interval: 0,
-    // },
+    gasPrice: 18 * 10 ** 9,
 };
 
 module.exports = {
@@ -45,7 +35,7 @@ module.exports = {
         mainnet: {
             url: IFURA_MAINNET_URL,
             accounts: [HEDGEHOG_REBALANCER_V2],
-            gasPrice: 3000000000,
+            gasPrice: 13 * 10 ** 9,
         },
     },
     solidity: {

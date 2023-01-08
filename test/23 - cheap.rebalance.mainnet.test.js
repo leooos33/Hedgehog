@@ -30,7 +30,7 @@ const {
 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.skip("Cheap Rebalancer test mainnet", function () {
+describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
         await resetFork(16354557);
 
@@ -43,7 +43,7 @@ describe.skip("Cheap Rebalancer test mainnet", function () {
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
     });
     it("Phase 1 A", async function () {
-        this.skip();
+        // this.skip();
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
@@ -60,6 +60,7 @@ describe.skip("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase 1 B", async function () {
+        this.skip();
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
