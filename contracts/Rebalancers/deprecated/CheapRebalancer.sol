@@ -24,7 +24,7 @@ interface IBigRebalancer {
 
     function addressTreasury() external view returns (address);
 
-    function rebalance(uint256 threshold) external;
+    function rebalance(uint256 threshold, uint256 triggerTime) external;
 
     function collectProtocol(
         uint256 amountEth,
@@ -39,7 +39,7 @@ interface IBigRebalancer {
 contract CheapRebalancer is Ownable {
     using PRBMathUD60x18 for uint256;
 
-    address public bigRebalancer = 0xFCFE742e19790Dd67a627875ef8b45F17DB1DaC6; //TODO: change address here
+    address public bigRebalancer = 0x86345a7f1D77F6056E2ff83e1b1071238AEf1483;
     address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
     address constant OSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
@@ -79,7 +79,7 @@ contract CheapRebalancer is Ownable {
             )
         );
 
-        IBigRebalancer(bigRebalancer).rebalance(threshold);
+        IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
 
         VaultStorage.setRebalanceTimeThreshold(604800);
     }

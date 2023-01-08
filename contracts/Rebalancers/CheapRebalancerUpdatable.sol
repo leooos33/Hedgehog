@@ -19,6 +19,8 @@ interface IRebalanceModule {
     function rebalance(uint256 threshold) external;
 
     function rebalance(uint256 threshold, uint256 triggerTime) external;
+
+    function setKeeper(address to) external;
 }
 
 //TODO: check all addresses
@@ -87,16 +89,15 @@ contract CheapRebalancerUpdatable is Ownable {
 
         VaultStorage.setRebalanceTimeThreshold(thresholdAfter);
 
-        IRebalanceModule() VaultStorage.setKeeper(address(this));
+        IRebalanceModule(rebalanceModules[moduleId]).setKeeper(address(this));
     }
 
     function rebalance(uint256 moduleId, uint256 threshold) public onlyOwner {
-        IVaultStorage VaultStorage = IVaultStorage(rebalanceModules[0]);
-        VaultStorage.setKeeper(rebalanceModules[moduleId]);
+        IVaultStorage(rebalanceModules[0]).setKeeper(rebalanceModules[moduleId]);
 
         IRebalanceModule(rebalanceModules[moduleId]).rebalance(threshold);
 
-        VaultStorage.setKeeper(address(this));
+        IRebalanceModule(rebalanceModules[moduleId]).setKeeper(address(this));
     }
 
     //TODO: add more setters

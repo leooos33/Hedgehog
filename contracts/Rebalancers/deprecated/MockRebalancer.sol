@@ -7,9 +7,9 @@ pragma solidity =0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import {IAuction} from "../interfaces/IAuction.sol";
-import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
-import {IVaultMath} from "../interfaces/IVaultMath.sol";
+import {IAuction} from "../../interfaces/IAuction.sol";
+import {IVaultTreasury} from "../../interfaces/IVaultTreasury.sol";
+import {IVaultMath} from "../../interfaces/IVaultMath.sol";
 
 import "hardhat/console.sol";
 
