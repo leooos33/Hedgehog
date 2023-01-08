@@ -17,41 +17,23 @@ import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/Transfer
 
 // Rebalance flow
 
-// branch 1 (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance)
-// 1) borrow weth & usdc
-// 2) get osqth
-// 3) sellv3 osqth
-// 4) return eth & usdc
-
-// branch 2 (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance)
+// branch 1 (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance)
 // 1) borrow osqth (get weth on euler and swap it to osqth)
 // 2) get usdc & weth
 // 3) sellv3 usdc
 // 4) return weth
 
-// branch 3 (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance)
+// branch 2 (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance)
 // 1) borrow usdc & osqth (borrow weth on euler and swap it to osqth)
 // 2) get weth
 // 3) sellv3 weth
 // 4) return usdc & weth
 
-// branch 4 (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance)
-// 1) borrow weth
-// 2) get usdc & osqth
-// 3) sellv3 usdc & osqth
-// 4) return weth
-
-// branch 5 (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance)
+// branch 3 (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance)
 // 1) borrow weth & osqth (borrow weth on euler and swap it to osqth)
 // 2) get usdc
 // 3) sellv3 usdc
 // 4) return weth
-
-// branch 6 (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance)
-// 1) borrow usdc
-// 2) get osqth & weth
-// 3) sellv3 osqth & weth
-// 4) return usdc
 
 contract BigRebalancerEuler is Ownable {
     using PRBMathUD60x18 for uint256;
@@ -79,16 +61,17 @@ contract BigRebalancerEuler is Ownable {
         uint256 amount1;
         uint256 amount2;
         uint256 threshold;
-        uint256 triggerTime;
     }
 
     constructor() Ownable() {
         TransferHelper.safeApprove(OSQTH, address(swapRouter), type(uint256).max);
         TransferHelper.safeApprove(WETH, address(swapRouter), type(uint256).max);
         TransferHelper.safeApprove(USDC, address(swapRouter), type(uint256).max);
+
         IERC20(USDC).approve(addressAuction, type(uint256).max);
         IERC20(OSQTH).approve(addressAuction, type(uint256).max);
         IERC20(WETH).approve(addressAuction, type(uint256).max);
+        
         IERC20(USDC).approve(euler, type(uint256).max);
         IERC20(OSQTH).approve(euler, type(uint256).max);
         IERC20(WETH).approve(euler, type(uint256).max);
@@ -104,6 +87,7 @@ contract BigRebalancerEuler is Ownable {
         addressMath = _addressMath;
         addressTreasury = _addressTreasury;
         addressStorage = _addressStorage;
+
         IERC20(USDC).approve(addressAuction, type(uint256).max);
         IERC20(OSQTH).approve(addressAuction, type(uint256).max);
         IERC20(WETH).approve(addressAuction, type(uint256).max);
@@ -124,16 +108,11 @@ contract BigRebalancerEuler is Ownable {
         if (amountOsqth > 0) IERC20(OSQTH).transfer(to, amountOsqth);
     }
 
-    function rebalance(uint256 threshold, uint256 triggerTime) public onlyOwner {
+    //dev a - deprecated param
+    function rebalance(uint256 threshold, uint256 a) public onlyOwner {
         FlCallbackData memory data;
-        data.triggerTime = triggerTime;
 
-        if (triggerTime == 0) {
-            (bool isTimeRebalance, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
-
-            require(isTimeRebalance, "Not time");
-            triggerTime = auctionTriggerTime;
-        }
+        (, uint256 auctionTriggerTime) = IVaultMath(addressMath).isTimeRebalance();
 
         IVaultTreasury(addressTreasury).externalPoke();
 
@@ -144,71 +123,42 @@ contract BigRebalancerEuler is Ownable {
             uint256 ethBalance,
             uint256 usdcBalance,
             uint256 osqthBalance
-        ) = IAuction(addressAuction).getParams(triggerTime);
+        ) = IAuction(addressAuction).getParams(auctionTriggerTime);
 
         data.threshold = threshold;
-
-        if (targetEth > ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
-            // 1) borrow weth & usdc
-            // 2) get osqth
-            // 3) sellv3 osqth
-            // 4) return eth & usdc
+        
+        if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
+            // 1) borrow osqth
+            // 2) get usdc & weth
+            // 3) sellv3 usdc & weth
+            // 4) return osqth
 
             data.type_of_arbitrage = 1;
-            data.amount1 = targetEth - ethBalance + 10;
-            data.amount2 = targetUsdc - usdcBalance + 10;
-
-            IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-        } else if (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
-            // 1) borrow osqth (get weth on euler and swap it to osqth)
-            // 2) get usdc & weth
-            // 3) sellv3 usdc
-            // 4) return weth
-
-            data.type_of_arbitrage = 2;
             data.amount1 = targetOsqth - osqthBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth > osqthBalance) {
-            // 1) borrow usdc & osqth (borrow weth on euler and swap it to osqth)
+            // 1) borrow usdc & osqth
             // 2) get weth
             // 3) sellv3 weth
-            // 4) return usdc & weth
+            // 4) return usdc & osqth
 
-            data.type_of_arbitrage = 3;
-            data.amount1 = (targetUsdc - usdcBalance + 10).mul(101); //TODO: what is it?
+            data.type_of_arbitrage = 2;
+            data.amount1 = targetUsdc - usdcBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-        } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth < osqthBalance) {
-            // 1) borrow weth
-            // 2) get usdc & osqth
-            // 3) sellv3 usdc & osqth
-            // 4) return weth
-
-            data.type_of_arbitrage = 4;
-            data.amount1 = targetEth - ethBalance + 10;
-
-            IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-        } else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
-            // 1) borrow weth & osqth (borrow weth on euler and swap it to osqth)
+        } 
+                
+        else if (targetEth > ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance) {
+            // 1) borrow weth & osqth
             // 2) get usdc
             // 3) sellv3 usdc
-            // 4) return weth
+            // 4) return osqth & weth
 
-            data.type_of_arbitrage = 5;
+            data.type_of_arbitrage = 3;
             data.amount1 = targetEth - ethBalance + 10;
             data.amount2 = targetOsqth - osqthBalance + 10;
-
-            IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
-        } else if (targetEth < ethBalance && targetUsdc > usdcBalance && targetOsqth < osqthBalance) {
-            // 1) borrow usdc
-            // 2) get osqth & weth
-            // 3) sellv3 osqth & weth
-            // 4) return usdc
-
-            data.type_of_arbitrage = 6;
-            data.amount1 = targetUsdc - usdcBalance + 10;
 
             IExec(exec).deferLiquidityCheck(address(this), abi.encode(data));
         } else {
@@ -217,220 +167,123 @@ contract BigRebalancerEuler is Ownable {
     }
 
     function onDeferredLiquidityCheck(bytes memory encodedData) external {
-        // require(msg.sender == euler, "e/flash-loan/on-deferred-caller");
-        // FlCallbackData memory data = abi.decode(encodedData, (FlCallbackData));
-        // uint256 ethBefore = IERC20(WETH).balanceOf(address(this));
-        // if (data.type_of_arbitrage == 1) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(USDC));
-        //     borrowedDToken2.borrow(0, data.amount2);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // swap all oSQTH to wETH
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(OSQTH),
-        //             tokenOut: address(WETH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(OSQTH).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // buy USDC with part of wETH
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(WETH),
-        //             tokenOut: address(USDC),
-        //             fee: 500,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount2,
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        //     borrowedDToken2.repay(0, data.amount2);
-        // } else if (data.type_of_arbitrage == 2) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(OSQTH));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // sell usdc to osqth
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(USDC),
-        //             tokenOut: address(OSQTH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(USDC).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // sell weth to osqth
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(WETH),
-        //             tokenOut: address(OSQTH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(WETH).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        // } else if (data.type_of_arbitrage == 3) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(OSQTH));
-        //     borrowedDToken2.borrow(0, data.amount2);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // buy USDC with wETH
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(WETH),
-        //             tokenOut: address(USDC),
-        //             fee: 500,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount1.sub(IERC20(USDC).balanceOf(address(this))),
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // buy OSQTH with wETH
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(WETH),
-        //             tokenOut: address(OSQTH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount1.sub(IERC20(OSQTH).balanceOf(address(this))),
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        //     borrowedDToken2.repay(0, data.amount2);
-        // } else if (data.type_of_arbitrage == 4) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // swap all oSQTH to wETH
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(OSQTH),
-        //             tokenOut: address(WETH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(OSQTH).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // swap all USDC to wETH
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(USDC),
-        //             tokenOut: address(WETH),
-        //             fee: 500,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(USDC).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        // } else if (data.type_of_arbitrage == 5) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(OSQTH));
-        //     borrowedDToken2.borrow(0, data.amount2);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // buy WETH with USDC
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(USDC),
-        //             tokenOut: address(WETH),
-        //             fee: 500,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount1.sub(IERC20(WETH).balanceOf(address(this))),
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // buy OSQTH with USDC
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(USDC),
-        //             tokenOut: address(OSQTH),
-        //             fee: 3000, //TODO: check all pools
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount1.sub(IERC20(USDC).balanceOf(address(this))),
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        //     borrowedDToken2.repay(0, data.amount2);
-        // } else if (data.type_of_arbitrage == 6) {
-        //     IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
-        //     borrowedDToken1.borrow(0, data.amount1);
-        //     if (data.triggerTime == 0) IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
-        //     else IAuction(addressAuction).priceRebalance(address(this), data.triggerTime, 0, 0, 0);
-        //     // sell all oSQTH to wETH
-        //     swapRouter.exactInputSingle(
-        //         ISwapRouter.ExactInputSingleParams({
-        //             tokenIn: address(OSQTH),
-        //             tokenOut: address(WETH),
-        //             fee: 3000,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountIn: IERC20(OSQTH).balanceOf(address(this)),
-        //             amountOutMinimum: 0,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     // swap all wETH to USDC
-        //     swapRouter.exactOutputSingle(
-        //         ISwapRouter.ExactOutputSingleParams({
-        //             tokenIn: address(WETH),
-        //             tokenOut: address(USDC),
-        //             fee: 500,
-        //             recipient: address(this),
-        //             deadline: block.timestamp,
-        //             amountOut: data.amount1,
-        //             amountInMaximum: type(uint256).max,
-        //             sqrtPriceLimitX96: 0
-        //         })
-        //     );
-        //     borrowedDToken1.repay(0, data.amount1);
-        // }
-        // require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
-    }
+        require(msg.sender == euler, "e/flash-loan/on-deferred-caller");
+        FlCallbackData memory data = abi.decode(encodedData, (FlCallbackData));
+        uint256 ethBefore = IERC20(WETH).balanceOf(address(this));
+        
+        if (data.type_of_arbitrage == 1) {
+            IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(OSQTH));
+            borrowedDToken1.borrow(0, data.amount1);
 
-    function isQuickRebalance() public view returns (bool) {
-        (uint256 ethUsdcPrice, ) = IVaultMath(addressMath).getPrices();
-        uint256 cachedPrice = IVaultStorage(addressStorage).ethPriceAtLastRebalance();
+            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
 
-        uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
+            uint256 usdcAfter = IERC20(USDC).balanceOf(address(this));
 
-        return ratio <= IVaultStorage(addressStorage).rebalanceThreshold();
+            // WETH -> USDC
+            swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
+                tokenIn: address(USDC),
+                tokenOut: address(WETH),
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: usdcAfter,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            }));
+
+            uint256 wethAll = IERC20(WETH).balanceOf(address(this));
+
+            // WETH -> OSQTH
+            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(WETH),
+                tokenOut: address(OSQTH),
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: data.amount1,
+                amountInMaximum: wethAll,
+                sqrtPriceLimitX96: 0
+            }));
+
+            borrowedDToken1.repay(0, data.amount1);
+        } else if (data.type_of_arbitrage == 2) {
+            IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
+            borrowedDToken1.borrow(0, data.amount1);
+            IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(OSQTH));
+            borrowedDToken2.borrow(0, data.amount2);
+
+            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+
+            uint256 wethAfter = IERC20(WETH).balanceOf(address(this));
+
+            // oSQTH -> WETH
+            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(WETH),
+                tokenOut: address(OSQTH),
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: data.amount2,
+                amountInMaximum: wethAfter,
+                sqrtPriceLimitX96: 0
+            }));
+
+            uint256 wethAfter2 = IERC20(WETH).balanceOf(address(this));
+
+            // USDC -> WETH
+            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(WETH),
+                tokenOut: address(USDC),
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: data.amount1,
+                amountInMaximum: wethAfter2,
+                sqrtPriceLimitX96: 0
+            }));
+
+            borrowedDToken1.repay(0, data.amount1);
+            borrowedDToken2.repay(0, data.amount2);
+        } 
+        else if (data.type_of_arbitrage == 3) {
+            IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(WETH));
+            borrowedDToken1.borrow(0, data.amount1);
+            IEulerDToken borrowedDToken2 = IEulerDToken(markets.underlyingToDToken(OSQTH));
+            borrowedDToken2.borrow(0, data.amount2);
+
+            IAuction(addressAuction).timeRebalance(address(this), 0, 0, 0);
+
+            uint256 usdcAfter = IERC20(USDC).balanceOf(address(this));
+
+            // WETH -> USDC
+            swapRouter.exactInputSingle(ISwapRouter.ExactInputSingleParams({
+                tokenIn: address(USDC),
+                tokenOut: address(WETH),
+                fee: 500,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountIn: usdcAfter,
+                amountOutMinimum: 0,
+                sqrtPriceLimitX96: 0
+            }));
+            uint256 wethAfter2 = IERC20(WETH).balanceOf(address(this));
+
+            // WETH -> oSQTH
+            swapRouter.exactOutputSingle(ISwapRouter.ExactOutputSingleParams({
+                tokenIn: address(WETH),
+                tokenOut: address(OSQTH),
+                fee: 3000,
+                recipient: address(this),
+                deadline: block.timestamp,
+                amountOut: data.amount2,
+                amountInMaximum: wethAfter2,
+                sqrtPriceLimitX96: 0
+            }));
+
+            borrowedDToken1.repay(0, data.amount1);
+            borrowedDToken2.repay(0, data.amount2);
+        }
+        
+        require(IERC20(WETH).balanceOf(address(this)).sub(ethBefore) > data.threshold, "NEP");
     }
 }
