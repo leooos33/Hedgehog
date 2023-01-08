@@ -32,7 +32,7 @@ const { deployContract } = require("./deploy");
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
-        await resetFork(16354557);
+        await resetFork(16361713);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -82,7 +82,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler before");
         await logBalance(hedgehogRebalancerActor.address, "hedgehogRebalancerActor.address before");
 
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "950000000000000000");
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", "999000000000000000");
         recipt = await tx.wait();
         console.log("Gas used", recipt.gasUsed.toString());
 
