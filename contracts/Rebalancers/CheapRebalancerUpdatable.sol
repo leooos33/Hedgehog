@@ -100,5 +100,14 @@ contract CheapRebalancerUpdatable is Ownable {
         IRebalanceModule(rebalanceModules[moduleId]).setKeeper(address(this));
     }
 
+    // function isQuickRebalance() public view returns (bool) {
+    //     (uint256 ethUsdcPrice, ) = IVaultMath(addressMath).getPrices();
+    //     uint256 cachedPrice = IVaultStorage(addressStorage).ethPriceAtLastRebalance();
+
+    //     uint256 ratio = cachedPrice > ethUsdcPrice ? cachedPrice.div(ethUsdcPrice) : ethUsdcPrice.div(cachedPrice);
+
+    //     return ratio <= IVaultStorage(addressStorage).rebalanceThreshold();
+    // }
+
     //TODO: add more setters
 }
