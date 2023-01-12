@@ -1,4 +1,4 @@
-// process.exit(0); // Block file in order to not accidentally deploy
+process.exit(0); // Block file in order to not accidentally deploy
 
 const { utils } = require("ethers");
 const { ethers } = require("hardhat");
@@ -12,10 +12,10 @@ const {
     _vaultStorageAddressV2,
 } = require("../test/common/index");
 
-let tx, ChepRebalancer, WETH;
+let tx, CheapRebalancer, WETH;
 const operation = async () => {
     MyContract = await ethers.getContractFactory("CheapRebalancer");
-    ChepRebalancer = await MyContract.attach(_cheapRebalancerV2);
+    CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
     WETH = await ethers.getContractAt("IWETH", wethAddress);
     MyContract = await ethers.getContractFactory("VaultStorage");
     VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -25,7 +25,7 @@ const operation = async () => {
     BigRebalancer = await MyContract.attach(_rebalanceModuleV2);
 
     // await governanceOperations();
-    await rebalanceOperations();
+    // await rebalanceOperations();
     // await collectToTreasuryOperations();
     // await collectToAddress();
     // await rebalanceManipulations();
@@ -34,35 +34,33 @@ const operation = async () => {
 };
 
 const rebalanceManipulations = async () => {
-    const gasPrice = 13 * 10 ** 9;
+    const gasPrice = 17 * 10 ** 9;
 
-    // tx = await BigRebalancerEuler.addressStorage();
-    // console.log(tx);
-
-    // tx = await ChepRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
+    // tx = await BigRebalancer.callStatic.transferOwnership(CheapRebalancer.address, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
 
-    // tx = await BigRebalancerEuler.callStatic.transferOwnership(ChepRebalancer.address, {
+    // tx = await CheapRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
 
-    // tx = await BigRebalancer.callStatic.setKeeper(BigRebalancerEuler.address, {
+    // tx = await BigRebalancerEuler.callStatic.setKeeper(BigRebalancer.address, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
 
-    // tx = await ChepRebalancer.callStatic.setContracts(BigRebalancerEuler.address, {
+    // tx = await CheapRebalancer.callStatic.setContracts(BigRebalancer.address, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
 };
+
 const governanceOperations = async () => {
     const gasPrice = 20 * 10 ** 9;
 
-    // tx = await ChepRebalancer.callStatic.returnGovernance(_hedgehogRebalancerDeployerV2, {
+    // tx = await CheapRebalancer.callStatic.returnGovernance(_hedgehogRebalancerDeployerV2, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
@@ -99,9 +97,9 @@ const rebalanceOperations = async () => {
     // const mul = "995000000000000000";
     // const mul = "990000000000000000";
     // const mul = "950000000000000000";
-    tx = await ChepRebalancer.callStatic.rebalance("0", mul, {
+    tx = await CheapRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 15 * 10 ** 9,
+        gasPrice: 20 * 10 ** 9,
     });
 };
 
@@ -109,25 +107,29 @@ const rebalanceOperations = async () => {
 let fee = utils.parseUnits("0", 18);
 
 const collectToTreasuryOperations = async () => {
-    let amount = await WETH.balanceOf(_rebalanceModuleV2);
+    const contract = await CheapRebalancer.bigRebalancer();
+    let amount = await WETH.balanceOf(contract);
     console.log("Total", amount.toString());
 
-    let partToSend = utils.parseUnits("0.35", 18);
+    // let partToSend = "102284313101702060";
+    // let partToSend = utils.parseUnits("0.2", 18);
+    let partToSend = amount.mul(2).div(3);
     console.log("Send ", partToSend.toString());
 
-    tx = await ChepRebalancer.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
+    tx = await CheapRebalancer.callStatic.collectProtocol(partToSend, "0", "0", _vaultTreasuryAddressV2, {
         gasLimit: 80000,
-        gasPrice: 13 * 10 ** 9,
+        gasPrice: 18 * 10 ** 9,
     });
 };
 
 const collectToAddress = async () => {
-    let amount = await WETH.balanceOf(_rebalanceModuleV2);
+    const contract = await CheapRebalancer.bigRebalancer();
+    let amount = await WETH.balanceOf(contract);
     console.log("All", amount.toString());
 
-    tx = await ChepRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
+    tx = await CheapRebalancer.callStatic.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
         gasLimit: 80000,
-        gasPrice: 18 * 10 ** 9,
+        gasPrice: 17 * 10 ** 9,
     });
 };
 

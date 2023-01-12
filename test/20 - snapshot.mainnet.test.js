@@ -14,7 +14,8 @@ const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 
 describe.skip("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
-        await resetFork(16232369);
+        let block = 15659076;
+        await resetFork(block);
 
         const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddressV2);
         const Vault = await ethers.getContractAt("Vault", _vaultAddressV2);
@@ -44,5 +45,15 @@ describe.skip("Snapshot Mainnet", function () {
         const value = await VaultMath.getValue(amounts[0], amounts[1], amounts[2], prices[0], prices[1]);
         console.log("Total ETH value %s", value);
         console.log("sharePrice %s", value / totalSupply);
+
+        console.log({
+            block: block,
+            data: {
+                totalSupply: totalSupply.toString(),
+                totalValue: value.toString(),
+                sharePrice: value / totalSupply,
+                ethUsdcPrice: utils.formatUnits(prices[0], "ether").toString(),
+            },
+        });
     });
 });
