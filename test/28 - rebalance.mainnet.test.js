@@ -5,12 +5,13 @@ const {
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
     _cheapRebalancerV2,
+    _vaultStorageAddressV2,
 } = require("./common");
 const { resetFork, logBalance, getETH } = require("./helpers");
 
 describe.only("Rebalancer mainnet test", function () {
     it("Phase 0", async function () {
-        await resetFork(16390400);
+        await resetFork(16393108);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -29,6 +30,9 @@ describe.only("Rebalancer mainnet test", function () {
 
         MyContract = await ethers.getContractFactory("BigRebalancerEuler");
         BigRebalancerEuler = await MyContract.attach(_bigRebalancerEuler);
+
+        MyContract = await ethers.getContractFactory("VaultStorage");
+        VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
     });
 
     // const mul = "1100000000000000000";
@@ -44,21 +48,8 @@ describe.only("Rebalancer mainnet test", function () {
     // const mul = "990000000000000000";
     // const mul = "950000000000000000";
 
-    it("Rebalance current", async function () {
+    it("Change 1", async function () {
         this.skip();
-        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler before");
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", mul);
-        recipt = await tx.wait();
-        console.log("Gas used", recipt.gasUsed.toString());
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler after");
-    });
-
-    it("Change & run", async function () {
-        // this.skip();
 
         tx = await BigRebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         await tx.wait();
@@ -71,25 +62,10 @@ describe.only("Rebalancer mainnet test", function () {
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancer.address);
         await tx.wait();
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(BigRebalancer.address, "BigRebalancer before");
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", mul);
-        recipt = await tx.wait();
-        console.log("Gas used", recipt.gasUsed.toString());
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        await logBalance(BigRebalancer.address, "BigRebalancer after");
     });
 
-    it("Change & run 2", async function () {
-        this.skip();
-
-        //TODO: check it
-
-        tx = await BigRebalancerEuler.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
-        await tx.wait();
+    it("Change 2", async function () {
+        // this.skip();
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
         await tx.wait();
@@ -100,14 +76,27 @@ describe.only("Rebalancer mainnet test", function () {
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler.address);
         await tx.wait();
 
+        tx = await BigRebalancerEuler.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
+        await tx.wait();
+    });
+
+    it("Rebalance current", async function () {
+        const _keeper = await VaultStorage.keeper();
+        const _module = await CheapRebalancer.bigRebalancer();
+        if (_keeper == BigRebalancerEuler.address && _module == BigRebalancerEuler.address) {
+            console.log("> BigRebalancerEuler");
+        } else if (_keeper == BigRebalancer.address && _module == BigRebalancer.address) {
+            console.log("> BigRebalancer");
+        }
+
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler before");
+        await logBalance(_keeper, "Module before");
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", mul);
         recipt = await tx.wait();
         console.log("Gas used", recipt.gasUsed.toString());
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler after");
+        await logBalance(_keeper, "Module after");
     });
 });
