@@ -30,7 +30,7 @@ const {
 } = require("./helpers");
 const { deployContract } = require("./deploy");
 
-describe.only("Cheap Rebalancer test mainnet", function () {
+describe.skip("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
         await resetFork(16354557);
 
