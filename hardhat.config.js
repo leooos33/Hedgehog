@@ -35,7 +35,7 @@ module.exports = {
         mainnet: {
             url: IFURA_MAINNET_URL,
             accounts: [HEDGEHOG_REBALANCER_V2],
-            gasPrice: 13 * 10 ** 9,
+            gasPrice: 30 * 10 ** 9,
         },
     },
     solidity: {

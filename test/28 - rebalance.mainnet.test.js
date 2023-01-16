@@ -1,6 +1,7 @@
 const { ethers } = require("hardhat");
 const {
     _rebalanceModuleV2,
+    _bigRebalancerEuler2,
     _bigRebalancerEuler,
     _hedgehogRebalancerDeployerV2,
     _vaultTreasuryAddressV2,
@@ -9,9 +10,9 @@ const {
 } = require("./common");
 const { resetFork, logBalance, getETH } = require("./helpers");
 
-describe.skip("Rebalancer mainnet test", function () {
+describe.only("Rebalancer mainnet test", function () {
     it("Phase 0", async function () {
-        await resetFork(16421681);
+        await resetFork(16422092);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -30,6 +31,9 @@ describe.skip("Rebalancer mainnet test", function () {
 
         MyContract = await ethers.getContractFactory("BigRebalancerEuler");
         BigRebalancerEuler = await MyContract.attach(_bigRebalancerEuler);
+
+        MyContract = await ethers.getContractFactory("BigRebalancerEuler");
+        BigRebalancerEuler2 = await MyContract.attach(_bigRebalancerEuler2);
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
@@ -65,7 +69,7 @@ describe.skip("Rebalancer mainnet test", function () {
     });
 
     it("Change 2", async function () {
-        // this.skip();
+        this.skip();
 
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
         await tx.wait();
@@ -80,6 +84,23 @@ describe.skip("Rebalancer mainnet test", function () {
         await tx.wait();
     });
 
+    it("Change 3", async function () {
+        // this.skip();
+
+        console.log(await CheapRebalancer.owner());
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
+        await tx.wait();
+
+        tx = await BigRebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancerEuler2.address);
+        await tx.wait();
+
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler2.address);
+        await tx.wait();
+
+        tx = await BigRebalancerEuler2.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
+        await tx.wait();
+    });
+
     it("Rebalance current", async function () {
         const _keeper = await VaultStorage.keeper();
         const _module = await CheapRebalancer.bigRebalancer();
@@ -87,6 +108,8 @@ describe.skip("Rebalancer mainnet test", function () {
             console.log("> BigRebalancerEuler");
         } else if (_keeper == BigRebalancer.address && _module == BigRebalancer.address) {
             console.log("> BigRebalancer");
+        } else if (_keeper == BigRebalancerEuler2.address && _module == BigRebalancerEuler2.address) {
+            console.log("> BigRebalancerEuler");
         }
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");

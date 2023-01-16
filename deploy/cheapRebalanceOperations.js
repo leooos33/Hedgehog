@@ -8,6 +8,7 @@ const {
     _hedgehogRebalancerDeployerV2,
     wethAddress,
     _bigRebalancerEuler,
+    _bigRebalancerEuler2,
     _rebalanceModuleV2,
     _vaultStorageAddressV2,
 } = require("../test/common/index");
@@ -21,15 +22,18 @@ const operation = async () => {
     VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
     MyContract = await ethers.getContractFactory("BigRebalancerEuler");
     BigRebalancerEuler = await MyContract.attach(_bigRebalancerEuler);
+    MyContract = await ethers.getContractFactory("BigRebalancerEuler");
+    BigRebalancerEuler2 = await MyContract.attach(_bigRebalancerEuler2);
     MyContract = await ethers.getContractFactory("BigRebalancer");
     BigRebalancer = await MyContract.attach(_rebalanceModuleV2);
 
     // await governanceOperations();
-    await rebalanceOperations();
+    // await rebalanceOperations();
     // await collectToTreasuryOperations();
     // await collectToAddress();
     // await rebalanceManipulations();
     // await rebalanceManipulations2();
+    await rebalanceManipulations3();
 
     if (tx) console.log(tx);
 };
@@ -77,6 +81,30 @@ const rebalanceManipulations2 = async () => {
     // });
 
     // tx = await BigRebalancerEuler.callStatic.transferOwnership(CheapRebalancer.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+};
+
+const rebalanceManipulations3 = async () => {
+    const gasPrice = 28 * 10 ** 9;
+
+    tx = await CheapRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
+        gasLimit: 2000000,
+        gasPrice,
+    });
+
+    // tx = await BigRebalancer.callStatic.setKeeper(BigRebalancerEuler2.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+
+    // tx = await CheapRebalancer.callStatic.setContracts(BigRebalancerEuler2.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+
+    // tx = await BigRebalancerEuler2.callStatic.transferOwnership(CheapRebalancer.address, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
@@ -151,7 +179,7 @@ const collectToAddress = async () => {
 
     tx = await CheapRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
         gasLimit: 80000,
-        gasPrice: 28 * 10 ** 9,
+        gasPrice: 32 * 10 ** 9,
     });
 };
 

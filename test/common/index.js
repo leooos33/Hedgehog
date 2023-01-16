@@ -48,9 +48,11 @@ const _hedgehogRebalancerDeployerV2 = "0x4530DA167C5a751e48f35b2aa08F44570C03B7d
 const _deployerAddressV2 = "0x8f69766b870C45339E02A68ca8298861fDA8A563";
 const _keeperAddressV2 = _hedgehogRebalancerDeployerV2;
 const _bigRebalancerEuler = "0x24F378A96eDAA91b20b86300771929Fcb10190E2";
+const _bigRebalancerEuler2 = "0xfE08EEb4d98551Ea6eB474b24356a82Cf60277e2";
 
 module.exports = {
     _bigRebalancerEuler,
+    _bigRebalancerEuler2,
     _cheapRebalancerV2,
     _rebalanceModuleV2,
     _hedgehogRebalancerDeployerV2,
