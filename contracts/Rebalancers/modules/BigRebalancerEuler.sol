@@ -15,8 +15,6 @@ import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";
 
-import "hardhat/console.sol";
-
 // Rebalance flow
 
 // branch 1 (targetEth < ethBalance && targetUsdc < usdcBalance && targetOsqth > osqthBalance)
@@ -112,7 +110,6 @@ contract BigRebalancerEuler is Ownable {
 
     //dev triggerTime - deprecated param
     function rebalance(uint256 threshold, uint256 triggerTime) public onlyOwner {
-        console.log("!");
 
         FlCallbackData memory data;
 
@@ -187,12 +184,11 @@ contract BigRebalancerEuler is Ownable {
                     fee: 500,
                     recipient: address(this),
                     deadline: block.timestamp,
-                    amountIn: IERC20(WETH).balanceOf(address(this)),
+                    amountIn: IERC20(USDC).balanceOf(address(this)),
                     amountOutMinimum: 0,
                     sqrtPriceLimitX96: 0
                 })
             );
-
             // WETH -> OSQTH
             swapRouter.exactOutputSingle(
                 ISwapRouter.ExactOutputSingleParams({
@@ -206,8 +202,8 @@ contract BigRebalancerEuler is Ownable {
                     sqrtPriceLimitX96: 0
                 })
             );
-
             borrowedDToken1.repay(0, data.amount1);
+            
         } else if (data.type_of_arbitrage == 2) {
             IEulerDToken borrowedDToken1 = IEulerDToken(markets.underlyingToDToken(USDC));
             borrowedDToken1.borrow(0, data.amount1);
