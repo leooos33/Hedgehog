@@ -14,7 +14,7 @@ const { resetFork, getERC20Balance, approveERC20 } = require("./helpers");
 
 describe.skip("Snapshot Mainnet", function () {
     it("Get snapshot", async function () {
-        let block = 15659076;
+        let block = 15658381;
         await resetFork(block);
 
         const VaultStorage = await ethers.getContractAt("VaultStorage", _vaultStorageAddressV2);

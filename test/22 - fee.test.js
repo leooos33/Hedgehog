@@ -33,7 +33,7 @@ describe.skip("Fee test", function () {
     let tx, receipt, Rebalancer, MyContract;
 
     it("Should deploy contract", async function () {
-        await resetFork(16175520);
+        await resetFork(16421382);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -53,14 +53,7 @@ describe.skip("Fee test", function () {
         CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
 
         await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("2.0"));
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerDeployerV2).returnGovernance(governance.address);
-        await tx.wait();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerDeployerV2).returnOwner(
-            hedgehogRebalancerDeployerV2.address
-        );
-        await tx.wait();
+        await getETH(governance.address, ethers.utils.parseEther("2.0"));
 
         MyContract = await ethers.getContractFactory("VaultAuction");
         VaultAuction = await MyContract.attach(_vaultAuctionAddressV2);
@@ -81,25 +74,27 @@ describe.skip("Fee test", function () {
     it("getParams", async function () {
         // this.skip();
 
-        await getETH(hedgehogRebalancerDeployerV2.address, ethers.utils.parseEther("2.0"));
-        await getETH(governance.address, ethers.utils.parseEther("2.0"));
-
-        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).setKeeper(governance.address);
-        await tx.wait();
-
         const amounts0 = await VaultMath.getTotalAmounts();
 
-        tx = await Treasury.connect(governance).externalPoke();
+        tx = await CheapRebalancer.connect(hedgehogRebalancerDeployerV2).returnOwner(
+            hedgehogRebalancerDeployerV2.address
+        );
         await tx.wait();
 
-        const amounts1 = await VaultMath.getTotalAmounts();
+        tx = await Rebalancer.connect(hedgehogRebalancerDeployerV2).setKeeper(hedgehogRebalancerDeployerV2.address);
+        await tx.wait();
 
-        const ethDiff = (amounts1[0] - amounts0[0]).toString();
-        const usdcDiff = (amounts1[1] - amounts0[1]).toString();
-        const osqthDiff = (amounts1[2] - amounts0[2]).toString();
+        // tx = await Treasury.connect(hedgehogRebalancerDeployerV2).externalPoke();
+        // await tx.wait();
 
-        const prices = await VaultMath.getPrices();
-        const feeValue = await VaultMath.getValue(ethDiff, usdcDiff, osqthDiff, prices[0], prices[1]);
-        console.log("accrude fee in USD %s", (feeValue * prices[0]) / 1e36);
+        // const amounts1 = await VaultMath.getTotalAmounts();
+
+        // const ethDiff = (amounts1[0] - amounts0[0]).toString();
+        // const usdcDiff = (amounts1[1] - amounts0[1]).toString();
+        // const osqthDiff = (amounts1[2] - amounts0[2]).toString();
+
+        // const prices = await VaultMath.getPrices();
+        // const feeValue = await VaultMath.getValue(ethDiff, usdcDiff, osqthDiff, prices[0], prices[1]);
+        // console.log("accrude fee in USD %s", (feeValue * prices[0]) / 1e36);
     });
 });

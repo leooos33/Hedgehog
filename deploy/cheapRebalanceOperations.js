@@ -1,4 +1,4 @@
-process.exit(0); // Block file in order to not accidentally deploy
+// process.exit(0); // Block file in order to not accidentally deploy
 
 const { utils } = require("ethers");
 const { ethers } = require("hardhat");
@@ -25,16 +25,17 @@ const operation = async () => {
     BigRebalancer = await MyContract.attach(_rebalanceModuleV2);
 
     // await governanceOperations();
-    // await rebalanceOperations();
+    await rebalanceOperations();
     // await collectToTreasuryOperations();
     // await collectToAddress();
     // await rebalanceManipulations();
+    // await rebalanceManipulations2();
 
     if (tx) console.log(tx);
 };
 
 const rebalanceManipulations = async () => {
-    const gasPrice = 17 * 10 ** 9;
+    const gasPrice = 26 * 10 ** 9;
 
     // tx = await BigRebalancer.callStatic.transferOwnership(CheapRebalancer.address, {
     //     gasLimit: 2000000,
@@ -52,6 +53,30 @@ const rebalanceManipulations = async () => {
     // });
 
     // tx = await CheapRebalancer.callStatic.setContracts(BigRebalancer.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+};
+
+const rebalanceManipulations2 = async () => {
+    const gasPrice = 28 * 10 ** 9;
+
+    // tx = await CheapRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+
+    // tx = await BigRebalancer.callStatic.setKeeper(BigRebalancerEuler.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+
+    // tx = await CheapRebalancer.callStatic.setContracts(BigRebalancerEuler.address, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
+
+    // tx = await BigRebalancerEuler.callStatic.transferOwnership(CheapRebalancer.address, {
     //     gasLimit: 2000000,
     //     gasPrice,
     // });
@@ -89,7 +114,7 @@ const rebalanceOperations = async () => {
     // const mul = "1000000000000000000";
     // const mul = "999900000000000000";
     // const mul = "999600000000000000";
-    const mul = "999000000000000000";
+    // const mul = "999000000000000000";
     // const mul = "998500000000000000";
     // const mul = "998000000000000000";
     // const mul = "997500000000000000";
@@ -99,12 +124,9 @@ const rebalanceOperations = async () => {
     // const mul = "950000000000000000";
     tx = await CheapRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 20 * 10 ** 9,
+        gasPrice: 27 * 10 ** 9,
     });
 };
-
-// Accumulated fee
-let fee = utils.parseUnits("0", 18);
 
 const collectToTreasuryOperations = async () => {
     const contract = await CheapRebalancer.bigRebalancer();
@@ -127,9 +149,9 @@ const collectToAddress = async () => {
     let amount = await WETH.balanceOf(contract);
     console.log("All", amount.toString());
 
-    tx = await CheapRebalancer.callStatic.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
+    tx = await CheapRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
         gasLimit: 80000,
-        gasPrice: 17 * 10 ** 9,
+        gasPrice: 28 * 10 ** 9,
     });
 };
 
