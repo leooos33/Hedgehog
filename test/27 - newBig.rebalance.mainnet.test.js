@@ -32,7 +32,7 @@ const { deployContract } = require("./deploy");
 
 describe.only("Cheap Rebalancer test mainnet", function () {
     it("Phase 0", async function () {
-        await resetFork(16421719);
+        await resetFork(16421744);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -43,9 +43,9 @@ describe.only("Cheap Rebalancer test mainnet", function () {
 
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
     });
-    return;
+
     it("Deploy and setup", async function () {
-        this.skip();
+        // this.skip();
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
 
@@ -70,7 +70,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler.address);
         await tx.wait();
 
-        //? Check
+        // //? Check
 
         console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == hedgehogRebalancerActor.address);
         console.log("BigRebalancerEuler.owner:", (await BigRebalancerEuler.owner()) == CheapRebalancer.address);
@@ -80,7 +80,7 @@ describe.only("Cheap Rebalancer test mainnet", function () {
     });
 
     it("Phase Do rebalance", async function () {
-        this.skip();
+        // this.skip();
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");
         await logBalance(BigRebalancerEuler.address, "BigRebalancerEuler before");
         await logBalance(hedgehogRebalancerActor.address, "hedgehogRebalancerActor.address before");
