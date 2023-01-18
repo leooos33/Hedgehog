@@ -12,7 +12,7 @@ const { resetFork, logBalance, getETH } = require("./helpers");
 
 describe.only("Rebalancer mainnet test", function () {
     it("Phase 0", async function () {
-        await resetFork(16422092);
+        await resetFork(16434909);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -43,9 +43,9 @@ describe.only("Rebalancer mainnet test", function () {
     // const mul = "1000000000000000000";
     // const mul = "999900000000000000";
     // const mul = "999600000000000000";
-    const mul = "999000000000000000";
+    // const mul = "999000000000000000";
     // const mul = "998500000000000000";
-    // const mul = "998000000000000000";
+    const mul = "998000000000000000";
     // const mul = "997500000000000000";
     // const mul = "997000000000000000";
     // const mul = "995000000000000000";
@@ -85,7 +85,7 @@ describe.only("Rebalancer mainnet test", function () {
     });
 
     it("Change 3", async function () {
-        // this.skip();
+        this.skip();
 
         console.log(await CheapRebalancer.owner());
         tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
@@ -109,7 +109,7 @@ describe.only("Rebalancer mainnet test", function () {
         } else if (_keeper == BigRebalancer.address && _module == BigRebalancer.address) {
             console.log("> BigRebalancer");
         } else if (_keeper == BigRebalancerEuler2.address && _module == BigRebalancerEuler2.address) {
-            console.log("> BigRebalancerEuler");
+            console.log("> BigRebalancerEuler2");
         }
 
         await logBalance(_vaultTreasuryAddressV2, "Treasury before");

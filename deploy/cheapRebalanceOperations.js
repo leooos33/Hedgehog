@@ -1,4 +1,4 @@
-// process.exit(0); // Block file in order to not accidentally deploy
+process.exit(0); // Block file in order to not accidentally deploy
 
 const { utils } = require("ethers");
 const { ethers } = require("hardhat");
@@ -33,7 +33,7 @@ const operation = async () => {
     // await collectToAddress();
     // await rebalanceManipulations();
     // await rebalanceManipulations2();
-    await rebalanceManipulations3();
+    // await rebalanceManipulations3();
 
     if (tx) console.log(tx);
 };
@@ -87,12 +87,12 @@ const rebalanceManipulations2 = async () => {
 };
 
 const rebalanceManipulations3 = async () => {
-    const gasPrice = 28 * 10 ** 9;
+    const gasPrice = 24 * 10 ** 9;
 
-    tx = await CheapRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
-        gasLimit: 2000000,
-        gasPrice,
-    });
+    // tx = await CheapRebalancer.callStatic.returnOwner(_hedgehogRebalancerDeployerV2, {
+    //     gasLimit: 2000000,
+    //     gasPrice,
+    // });
 
     // tx = await BigRebalancer.callStatic.setKeeper(BigRebalancerEuler2.address, {
     //     gasLimit: 2000000,
@@ -152,7 +152,7 @@ const rebalanceOperations = async () => {
     // const mul = "950000000000000000";
     tx = await CheapRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 27 * 10 ** 9,
+        gasPrice: 35 * 10 ** 9,
     });
 };
 
