@@ -17,13 +17,11 @@ interface IVaultStorage {
     function setRebalanceTimeThreshold(uint256 _rebalanceTimeThreshold) external;
 
     function setGovernance(address _governance) external;
+    
+    function setKeeper(address _governance) external;
 }
 
 interface IBigRebalancer {
-    function addressStorage() external view returns (address);
-
-    function addressTreasury() external view returns (address);
-
     function rebalance(uint256 threshold, uint256 triggerTime) external;
 
     function collectProtocol(
@@ -39,37 +37,38 @@ interface IBigRebalancer {
 contract CheapRebalancer is Ownable {
     using PRBMathUD60x18 for uint256;
 
-    address public bigRebalancer = 0x86345a7f1D77F6056E2ff83e1b1071238AEf1483;
-    address constant WETH = 0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2;
-    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-    address constant OSQTH = 0xf1B99e3E573A1a9C5E6B2Ce818b617F0E664E86B;
-
+    address addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
     constructor() Ownable() {}
 
-    function setContracts(address _bigRebalancer) external onlyOwner {
-        bigRebalancer = _bigRebalancer;
+    function setContracts(address _addressStorage) external onlyOwner {
+        addressStorage = _addressStorage;
     }
 
-    function returnOwner(address to) external onlyOwner {
-        IBigRebalancer(bigRebalancer).transferOwnership(to);
+    function returnOwner(address to, address rebalancer) external onlyOwner {
+        IBigRebalancer(rebalancer).transferOwnership(to);
     }
 
-    function returnGovernance(address to) external onlyOwner {
-        IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage()).setGovernance(to);
+    function setGovernance(address to) external onlyOwner {
+        IVaultStorage(addressStorage).setGovernance(to);
+    }
+
+    function setKeeper(address to) external onlyOwner {
+        IVaultStorage(addressStorage).setKeeper(to);
     }
 
     function collectProtocol(
+        address rebalancer,
         uint256 amountEth,
-        uint256 amountUsdc,
-        uint256 amountOsqth,
         address to
     ) external onlyOwner {
-        IBigRebalancer(bigRebalancer).collectProtocol(amountEth, amountUsdc, amountOsqth, to);
+        IBigRebalancer(rebalancer).collectProtocol(amountEth, 0, 0, to);
     }
 
-    function rebalance(uint256 threshold, uint256 newPM) public onlyOwner {
-        IVaultStorage VaultStorage = IVaultStorage(IBigRebalancer(bigRebalancer).addressStorage());
-
+    function rebalance(address rebalancer, uint256 threshold, uint256 newPM, address newThreshold) public onlyOwner {
+        IVaultStorage VaultStorage = IVaultStorage(addressStorage);
+        
+        VaultStorage.setKeeper(rebalance);
+        
         uint256 maxPM = VaultStorage.maxPriceMultiplier();
         uint256 minPM = VaultStorage.minPriceMultiplier();
 
@@ -79,8 +78,10 @@ contract CheapRebalancer is Ownable {
             )
         );
 
-        IBigRebalancer(bigRebalancer).rebalance(threshold, 0);
+        IBigRebalancer(rebalancer).rebalance(threshold, 0);
 
-        VaultStorage.setRebalanceTimeThreshold(604800);
+        VaultStorage.setRebalanceTimeThreshold(newThreshold);
+        
+        IBigRebalancer(rebalancer).setKeeper(address(this));
     }
 }

@@ -26,6 +26,7 @@ contract MultiSigWallet {
         uint numConfirmations;
         address transferedKeeper;
         address transferedGovernance;
+        address executor;
     }
 
     mapping(uint => mapping(address => bool)) public isConfirmed;
@@ -70,7 +71,8 @@ contract MultiSigWallet {
         uint _value,
         bytes memory _data,
         address _transferedKeeper,
-        address _transferedGovernance
+        address _transferedGovernance,
+        address _executor,
     ) public onlyOwner {
         uint txIndex = transactions.length;
 
@@ -82,7 +84,8 @@ contract MultiSigWallet {
                 executed: false,
                 numConfirmations: 0,
                 transferedKeeper: _transferedKeeper,
-                transferedGovernance: _transferedGovernance
+                transferedGovernance: _transferedGovernance,
+                executor: _executor
             })
         );
 
@@ -100,13 +103,20 @@ contract MultiSigWallet {
     }
 
     interface IModule {
-        function returnGovernance(address to) external;
+        function setGovernance(address to) external;
         function setKeeper(address to) external;
     }
 
     function executeTransaction(
         uint _txIndex
     ) public onlyOwner {
+        _executeTransaction(_txIndex);
+    }
+
+    function executorExecuteTransaction(
+        uint _txIndex
+    ) public {
+        require(msg.sender == transactions[_txIndex].executor, "C1");
         _executeTransaction(_txIndex);
     }
 
@@ -131,7 +141,7 @@ contract MultiSigWallet {
         );
         require(success, "tx failed");
 
-        if(transaction.transferedGovernance != address(0)) IModule(transaction.transferedGovernance).transferedGovernance(address(this));
+        if(transaction.transferedGovernance != address(0)) IModule(transaction.transferedGovernance).setGovernance(address(this));
         if(transaction.transferedKeeper != address(0)) IModule(transaction.transferedKeeper).setKeeper(address(this));
 
         emit ExecuteTransaction(msg.sender, _txIndex);
