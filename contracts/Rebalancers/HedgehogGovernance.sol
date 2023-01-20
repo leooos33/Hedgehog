@@ -25,6 +25,14 @@ event ComponentUpdated(uint256 id, address componentAddress);
 
 //TODO: Put reentrancy gards everythere
 contract HedgehogGovernance is Ownable {
+    struct Transaction {
+        address executor;
+        uint256 moduleId;
+        address governance;
+        address keeper;
+        bytes data;
+    }
+
     address[] public modules;
 
     address[] public components; // TODO: optimize array uint value evrythere
@@ -83,20 +91,50 @@ contract HedgehogGovernance is Ownable {
 
     function call(
         uint256 moduleId,
-        address _governance,
-        address _keeper,
+        address governance,
+        address keeper,
         bytes calldata _data,
     ) public onlyOwner {
         address moduleAddress = modules[moduleId];
-        if(_governance != address(0)) setGovernance(_governance);
-        if(_keeper != address(0)) setKeeper(_keeper);
+        if(governance != address(0)) setGovernance(governance);
+        if(keeper != address(0)) setKeeper(keeper);
 
         (bool success, ) = moduleAddress.call(_data);
         require(success, 'call failed');
 
         // this should return error if it's not transfered, for example for BigRebalancerEuler
         //TODO: check it
-        if(_governance != address(0)) IModule(_governance).setGovernance(address(this));
-        if(_keeper != address(0)) IModule(_keeper).setKeeper(address(this));
+        if(governance != address(0)) IModule(governance).setGovernance(address(this));
+        if(keeper != address(0)) IModule(keeper).setKeeper(address(this));
+    }
+
+    function executeDelegatedCall() public {
+        require(msg.sender == delegatedTranscation.executor, "C2");
+        address moduleAddress = modules[delegatedTranscation.moduleId];
+        if(delegatedTranscation.governance != address(0)) setGovernance(delegatedTranscation.governance);
+        if(delegatedTranscation.keeper != address(0)) setKeeper(delegatedTranscation.keeper);
+
+        (bool success, ) = moduleAddress.call(delegatedTranscation.data);
+        require(success, 'call failed');
+
+        if(delegatedTranscation.governance != address(0)) IModule(delegatedTranscation.governance).setGovernance(address(this));
+        if(delegatedTranscation.keeper != address(0)) IModule(delegatedTranscation.keeper).setKeeper(address(this));
+    }
+
+    Transaction delegatedTranscation;
+    function createDelegatedCall(
+        address _executor,
+        uint256 _moduleId,
+        address _governance,
+        address _keeper,
+        bytes calldata _data,
+    ) public onlyOwner {
+        delegatedTranscation = Transaction({
+            executor: _executor,
+            moduleId: _moduleId,
+            governance: _governance,
+            keeper: _keeper,
+            data: _data;
+        });
     }
 }
