@@ -152,7 +152,7 @@ const rebalanceOperations = async () => {
     // const mul = "950000000000000000";
     tx = await CheapRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 35 * 10 ** 9,
+        gasPrice: 27 * 10 ** 9,
     });
 };
 
@@ -177,9 +177,9 @@ const collectToAddress = async () => {
     let amount = await WETH.balanceOf(contract);
     console.log("All", amount.toString());
 
-    tx = await CheapRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
+    tx = await CheapRebalancer.callStatic.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
         gasLimit: 80000,
-        gasPrice: 32 * 10 ** 9,
+        gasPrice: 105 * 10 ** 9,
     });
 };
 
