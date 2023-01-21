@@ -13,7 +13,7 @@ const { deployContract } = require("./deploy");
 
 describe.only("Multisig hardhat test", function () {
     it("Phase 0", async function () {
-        await resetFork(16434909);
+        await resetFork(16455860);
 
         await hre.network.provider.request({
             method: "hardhat_impersonateAccount",
@@ -29,8 +29,11 @@ describe.only("Multisig hardhat test", function () {
 
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
 
-        MyContract = await ethers.getContractFactory("CheapRebalancer");
-        CheapRebalancer = await MyContract.attach(_cheapRebalancerV2);
+        _CheapRebalancer = await ethers.getContractAt("ICheapRebalancerOld", _cheapRebalancerV2);
+
+        CheapRebalancer = await deployContract("CheapRebalancer", [], false);
+        tx = await CheapRebalancer.transferOwnership(hedgehogRebalancerActor.address);
+        await tx.wait();
 
         MyContract = await ethers.getContractFactory("BigRebalancer");
         BigRebalancer = await MyContract.attach(_rebalanceModuleV2);
@@ -51,55 +54,125 @@ describe.only("Multisig hardhat test", function () {
         );
     });
 
-    return;
-    it("Change 1", async function () {
-        this.skip();
+    it("Transfer to new contracts", async function () {
+        // this.skip();
+
+        tx = await _CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler2.address);
+        await tx.wait();
+        tx = await _CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
+        await tx.wait();
+
+        tx = await _CheapRebalancer.connect(hedgehogRebalancerActor).returnGovernance(MultisigWallet.address);
+        await tx.wait();
+        tx = await BigRebalancerEuler2.connect(hedgehogRebalancerActor).setKeeper(MultisigWallet.address);
+        await tx.wait();
 
         tx = await BigRebalancer.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         await tx.wait();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
-        await tx.wait();
-
-        tx = await BigRebalancerEuler.connect(hedgehogRebalancerActor).setKeeper(BigRebalancer.address);
-        await tx.wait();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancer.address);
-        await tx.wait();
-    });
-
-    it("Change 2", async function () {
-        this.skip();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
-        await tx.wait();
-
-        tx = await BigRebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancerEuler.address);
-        await tx.wait();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler.address);
-        await tx.wait();
-
         tx = await BigRebalancerEuler.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         await tx.wait();
-    });
-
-    it("Change 3", async function () {
-        this.skip();
-
-        console.log(await CheapRebalancer.owner());
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(hedgehogRebalancerActor.address);
-        await tx.wait();
-
-        tx = await BigRebalancer.connect(hedgehogRebalancerActor).setKeeper(BigRebalancerEuler2.address);
-        await tx.wait();
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).setContracts(BigRebalancerEuler2.address);
-        await tx.wait();
-
         tx = await BigRebalancerEuler2.connect(hedgehogRebalancerActor).transferOwnership(CheapRebalancer.address);
         await tx.wait();
+
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).transferOwnership(MultisigWallet.address);
+        await tx.wait();
+
+        console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == MultisigWallet.address);
+        console.log("BigRebalancer.owner:", (await BigRebalancer.owner()) == CheapRebalancer.address);
+        console.log("BigRebalancerEuler.owner:", (await BigRebalancerEuler.owner()) == CheapRebalancer.address);
+        console.log("BigRebalancerEuler2.owner:", (await BigRebalancerEuler2.owner()) == CheapRebalancer.address);
+        console.log("VaultStorage.governance:", (await VaultStorage.governance()) == MultisigWallet.address);
+        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == MultisigWallet.address);
     });
+
+    const nullAddress = "0x0000000000000000000000000000000000000000";
+    it("Check if could return", async function () {
+        this.skip();
+
+        //? setGovernance
+        inface = new ethers.utils.Interface(["function setGovernance(address _governance)"]);
+        data = inface.encodeFunctionData("setGovernance", [hedgehogRebalancerActor.address]);
+        tx = await MultisigWallet.connect(owner1).submitTransaction(
+            VaultStorage.address,
+            0,
+            data,
+            nullAddress,
+            nullAddress,
+            nullAddress
+        );
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).confirmTransaction(0);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner2).confirmTransaction(0);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).executeTransaction(0);
+        await tx.wait();
+
+        //?setKeeper
+        inface = new ethers.utils.Interface(["function setKeeper(address _keeper)"]);
+        data = inface.encodeFunctionData("setKeeper", [hedgehogRebalancerActor.address]);
+        tx = await MultisigWallet.connect(owner1).submitTransaction(
+            VaultStorage.address,
+            0,
+            data,
+            nullAddress,
+            nullAddress,
+            nullAddress
+        );
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).confirmTransaction(1);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner2).confirmTransaction(1);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).executeTransaction(1);
+        await tx.wait();
+
+        //?transferOwnership
+        inface = new ethers.utils.Interface(["function transferOwnership(address newOwner)"]);
+        data = inface.encodeFunctionData("transferOwnership", [hedgehogRebalancerActor.address]);
+        tx = await MultisigWallet.connect(owner1).submitTransaction(
+            CheapRebalancer.address,
+            0,
+            data,
+            nullAddress,
+            nullAddress,
+            nullAddress
+        );
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).confirmTransaction(2);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner2).confirmTransaction(2);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).executeTransaction(2);
+        await tx.wait();
+
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(
+            hedgehogRebalancerActor.address,
+            BigRebalancer.address
+        );
+        await tx.wait();
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(
+            hedgehogRebalancerActor.address,
+            BigRebalancerEuler.address
+        );
+        await tx.wait();
+        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).returnOwner(
+            hedgehogRebalancerActor.address,
+            BigRebalancerEuler2.address
+        );
+        await tx.wait();
+
+        console.log("CheapRebalancer.owner:", (await CheapRebalancer.owner()) == hedgehogRebalancerActor.address);
+        console.log("BigRebalancer.owner:", (await BigRebalancer.owner()) == hedgehogRebalancerActor.address);
+        console.log("BigRebalancerEuler.owner:", (await BigRebalancerEuler.owner()) == hedgehogRebalancerActor.address);
+        console.log(
+            "BigRebalancerEuler2.owner:",
+            (await BigRebalancerEuler2.owner()) == hedgehogRebalancerActor.address
+        );
+        console.log("VaultStorage.governance:", (await VaultStorage.governance()) == hedgehogRebalancerActor.address);
+        console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == hedgehogRebalancerActor.address);
+    });
+    return;
 
     it("Rebalance current", async function () {
         const _keeper = await VaultStorage.keeper();
