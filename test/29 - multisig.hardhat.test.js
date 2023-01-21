@@ -11,6 +11,7 @@ const {
 const { resetFork, logBalance, getETH } = require("./helpers");
 const { deployContract } = require("./deploy");
 
+const nullAddress = "0x0000000000000000000000000000000000000000";
 describe.only("Multisig hardhat test", function () {
     it("Phase 0", async function () {
         await resetFork(16455860);
@@ -85,7 +86,40 @@ describe.only("Multisig hardhat test", function () {
         console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == MultisigWallet.address);
     });
 
-    const nullAddress = "0x0000000000000000000000000000000000000000";
+    const mul = "991000000000000000";
+    it("Rebalance current", async function () {
+        // this.skip();
+        // _keeper = BigRebalancer.address;
+        // _keeper = BigRebalancerEuler.address;
+        _keeper = BigRebalancerEuler2.address;
+
+        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
+        await logBalance(_keeper, "Module before");
+
+        inface = new ethers.utils.Interface([
+            "function rebalance(address rebalancer, uint256 threshold, uint256 newPM, uint256 newThreshold)",
+        ]);
+        data = inface.encodeFunctionData("rebalance", [_keeper, 0, mul, 604800]);
+        tx = await MultisigWallet.connect(owner1).submitTransaction(
+            CheapRebalancer.address,
+            0,
+            data,
+            nullAddress,
+            nullAddress,
+            nullAddress
+        );
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).confirmTransaction(0);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner2).confirmTransaction(0);
+        await tx.wait();
+        tx = await MultisigWallet.connect(owner1).executeTransaction(0);
+        await tx.wait();
+
+        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
+        await logBalance(_keeper, "Module after");
+    });
+
     it("Check if could return", async function () {
         this.skip();
 
@@ -173,26 +207,4 @@ describe.only("Multisig hardhat test", function () {
         console.log("VaultStorage.keeper:", (await VaultStorage.keeper()) == hedgehogRebalancerActor.address);
     });
     return;
-
-    it("Rebalance current", async function () {
-        const _keeper = await VaultStorage.keeper();
-        const _module = await CheapRebalancer.bigRebalancer();
-        if (_keeper == BigRebalancerEuler.address && _module == BigRebalancerEuler.address) {
-            console.log("> BigRebalancerEuler");
-        } else if (_keeper == BigRebalancer.address && _module == BigRebalancer.address) {
-            console.log("> BigRebalancer");
-        } else if (_keeper == BigRebalancerEuler2.address && _module == BigRebalancerEuler2.address) {
-            console.log("> BigRebalancerEuler2");
-        }
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury before");
-        await logBalance(_keeper, "Module before");
-
-        tx = await CheapRebalancer.connect(hedgehogRebalancerActor).rebalance("0", mul);
-        recipt = await tx.wait();
-        console.log("Gas used", recipt.gasUsed.toString());
-
-        await logBalance(_vaultTreasuryAddressV2, "Treasury after");
-        await logBalance(_keeper, "Module after");
-    });
 });
