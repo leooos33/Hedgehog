@@ -4,12 +4,12 @@ pragma solidity =0.8.4;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
-import {PRBMathUD60x18} from "../../libraries/math/PRBMathUD60x18.sol";
+import {PRBMathUD60x18} from "../libraries/math/PRBMathUD60x18.sol";
 
-import {IAuction} from "../../interfaces/IAuction.sol";
-import {IVaultMath} from "../../interfaces/IVaultMath.sol";
-import {IVaultStorage} from "../../interfaces/IVaultStorage.sol";
-import {IVaultTreasury} from "../../interfaces/IVaultTreasury.sol";
+import {IAuction} from "../interfaces/IAuction.sol";
+import {IVaultMath} from "../interfaces/IVaultMath.sol";
+import {IVaultStorage} from "../interfaces/IVaultStorage.sol";
+import {IVaultTreasury} from "../interfaces/IVaultTreasury.sol";
 import {IEulerDToken, IEulerMarkets, IExec} from "./IEuler.sol";
 
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";

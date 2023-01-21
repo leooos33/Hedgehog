@@ -12,7 +12,7 @@ import {SafeMath} from "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import {IAuction} from "../../interfaces/IAuction.sol";
 import {IVaultTreasury} from "../../interfaces/IVaultTreasury.sol";
 import {IVaultMath} from "../../interfaces/IVaultMath.sol";
-import {IEulerDToken, IEulerMarkets, IExec} from "../modules/IEuler.sol";
+import {IEulerDToken, IEulerMarkets, IExec} from "../IEuler.sol";
 
 import {ISwapRouter} from "@uniswap/v3-periphery/contracts/interfaces/ISwapRouter.sol";
 import {TransferHelper} from "@uniswap/v3-periphery/contracts/libraries/TransferHelper.sol";

@@ -9,8 +9,9 @@ const {
     _vaultStorageAddressV2,
 } = require("./common");
 const { resetFork, logBalance, getETH } = require("./helpers");
+const { deployContract } = require("./deploy");
 
-describe.skip("Rebalancer mainnet test", function () {
+describe.only("Multisig hardhat test", function () {
     it("Phase 0", async function () {
         await resetFork(16434909);
 
@@ -20,6 +21,11 @@ describe.skip("Rebalancer mainnet test", function () {
         });
 
         hedgehogRebalancerActor = await ethers.getSigner(_hedgehogRebalancerDeployerV2);
+
+        const signers = await ethers.getSigners();
+        owner1 = signers[2];
+        owner2 = signers[3];
+        owner3 = signers[4];
 
         await getETH(hedgehogRebalancerActor.address, ethers.utils.parseEther("3.0"));
 
@@ -37,21 +43,15 @@ describe.skip("Rebalancer mainnet test", function () {
 
         MyContract = await ethers.getContractFactory("VaultStorage");
         VaultStorage = await MyContract.attach(_vaultStorageAddressV2);
+
+        MultisigWallet = await deployContract(
+            "MultiSigWallet",
+            [[owner1.address, owner2.address, owner3.address]],
+            false
+        );
     });
 
-    // const mul = "1100000000000000000";
-    // const mul = "1000000000000000000";
-    // const mul = "999900000000000000";
-    // const mul = "999600000000000000";
-    // const mul = "999000000000000000";
-    // const mul = "998500000000000000";
-    const mul = "998000000000000000";
-    // const mul = "997500000000000000";
-    // const mul = "997000000000000000";
-    // const mul = "995000000000000000";
-    // const mul = "990000000000000000";
-    // const mul = "950000000000000000";
-
+    return;
     it("Change 1", async function () {
         this.skip();
 
