@@ -44,7 +44,6 @@ contract MultiSigWallet {
         uint256 numConfirmations;
         address transferedKeeper;
         address transferedGovernance;
-        address invoker;
     }
 
     mapping(uint256 => mapping(address => bool)) public isConfirmed;
@@ -89,8 +88,7 @@ contract MultiSigWallet {
         uint256 _value,
         bytes memory _data,
         address _transferedKeeper,
-        address _transferedGovernance,
-        address _invoker
+        address _transferedGovernance
     ) public onlyOwner {
         uint256 txIndex = transactions.length;
 
@@ -102,8 +100,7 @@ contract MultiSigWallet {
                 executed: false,
                 numConfirmations: 0,
                 transferedKeeper: _transferedKeeper,
-                transferedGovernance: _transferedGovernance,
-                invoker: _invoker
+                transferedGovernance: _transferedGovernance
             })
         );
 
@@ -124,19 +121,7 @@ contract MultiSigWallet {
         emit ConfirmTransaction(msg.sender, _txIndex);
     }
 
-    function executeTransaction(uint256 _txIndex) public onlyOwner {
-        _executeTransaction(_txIndex);
-    }
-
-    function invokerExecuteTransaction(uint256 _txIndex) public {
-        require(msg.sender == transactions[_txIndex].invoker, "M0");
-        _executeTransaction(_txIndex);
-    }
-
-    //TODO: decide where to get VaultStorage address from
-    address constant addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
-
-    function _executeTransaction(uint256 _txIndex) internal txExists(_txIndex) notExecuted(_txIndex) {
+    function executeTransaction(uint256 _txIndex) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
         Transaction storage transaction = transactions[_txIndex];
 
         require(transaction.numConfirmations >= numConfirmationsRequired, "M1");
@@ -156,6 +141,9 @@ contract MultiSigWallet {
 
         emit ExecuteTransaction(msg.sender, _txIndex);
     }
+
+    //TODO: decide where to get VaultStorage address from
+    address constant addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
 
     function revokeConfirmation(uint256 _txIndex) public onlyOwner txExists(_txIndex) notExecuted(_txIndex) {
         Transaction storage transaction = transactions[_txIndex];
@@ -182,8 +170,7 @@ contract MultiSigWallet {
             bool executed,
             uint256 numConfirmations,
             address transferedKeeper,
-            address transferedGovernance,
-            address invoker
+            address transferedGovernance
         )
     {
         Transaction storage transaction = transactions[_txIndex];
@@ -195,8 +182,7 @@ contract MultiSigWallet {
             transaction.executed,
             transaction.numConfirmations,
             transaction.transferedKeeper,
-            transaction.transferedGovernance,
-            transaction.invoker
+            transaction.transferedGovernance
         );
     }
 }
