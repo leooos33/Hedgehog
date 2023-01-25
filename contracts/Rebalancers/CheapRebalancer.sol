@@ -35,26 +35,36 @@ interface IRebalancer {
     function setKeeper(address to) external;
 }
 
-contract CheapRebalancer is Ownable {
+/**
+ * Error
+ * M0: Not an owner
+*/
+
+contract CheapRebalancer {
     using PRBMathUD60x18 for uint256;
 
     address addressStorage = 0xa6D7b99c05038ad2CC39F695CF6D2A06DdAD799a;
 
-    constructor() Ownable() {}
+    mapping(address => bool) public isOwner;
 
-    function setContracts(address _addressStorage) external onlyOwner {
+    constructor() {
+        isOwner[0x4530DA167C5a751e48f35b2aa08F44570C03B7dd] = true;
+        isOwner[0x4530DA167C5a751e48f35b2aa08F44570C03B7dd] = true;
+    }
+
+    function setContracts(address _addressStorage) external onlyOwners {
         addressStorage = _addressStorage;
     }
 
-    function returnOwner(address to, address rebalancer) external onlyOwner {
+    function returnOwner(address to, address rebalancer) external onlyOwners {
         IRebalancer(rebalancer).transferOwnership(to);
     }
 
-    function setGovernance(address to) external onlyOwner {
+    function setGovernance(address to) external onlyOwners {
         IVaultStorage(addressStorage).setGovernance(to);
     }
 
-    function setKeeper(address to) external onlyOwner {
+    function setKeeper(address to) external onlyOwners {
         IVaultStorage(addressStorage).setKeeper(to);
     }
 
@@ -63,7 +73,7 @@ contract CheapRebalancer is Ownable {
         address rebalancer,
         uint256 amountEth,
         address to
-    ) external onlyOwner {
+    ) external onlyOwners {
         IRebalancer(rebalancer).collectProtocol(amountEth, 0, 0, to);
     }
 
@@ -72,7 +82,7 @@ contract CheapRebalancer is Ownable {
         uint256 threshold,
         uint256 newPM,
         uint256 newThreshold
-    ) public onlyOwner {
+    ) public onlyOwners {
         IVaultStorage VaultStorage = IVaultStorage(addressStorage);
 
         VaultStorage.setKeeper(rebalancer);
@@ -91,5 +101,18 @@ contract CheapRebalancer is Ownable {
         VaultStorage.setRebalanceTimeThreshold(newThreshold);
 
         IRebalancer(rebalancer).setKeeper(address(this));
+    }
+
+    function transferOwnership(
+        address to
+    ) public onlyOwners {
+        isOwner[msg.sender] = false;
+        isOwner[to] = true;
+    }
+
+    // TODO: think about where to put only owner
+    modifier onlyOwners() {
+        require(isOwner[msg.sender], "M0");
+        _;
     }
 }
