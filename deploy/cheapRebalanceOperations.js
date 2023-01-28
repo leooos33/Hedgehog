@@ -11,6 +11,7 @@ const {
     _bigRebalancerEuler2,
     _rebalanceModuleV2,
     _vaultStorageAddressV2,
+    _sharedGovernance,
 } = require("../test/common/index");
 
 let tx, CheapRebalancer, WETH;
@@ -27,6 +28,8 @@ const operation = async () => {
     MyContract = await ethers.getContractFactory("BigRebalancer");
     BigRebalancer = await MyContract.attach(_rebalanceModuleV2);
 
+    console.log(await VaultStorage.owner());
+    console.log(await CheapRebalancer.owner());
     // await governanceOperations();
     // await rebalanceOperations();
     // await collectToTreasuryOperations();
@@ -111,25 +114,27 @@ const rebalanceManipulations3 = async () => {
 };
 
 const governanceOperations = async () => {
-    const gasPrice = 20 * 10 ** 9;
-
-    // tx = await CheapRebalancer.callStatic.returnGovernance(_hedgehogRebalancerDeployerV2, {
-    //     gasLimit: 2000000,
+    const gasPrice = 16 * 10 ** 9;
+    // console.log(await CheapRebalancer.bigRebalancer());
+    // tx = await CheapRebalancer.returnGovernance(_hedgehogRebalancerDeployerV2, {
+    //     gasLimit: 80000,
     //     gasPrice,
     // });
-
-    // tx = await VaultStorage.callStatic.setAdjParam("100000000000000000", {
-    //     gasLimit: 2000000,
+    // tx = await CheapRebalancer.callStatic.transferOwnership(_sharedGovernance, {
+    //     gasLimit: 80000,
     //     gasPrice,
     // });
-
+    // console.log(await VaultStorage.governance());
+    // tx = await VaultStorage.callStatic.setBaseThreshold(1500, {
+    //     gasLimit: 80000,
+    //     gasPrice,
+    // });
     // tx = await VaultStorage.callStatic.setCap("228000000000000000000", {
-    //     gasLimit: 2000000,
+    //     gasLimit: 80000,
     //     gasPrice,
     // });
-
     // tx = await VaultStorage.callStatic.setGovernance(_cheapRebalancerV2, {
-    //     gasLimit: 2000000,
+    //     gasLimit: 80000,
     //     gasPrice,
     // });
 };
@@ -152,7 +157,7 @@ const rebalanceOperations = async () => {
     // const mul = "950000000000000000";
     tx = await CheapRebalancer.callStatic.rebalance("0", mul, {
         gasLimit: 4000000,
-        gasPrice: 35 * 10 ** 9,
+        gasPrice: 25 * 10 ** 9,
     });
 };
 
@@ -173,14 +178,18 @@ const collectToTreasuryOperations = async () => {
 };
 
 const collectToAddress = async () => {
-    const contract = await CheapRebalancer.bigRebalancer();
-    let amount = await WETH.balanceOf(contract);
-    console.log("All", amount.toString());
-
-    tx = await CheapRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
-        gasLimit: 80000,
-        gasPrice: 32 * 10 ** 9,
-    });
+    // console.log(await CheapRebalancer.bigRebalancer());
+    // tx = await CheapRebalancer.setContracts(_bigRebalancerEuler2, {
+    //     gasLimit: 80000,
+    //     gasPrice: 31 * 10 ** 9,
+    // });
+    // const contract = await CheapRebalancer.bigRebalancer();
+    // let amount = await WETH.balanceOf(contract);
+    // console.log("All", amount.toString());
+    // tx = await CheapRebalancer.collectProtocol(amount, "0", "0", _hedgehogRebalancerDeployerV2, {
+    //     gasLimit: 80000,
+    //     gasPrice: 29 * 10 ** 9,
+    // });
 };
 
 operation().catch((error) => {
